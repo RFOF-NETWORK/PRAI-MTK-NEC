@@ -1,0 +1,6 @@
+{
+  "name": "PRAI / MTK / NEC",
+  "description": "Zentrales Systemhandbuch & Schnittstelle für das dezentrale PRAI / MTK / NEC Ökosystem mit 4 Layern, 28 Kategorien, 8 Perspektiven, Urkunden und Organigrammen.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
