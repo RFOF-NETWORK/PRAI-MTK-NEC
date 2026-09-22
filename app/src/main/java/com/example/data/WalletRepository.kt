@@ -6,6 +6,7 @@ import com.example.model.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 object WalletRepository {
   // Seed phrase for demo / local keystore
@@ -49,11 +50,27 @@ object WalletRepository {
   init {
     refreshAssetsForCurrentRole()
     initInitialTransactions()
+
+    // Listen to real live price updates from network
+    kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+      com.example.network.CryptoPriceService.marketData.collect { liveData ->
+        refreshAssetsWithMarketData(liveData)
+      }
+    }
   }
 
   fun refreshAssetsForCurrentRole() {
+    refreshAssetsWithMarketData(com.example.network.CryptoPriceService.marketData.value)
+  }
+
+  private fun refreshAssetsWithMarketData(liveMarket: Map<String, com.example.network.LiveMarketData>) {
     val isAdmin = AuthManager.isAdmin
     val derived = AESEncryption.deriveAddresses(currentSeedPhrase)
+
+    val btcInfo = liveMarket["BTC"]
+    val ethInfo = liveMarket["ETH"]
+    val tonInfo = liveMarket["TON"]
+    val mtkInfo = liveMarket["MTK"]
 
     val list = mutableListOf<CryptoAsset>()
 
@@ -64,9 +81,9 @@ object WalletRepository {
         CryptoAsset(
           chain = CryptoChain.MTK,
           balance = 1_250_000.0,
-          usdRate = 4.25,
+          usdRate = mtkInfo?.priceUsd ?: 4.25,
           address = derived["MTK"] ?: "0xMTK_ADMIN",
-          change24h = +5.8,
+          change24h = mtkInfo?.change24hPercent ?: +5.8,
           isRestrictedToAdmin = true
         )
       )
@@ -77,9 +94,9 @@ object WalletRepository {
       CryptoAsset(
         chain = CryptoChain.BTC,
         balance = if (isAdmin) 12.85 else 0.65,
-        usdRate = 64_200.0,
+        usdRate = btcInfo?.priceUsd ?: 64_200.0,
         address = derived["BTC"] ?: "bc1q_demo",
-        change24h = +1.4
+        change24h = btcInfo?.change24hPercent ?: +1.4
       )
     )
 
@@ -88,9 +105,9 @@ object WalletRepository {
       CryptoAsset(
         chain = CryptoChain.ETH,
         balance = if (isAdmin) 84.2 else 4.15,
-        usdRate = 3_480.0,
+        usdRate = ethInfo?.priceUsd ?: 3_480.0,
         address = derived["ETH"] ?: "0x_demo",
-        change24h = -0.8
+        change24h = ethInfo?.change24hPercent ?: -0.8
       )
     )
 
@@ -99,9 +116,9 @@ object WalletRepository {
       CryptoAsset(
         chain = CryptoChain.TON,
         balance = if (isAdmin) 15_800.0 else 940.0,
-        usdRate = 5.60,
+        usdRate = tonInfo?.priceUsd ?: 5.60,
         address = derived["TON"] ?: "EQD_demo",
-        change24h = +8.2
+        change24h = tonInfo?.change24hPercent ?: +8.2
       )
     )
 

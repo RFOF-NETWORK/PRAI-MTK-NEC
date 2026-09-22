@@ -9,6 +9,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -37,6 +38,7 @@ class MainActivity : ComponentActivity() {
     super.onCreate(savedInstanceState)
     RepositoryManager.initializeDatabase(applicationContext)
     com.example.data.ExplorerRepository.initializeDatabase(applicationContext)
+    com.example.network.CryptoPriceService.initialize(applicationContext)
     enableEdgeToEdge()
     setContent {
       MyApplicationTheme {
@@ -68,6 +70,7 @@ enum class Screen {
 fun MainAppContent() {
   val context = LocalContext.current
   val currentUser by AuthManager.currentUser.collectAsState()
+  val isOnline by com.example.network.CryptoPriceService.isOnline.collectAsState()
   var currentScreen by remember { mutableStateOf(Screen.DASHBOARD) }
   var selectedCategoryId by remember { mutableStateOf(1) }
   var showGlobalSearch by remember { mutableStateOf(false) }
@@ -125,12 +128,27 @@ fun MainAppContent() {
       TopAppBar(
         title = {
           Column {
-            Text(
-              text = "PRAI / MTK / NEC",
-              style = MaterialTheme.typography.titleMedium,
-              fontWeight = FontWeight.Black,
-              color = Color.White
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+              Text(
+                text = "PRAI / MTK / NEC",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Black,
+                color = Color.White
+              )
+              Spacer(modifier = Modifier.width(6.dp))
+              Box(
+                modifier = Modifier
+                  .size(7.dp)
+                  .background(if (isOnline) SignalGreen else Color(0xFFEF4444), CircleShape)
+              )
+              Spacer(modifier = Modifier.width(3.dp))
+              Text(
+                text = if (isOnline) "LIVE" else "OFFLINE",
+                fontSize = 8.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (isOnline) SignalGreen else Color(0xFFEF4444)
+              )
+            }
             Text(
               text = if (currentUser.role == UserRole.ADMIN) "Admin: RFOF-NETWORK" else "Nutzer: ${currentUser.username}",
               style = MaterialTheme.typography.labelSmall,
