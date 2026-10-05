@@ -8,7 +8,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -39,6 +41,7 @@ class MainActivity : ComponentActivity() {
     RepositoryManager.initializeDatabase(applicationContext)
     com.example.data.ExplorerRepository.initializeDatabase(applicationContext)
     com.example.network.CryptoPriceService.initialize(applicationContext)
+    com.example.network.AlchemyMultiChainService.initialize(applicationContext)
     enableEdgeToEdge()
     setContent {
       MyApplicationTheme {
@@ -57,6 +60,8 @@ enum class Screen {
   WALLET,
   EXPLORER,
   SYSTEM_HUB,
+  RAPP_CENTER,
+  DOCUMENTATION,
   TITLES,
   BLUEPRINT,
   WOHNZENTREN,
@@ -222,42 +227,88 @@ fun MainAppContent() {
       )
     },
     bottomBar = {
-      NavigationBar(
-        containerColor = Color.White,
-        contentColor = BlueprintNavy,
+      val navScrollState = rememberScrollState()
+      Surface(
+        color = Color.White,
         tonalElevation = 8.dp,
-        modifier = Modifier.testTag("main_bottom_nav")
+        modifier = Modifier
+          .fillMaxWidth()
+          .testTag("main_bottom_nav")
       ) {
-        NavigationBarItem(
-          selected = currentScreen == Screen.DASHBOARD,
-          onClick = { navigateTo(Screen.DASHBOARD) },
-          icon = { Icon(Icons.Default.Dashboard, contentDescription = "Übersicht") },
-          label = { Text("Übersicht", fontSize = 10.sp) }
-        )
-        NavigationBarItem(
-          selected = currentScreen == Screen.CATEGORIES || currentScreen == Screen.CATEGORY_DETAIL,
-          onClick = { navigateTo(Screen.CATEGORIES) },
-          icon = { Icon(Icons.Default.Category, contentDescription = "Kategorien") },
-          label = { Text("28 Fachgebiete", fontSize = 10.sp) }
-        )
-        NavigationBarItem(
-          selected = currentScreen == Screen.WALLET,
-          onClick = { navigateTo(Screen.WALLET) },
-          icon = { Icon(Icons.Default.AccountBalanceWallet, contentDescription = "Wallet") },
-          label = { Text("Wallet", fontSize = 10.sp) }
-        )
-        NavigationBarItem(
-          selected = currentScreen == Screen.EXPLORER,
-          onClick = { navigateTo(Screen.EXPLORER) },
-          icon = { Icon(Icons.Default.Explore, contentDescription = "Explorer") },
-          label = { Text("Explorer", fontSize = 10.sp) }
-        )
-        NavigationBarItem(
-          selected = currentScreen in listOf(Screen.SYSTEM_HUB, Screen.LAYERS, Screen.ARENAS, Screen.TITLES, Screen.BLUEPRINT, Screen.WOHNZENTREN, Screen.GLOSSAR, Screen.HEALTH),
-          onClick = { navigateTo(Screen.SYSTEM_HUB) },
-          icon = { Icon(Icons.Default.Apps, contentDescription = "System") },
-          label = { Text("System", fontSize = 10.sp) }
-        )
+        Row(
+          modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(navScrollState)
+            .padding(horizontal = 4.dp, vertical = 2.dp),
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          NavigationBarItem(
+            selected = currentScreen == Screen.DASHBOARD,
+            onClick = { navigateTo(Screen.DASHBOARD) },
+            icon = { Icon(Icons.Default.Dashboard, contentDescription = "Übersicht") },
+            label = { Text("Übersicht", fontSize = 9.sp, maxLines = 1, softWrap = false) },
+            alwaysShowLabel = true,
+            modifier = Modifier.width(68.dp)
+          )
+          NavigationBarItem(
+            selected = currentScreen == Screen.CATEGORIES || currentScreen == Screen.CATEGORY_DETAIL,
+            onClick = { navigateTo(Screen.CATEGORIES) },
+            icon = { Icon(Icons.Default.Category, contentDescription = "Kategorien") },
+            label = { Text("Kategorien", fontSize = 9.sp, maxLines = 1, softWrap = false) },
+            alwaysShowLabel = true,
+            modifier = Modifier.width(68.dp)
+          )
+          NavigationBarItem(
+            selected = currentScreen == Screen.ARENAS,
+            onClick = { navigateTo(Screen.ARENAS) },
+            icon = { Icon(Icons.Default.SportsScore, contentDescription = "Arenen") },
+            label = { Text("Arenen", fontSize = 9.sp, maxLines = 1, softWrap = false) },
+            alwaysShowLabel = true,
+            modifier = Modifier.width(68.dp)
+          )
+          NavigationBarItem(
+            selected = currentScreen == Screen.WALLET,
+            onClick = { navigateTo(Screen.WALLET) },
+            icon = { Icon(Icons.Default.AccountBalanceWallet, contentDescription = "Wallet") },
+            label = { Text("Wallet", fontSize = 9.sp, maxLines = 1, softWrap = false) },
+            alwaysShowLabel = true,
+            modifier = Modifier.width(68.dp)
+          )
+          NavigationBarItem(
+            selected = currentScreen == Screen.EXPLORER,
+            onClick = { navigateTo(Screen.EXPLORER) },
+            icon = { Icon(Icons.Default.Explore, contentDescription = "Explorer") },
+            label = { Text("Explorer", fontSize = 9.sp, maxLines = 1, softWrap = false) },
+            alwaysShowLabel = true,
+            modifier = Modifier.width(68.dp)
+          )
+          NavigationBarItem(
+            selected = currentScreen in listOf(Screen.SYSTEM_HUB, Screen.LAYERS, Screen.TITLES, Screen.BLUEPRINT, Screen.WOHNZENTREN, Screen.GLOSSAR, Screen.HEALTH),
+            onClick = { navigateTo(Screen.SYSTEM_HUB) },
+            icon = { Icon(Icons.Default.Apps, contentDescription = "System") },
+            label = { Text("System", fontSize = 9.sp, maxLines = 1, softWrap = false) },
+            alwaysShowLabel = true,
+            modifier = Modifier.width(68.dp)
+          )
+          // 7th Button: rApp Center (PlayStore)
+          NavigationBarItem(
+            selected = currentScreen == Screen.RAPP_CENTER,
+            onClick = { navigateTo(Screen.RAPP_CENTER) },
+            icon = { Icon(Icons.Default.Storefront, contentDescription = "rApp Center") },
+            label = { Text("rApp Center", fontSize = 9.sp, maxLines = 1, softWrap = false, color = if (currentScreen == Screen.RAPP_CENTER) SignalBlue else Color.Unspecified) },
+            alwaysShowLabel = true,
+            modifier = Modifier.width(76.dp)
+          )
+          // 8th Button: Dokumentation & Guardian
+          NavigationBarItem(
+            selected = currentScreen == Screen.DOCUMENTATION,
+            onClick = { navigateTo(Screen.DOCUMENTATION) },
+            icon = { Icon(Icons.Default.MenuBook, contentDescription = "Dokumentation") },
+            label = { Text("Dokumentation", fontSize = 9.sp, maxLines = 1, softWrap = false, color = if (currentScreen == Screen.DOCUMENTATION) Color(0xFFA855F7) else Color.Unspecified) },
+            alwaysShowLabel = true,
+            modifier = Modifier.width(82.dp)
+          )
+        }
       }
     }
   ) { innerPadding ->
@@ -329,6 +380,10 @@ fun MainAppContent() {
           onNavigateToProfile = { navigateTo(Screen.PROFILE) },
           onOpenAuth = { showAuthDialog = true }
         )
+
+        Screen.RAPP_CENTER -> RAppCenterScreen()
+
+        Screen.DOCUMENTATION -> DocumentationScreen()
 
         Screen.TITLES -> TitlesScreen()
 

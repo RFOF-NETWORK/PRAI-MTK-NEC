@@ -122,6 +122,18 @@ object WalletRepository {
       )
     )
 
+    // ZON: Universal Public Currency deployed over MTK/NEC logic (ETH/TON Bridged)
+    list.add(
+      CryptoAsset(
+        chain = CryptoChain.ZON,
+        balance = if (isAdmin) 50_000.0 else 1_250.0,
+        usdRate = 1.48,
+        address = derived["ETH"]?.replace("0x", "0xZON_") ?: "0xZON_UNIVERSAL",
+        change24h = +14.8,
+        isRestrictedToAdmin = false
+      )
+    )
+
     _assets.value = list
   }
 
@@ -249,6 +261,57 @@ object WalletRepository {
     return amountTo
   }
 
+  fun executeGenesisSwap(
+    fromChain: CryptoChain,
+    toChain: CryptoChain,
+    amountFrom: Double
+  ): com.example.network.GenesisSwapReceipt? {
+    val currentUser = AuthManager.currentUser.value
+    val fromAsset = _assets.value.find { it.chain == fromChain } ?: return null
+    if (fromAsset.balance < amountFrom) return null
+
+    val toAsset = _assets.value.find { it.chain == toChain } ?: return null
+    val valueUsd = amountFrom * fromAsset.usdRate
+    val amountTo = if (toAsset.usdRate > 0) valueUsd / toAsset.usdRate else 0.0
+
+    // Execute on-chain verified Genesis Swap via Alchemy
+    val receipt = com.example.network.AlchemyMultiChainService.executeGenesisSwap(
+      fromSymbol = fromChain.symbol,
+      toSymbol = toChain.symbol,
+      amountFrom = amountFrom,
+      amountTo = amountTo,
+      executor = currentUser.username
+    )
+
+    // Atomic Balance Adjustment
+    _assets.value = _assets.value.map {
+      when (it.chain) {
+        fromChain -> it.copy(balance = it.balance - amountFrom)
+        toChain -> it.copy(balance = it.balance + amountTo)
+        else -> it
+      }
+    }
+
+    // Create Wallet Transaction
+    val tx = WalletTransaction(
+      id = receipt.swapId,
+      txHash = receipt.txHashSha256,
+      chain = fromChain,
+      type = TxType.SWAP,
+      amount = amountFrom,
+      fromAddress = getAddressForChain(fromChain),
+      toAddress = getAddressForChain(toChain),
+      timestamp = receipt.timestamp,
+      note = "GENESIS-SWAP: ${fromChain.symbol} ➔ ${toChain.symbol} | Block #${receipt.ethBlockHeight} | ${receipt.dualParityNotarialSeal.take(28)}"
+    )
+    _transactions.value = listOf(tx) + _transactions.value
+
+    // Record in Blockchain Explorer
+    ExplorerRepository.recordGenesisSwapBlock(receipt)
+
+    return receipt
+  }
+
   fun toggleMining() {
     val current = _miningState.value
     _miningState.value = current.copy(isActive = !current.isActive)
@@ -270,6 +333,17 @@ object WalletRepository {
   }
 
   fun getSeedPhrase(): List<String> = currentSeedPhrase
+
+  fun updatePricesFromKiEngine(newMtkPrice: Double, newZonPrice: Double) {
+    val current = _assets.value
+    _assets.value = current.map { asset ->
+      when (asset.chain) {
+        CryptoChain.MTK -> asset.copy(usdRate = newMtkPrice)
+        CryptoChain.ZON -> asset.copy(usdRate = newZonPrice)
+        else -> asset
+      }
+    }
+  }
 
   fun importSeedPhrase(words: List<String>) {
     if (words.size == 12) {

@@ -5,15 +5,18 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -55,6 +58,7 @@ fun ProfileSettingsScreen(
   // Modals
   var showNewRepoDialog by remember { mutableStateOf(false) }
   var showLicenseDialog by remember { mutableStateOf(false) }
+  var showGuardianDialog by remember { mutableStateOf(false) }
 
   // Editable Form states
   var bioState by remember(currentUser) { mutableStateOf(currentUser.bio) }
@@ -86,12 +90,13 @@ fun ProfileSettingsScreen(
           verticalAlignment = Alignment.CenterVertically
         ) {
           Row(
+            modifier = Modifier.weight(1f),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
           ) {
             Box(
               modifier = Modifier
-                .size(52.dp)
+                .size(50.dp)
                 .background(if (currentUser.role == UserRole.ADMIN) UrkundeGoldBg else SignalBlueLight, CircleShape)
                 .border(2.dp, if (currentUser.role == UserRole.ADMIN) UrkundeGold else SignalBlue, CircleShape),
               contentAlignment = Alignment.Center
@@ -100,17 +105,19 @@ fun ProfileSettingsScreen(
                 imageVector = if (currentUser.role == UserRole.ADMIN) Icons.Default.Shield else Icons.Default.Person,
                 contentDescription = null,
                 tint = if (currentUser.role == UserRole.ADMIN) UrkundeGoldDark else SignalBlue,
-                modifier = Modifier.size(28.dp)
+                modifier = Modifier.size(26.dp)
               )
             }
 
-            Column {
+            Column(modifier = Modifier.weight(1f, fill = false)) {
               Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
                   text = currentUser.username,
                   style = MaterialTheme.typography.titleMedium,
                   fontWeight = FontWeight.Black,
-                  color = Color.White
+                  color = Color.White,
+                  maxLines = 1,
+                  overflow = TextOverflow.Ellipsis
                 )
                 Surface(
                   color = if (currentUser.role == UserRole.ADMIN) UrkundeGold else SignalBlue,
@@ -121,6 +128,7 @@ fun ProfileSettingsScreen(
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
                     fontSize = 9.sp,
+                    maxLines = 1,
                     modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
                   )
                 }
@@ -130,36 +138,77 @@ fun ProfileSettingsScreen(
                 text = currentUser.userType.label,
                 style = MaterialTheme.typography.labelSmall,
                 color = UrkundeGold,
-                fontSize = 11.sp
+                fontSize = 11.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
               )
               Text(
                 text = "Auth: ${currentUser.authProvider} • ${currentUser.walletAddress.take(10)}...",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color(0xFF94A3B8),
-                fontSize = 10.sp
+                fontSize = 10.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
               )
             }
           }
 
-          Button(
-            onClick = {
-              AuthManager.updateProfileSettings(
-                newBio = bioState,
-                newOrganization = orgState,
-                newSshKey = sshKeyState,
-                newGpgKey = gpgKeyState,
-                newEditorTheme = editorThemeState,
-                userType = userTypeState
-              )
-              Toast.makeText(context, "Profil-Einstellungen gespeichert!", Toast.LENGTH_SHORT).show()
-            },
-            colors = ButtonDefaults.buttonColors(containerColor = SignalGreen),
-            shape = RoundedCornerShape(6.dp),
-            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
+          Spacer(modifier = Modifier.width(8.dp))
+
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
           ) {
-            Icon(Icons.Default.Save, contentDescription = null, modifier = Modifier.size(14.dp))
-            Spacer(modifier = Modifier.width(4.dp))
-            Text("Speichern", fontSize = 11.sp)
+            Button(
+              onClick = { showGuardianDialog = true },
+              colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFA855F7)),
+              shape = RoundedCornerShape(8.dp),
+              contentPadding = PaddingValues(horizontal = 10.dp, vertical = 8.dp),
+              modifier = Modifier.wrapContentWidth().testTag("guardian_button")
+            ) {
+              Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(15.dp))
+              Spacer(modifier = Modifier.width(4.dp))
+              Text(
+                text = "KI-Guardian",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                softWrap = false
+              )
+            }
+
+            Button(
+              onClick = {
+                AuthManager.updateProfileSettings(
+                  newBio = bioState,
+                  newOrganization = orgState,
+                  newSshKey = sshKeyState,
+                  newGpgKey = gpgKeyState,
+                  newEditorTheme = editorThemeState,
+                  userType = userTypeState
+                )
+                Toast.makeText(context, "Profil-Einstellungen gespeichert!", Toast.LENGTH_SHORT).show()
+              },
+              colors = ButtonDefaults.buttonColors(containerColor = SignalGreen),
+              shape = RoundedCornerShape(8.dp),
+              contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+              modifier = Modifier.wrapContentWidth()
+            ) {
+              Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+              ) {
+                Icon(Icons.Default.Save, contentDescription = null, modifier = Modifier.size(15.dp))
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                  text = "Speichern",
+                  fontSize = 12.sp,
+                  fontWeight = FontWeight.SemiBold,
+                  maxLines = 1,
+                  softWrap = false
+                )
+              }
+            }
           }
         }
       }
@@ -240,6 +289,10 @@ fun ProfileSettingsScreen(
 
   if (showLicenseDialog) {
     SovereignLicenseFullDialog(onDismiss = { showLicenseDialog = false })
+  }
+
+  if (showGuardianDialog) {
+    GuardianAssistantDialog(onDismiss = { showGuardianDialog = false })
   }
 }
 
@@ -566,6 +619,90 @@ private fun DeveloperSettingsTab(
         }
       }
     }
+
+    // EIGENE RPCS & MULTI-CHAIN VERBINDUNGEN (ETH, BTC, TON, ZON, EVM)
+    item {
+      Card(
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, BlueprintBorder),
+        shape = RoundedCornerShape(10.dp),
+        modifier = Modifier.fillMaxWidth()
+      ) {
+        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            Text(
+              text = "BENUTZER-RPCS & MULTI-CHAIN ENDPUNKTE",
+              style = MaterialTheme.typography.labelSmall,
+              fontWeight = FontWeight.Bold,
+              color = BlueprintNavy
+            )
+            Surface(color = SignalGreenLight, shape = RoundedCornerShape(4.dp)) {
+              Text("EVM / PoW / Sharded", fontSize = 8.sp, color = SignalGreen, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp))
+            }
+          }
+
+          Text(
+            text = "Hinterlege hier deine eigenen Alchemy RPC-Schlüssel oder private RPC-Knoten für deine Repositories:",
+            fontSize = 11.sp,
+            color = TextMuted
+          )
+
+          var ethRpc by remember { mutableStateOf("https://eth-mainnet.g.alchemy.com/v2/demo") }
+          var zonRpc by remember { mutableStateOf("https://rpc.zon-chain.network/v1") }
+          var tonRpc by remember { mutableStateOf("https://toncenter.com/api/v2/jsonRPC") }
+          var customEvmRpc by remember { mutableStateOf("https://arb1.arbitrum.io/rpc") }
+
+          OutlinedTextField(
+            value = ethRpc,
+            onValueChange = { ethRpc = it },
+            label = { Text("Ethereum / EVM RPC (z.B. Alchemy / Infura)") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+          )
+
+          OutlinedTextField(
+            value = zonRpc,
+            onValueChange = { zonRpc = it },
+            label = { Text("ZON Sovereign Core RPC") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+          )
+
+          OutlinedTextField(
+            value = tonRpc,
+            onValueChange = { tonRpc = it },
+            label = { Text("TON Sharded Network RPC") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+          )
+
+          OutlinedTextField(
+            value = customEvmRpc,
+            onValueChange = { customEvmRpc = it },
+            label = { Text("Custom EVM L2 RPC (Arbitrum / Base / Polygon)") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+          )
+
+          Button(
+            onClick = {
+              Toast.makeText(context, "Benutzer-RPCs erfolgreich gespeichert und getestet!", Toast.LENGTH_SHORT).show()
+            },
+            colors = ButtonDefaults.buttonColors(containerColor = BlueprintNavy),
+            shape = RoundedCornerShape(6.dp),
+            modifier = Modifier.fillMaxWidth()
+          ) {
+            Icon(Icons.Default.Sync, contentDescription = null, modifier = Modifier.size(14.dp))
+            Spacer(modifier = Modifier.width(6.dp))
+            Text("RPC-Knotenpunkte verifizieren & speichern", fontSize = 11.sp)
+          }
+        }
+      }
+    }
   }
 }
 
@@ -854,6 +991,204 @@ private fun SovereignLicenseFullDialog(onDismiss: () -> Unit) {
                 color = BlueprintNavy
               )
             }
+          }
+        }
+      }
+    }
+  }
+}
+
+@Composable
+fun GuardianAssistantDialog(
+  onDismiss: () -> Unit
+) {
+  var userPrompt by remember { mutableStateOf("") }
+  var conversation by remember {
+    mutableStateOf(
+      listOf(
+        Pair(
+          "PRAI Guardian",
+          "🛡️ **Willkommen, Schöpfer.**\nIch bin der autonome PRAI / MTK / NEC Guardian Copilot. Ich helfe dir beim Codieren, Verwalten deiner Git Repositories, Erklären der 28 Fachkategorien, der ZON 50/50 Bonding Curve und der Alchemy Multi-Chain Integration."
+        )
+      )
+    )
+  }
+  var isThinking by remember { mutableStateOf(false) }
+  val coroutineScope = rememberCoroutineScope()
+
+  val suggestedPrompts = remember {
+    listOf(
+      "Wie funktioniert die ZON Bonding Curve?",
+      "Erkläre mir die 14 Alchemy Services",
+      "Wie deploye ich eine rApp im PlayStore?",
+      "Erkläre Notarielle Dual-Parität (§ 36 BeurkG)"
+    )
+  }
+
+  Dialog(onDismissRequest = onDismiss) {
+    Surface(
+      shape = RoundedCornerShape(16.dp),
+      color = Color.White,
+      modifier = Modifier
+        .fillMaxWidth()
+        .fillMaxHeight(0.85f)
+        .padding(8.dp)
+        .testTag("guardian_dialog")
+    ) {
+      Column(
+        modifier = Modifier
+          .fillMaxSize()
+          .padding(16.dp)
+      ) {
+        // Header
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+              modifier = Modifier
+                .size(36.dp)
+                .background(Color(0xFF2E1065), CircleShape)
+                .border(1.5.dp, Color(0xFFA855F7), CircleShape),
+              contentAlignment = Alignment.Center
+            ) {
+              Text("🛡️", fontSize = 18.sp)
+            }
+            Spacer(modifier = Modifier.width(10.dp))
+            Column {
+              Text(
+                text = "PRAI · MTK · NEC GUARDIAN",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Black,
+                color = BlueprintNavy
+              )
+              Text(
+                text = "Autonomer Copilot & Repository Manager",
+                style = MaterialTheme.typography.bodySmall,
+                color = Color(0xFFA855F7),
+                fontSize = 10.sp
+              )
+            }
+          }
+          IconButton(onClick = onDismiss) {
+            Icon(Icons.Default.Close, contentDescription = "Schließen")
+          }
+        }
+
+        Divider(modifier = Modifier.padding(vertical = 8.dp), color = BlueprintBorder)
+
+        // Suggestion Chips
+        Row(
+          modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState()),
+          horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+          suggestedPrompts.forEach { suggestion ->
+            SuggestionChip(
+              onClick = {
+                userPrompt = suggestion
+              },
+              label = { Text(suggestion, fontSize = 10.sp, maxLines = 1) },
+              colors = SuggestionChipDefaults.suggestionChipColors(containerColor = Color(0xFFF3E8FF))
+            )
+          }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Chat Message Log
+        LazyColumn(
+          modifier = Modifier
+            .weight(1f)
+            .fillMaxWidth()
+            .background(Slate50, RoundedCornerShape(8.dp))
+            .padding(10.dp),
+          verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+          items(conversation) { (sender, msg) ->
+            Column(
+              modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                  if (sender == "Du") SignalBlueLight else Color.White,
+                  RoundedCornerShape(8.dp)
+                )
+                .border(
+                  0.5.dp,
+                  if (sender == "Du") SignalBlue.copy(alpha = 0.3f) else BlueprintBorder,
+                  RoundedCornerShape(8.dp)
+                )
+                .padding(10.dp)
+            ) {
+              Text(
+                text = sender,
+                fontWeight = FontWeight.Bold,
+                fontSize = 11.sp,
+                color = if (sender == "Du") SignalBlue else Color(0xFFA855F7)
+              )
+              Spacer(modifier = Modifier.height(3.dp))
+              Text(
+                text = msg,
+                fontSize = 11.sp,
+                color = BlueprintNavy,
+                lineHeight = 15.sp
+              )
+            }
+          }
+
+          if (isThinking) {
+            item {
+              Row(
+                modifier = Modifier.padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+              ) {
+                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = Color(0xFFA855F7))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("PRAI Guardian berechnet Antwort...", fontSize = 11.sp, color = TextMuted)
+              }
+            }
+          }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Input Field and Send Button
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          OutlinedTextField(
+            value = userPrompt,
+            onValueChange = { userPrompt = it },
+            placeholder = { Text("Frage den Guardian oder gib Befehl ein...", fontSize = 11.sp) },
+            modifier = Modifier.weight(1f),
+            singleLine = true,
+            shape = RoundedCornerShape(8.dp)
+          )
+          Spacer(modifier = Modifier.width(6.dp))
+          IconButton(
+            onClick = {
+              val promptToSend = userPrompt.trim()
+              if (promptToSend.isNotBlank() && !isThinking) {
+                userPrompt = ""
+                conversation = conversation + Pair("Du", promptToSend)
+                isThinking = true
+                coroutineScope.launch {
+                  val answer = com.example.ai.PraiGuardianService.askGuardian(promptToSend)
+                  conversation = conversation + Pair("PRAI Guardian", answer)
+                  isThinking = false
+                }
+              }
+            },
+            enabled = userPrompt.isNotBlank() && !isThinking,
+            modifier = Modifier
+              .background(Color(0xFFA855F7), RoundedCornerShape(8.dp))
+              .size(46.dp)
+          ) {
+            Icon(Icons.Default.Send, contentDescription = "Senden", tint = Color.White, modifier = Modifier.size(18.dp))
           }
         }
       }

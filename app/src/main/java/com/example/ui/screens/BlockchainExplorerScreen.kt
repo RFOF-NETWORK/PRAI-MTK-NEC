@@ -24,16 +24,29 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.auth.AuthManager
+import com.example.auth.UserRole
 import com.example.crypto.AESEncryption
 import com.example.data.ExplorerRepository
+import com.example.data.WalletRepository
 import com.example.model.*
+import com.example.ui.components.AdminSovereignExplorerView
+import com.example.ui.components.KiAutonomyExplorerView
 import com.example.ui.theme.*
+import java.text.SimpleDateFormat
+import java.util.*
+
+enum class ExplorerPerspective(val title: String, val subtitle: String, val iconEmoji: String) {
+  USER("Nutzer-Sicht", "Eigene Transaktionen & Globaler Ledger", "👤"),
+  KI("KI-Sicht (Autonom)", "Flash Loans, Mining & Gebühren-Liquidator", "🤖"),
+  ADMIN("Admin-Sicht", "Sovereign Master, Genesis & Escrow Treasury", "👑")
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,19 +56,25 @@ fun BlockchainExplorerScreen(
 ) {
   val context = LocalContext.current
   val clipboardManager = LocalClipboardManager.current
+  val currentUser by AuthManager.currentUser.collectAsState()
   val certificates by ExplorerRepository.certificates.collectAsState()
   val recentBlocks by ExplorerRepository.recentBlocks.collectAsState()
   val transferredCopies by ExplorerRepository.transferredCopies.collectAsState()
-  val currentUser by AuthManager.currentUser.collectAsState()
+  val globalTransactions by ExplorerRepository.globalTransactions.collectAsState()
+  val walletTransactions by WalletRepository.transactions.collectAsState()
 
-  var selectedTab by remember { mutableStateOf(0) }
-  val tabs = listOf("NEC-Urkunden & Zertifikate", "Blockchain-Blöcke", "Transaktionen & Kopien")
+  var selectedPerspective by remember { mutableStateOf(ExplorerPerspective.USER) }
+  var showAdminAccessRestrictedDialog by remember { mutableStateOf(false) }
 
-  // Transfer Dialog State
+  // User perspective sub-tabs
+  var selectedUserTab by remember { mutableStateOf(0) }
+  val userTabs = listOf("Profil-Transaktionen", "Globaler Ledger (Blöcke & Tx)", "NEC-Urkunden")
+
+  // Modals
+  var selectedBlockForDetails by remember { mutableStateOf<BlockchainBlock?>(null) }
+  var selectedTxForDetails by remember { mutableStateOf<WalletTransaction?>(null) }
   var activeCertForTransfer by remember { mutableStateOf<NecCertificate?>(null) }
   var isTransferringCopyOnly by remember { mutableStateOf(true) }
-
-  // Inspect Certificate Dialog
   var activeCertForInspection by remember { mutableStateOf<NecCertificate?>(null) }
 
   Column(
@@ -64,7 +83,9 @@ fun BlockchainExplorerScreen(
       .background(BackgroundLight)
       .testTag("blockchain_explorer_screen")
   ) {
-    // Header Banner
+    // -------------------------------------------------------------
+    // TOP HEADER BANNER: 3-PERSPEKTIVEN SYSTEM MATRIX
+    // -------------------------------------------------------------
     Surface(
       color = BlueprintNavy,
       modifier = Modifier.fillMaxWidth()
@@ -72,7 +93,7 @@ fun BlockchainExplorerScreen(
       Column(
         modifier = Modifier
           .fillMaxWidth()
-          .padding(horizontal = 16.dp, vertical = 14.dp)
+          .padding(horizontal = 14.dp, vertical = 12.dp)
       ) {
         Row(
           modifier = Modifier.fillMaxWidth(),
@@ -93,29 +114,29 @@ fun BlockchainExplorerScreen(
             }
             Column {
               Text(
-                text = "BLOCKCHAIN & NEC EXPLORER",
+                text = "BLOCKCHAIN & SYSTEM EXPLORER",
                 style = MaterialTheme.typography.titleMedium,
                 color = Color.White,
                 fontWeight = FontWeight.Black
               )
               Text(
-                text = "MTK Sovereign Ledger • Dual-Existenz mit XJustiz",
+                text = "3-Säulen-Matrix: Nutzer • KI • Admin (§ 36 BeurkG)",
                 style = MaterialTheme.typography.labelSmall,
                 color = Color(0xFFCBD5E1),
-                fontSize = 11.sp
+                fontSize = 10.sp
               )
             }
           }
 
           Surface(
-            color = Color(0xFF1E293B),
+            color = if (AuthManager.isAdmin) UrkundeGoldDark else SignalBlue,
             shape = RoundedCornerShape(4.dp)
           ) {
             Text(
-              text = "BLOCK #4.102.918",
-              color = SignalGreen,
+              text = if (AuthManager.isAdmin) "ADMIN-SOUVERÄN" else "NUTZER-MODUS",
+              color = Color.White,
               fontWeight = FontWeight.Bold,
-              fontSize = 10.sp,
+              fontSize = 9.sp,
               modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
             )
           }
@@ -123,81 +144,251 @@ fun BlockchainExplorerScreen(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        Text(
-          text = "NEC ist keine Währung, sondern ein nicht-extrahierbares Zertifikat und NFT (Urkunde), das parallel auf der Blockchain und in der notariellen Datenbank synchron koexistiert.",
-          style = MaterialTheme.typography.bodySmall,
-          color = Color(0xFFE2E8F0),
-          fontSize = 11.sp,
-          lineHeight = 15.sp
-        )
-      }
-    }
+        // 3-Segment Perspective Selector
+        Row(
+          modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFF1E293B), RoundedCornerShape(8.dp))
+            .padding(3.dp),
+          horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+          ExplorerPerspective.values().forEach { perspective ->
+            val isSelected = selectedPerspective == perspective
+            val isRestricted = perspective == ExplorerPerspective.ADMIN && !AuthManager.isAdmin
 
-    // Tab Navigation
-    TabRow(
-      selectedTabIndex = selectedTab,
-      containerColor = Color.White,
-      contentColor = BlueprintNavy
-    ) {
-      tabs.forEachIndexed { index, title ->
-        Tab(
-          selected = selectedTab == index,
-          onClick = { selectedTab = index },
-          text = {
-            Text(
-              text = title,
-              fontSize = 11.sp,
-              fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal
-            )
+            Surface(
+              color = when {
+                isSelected && perspective == ExplorerPerspective.ADMIN -> UrkundeGoldDark
+                isSelected && perspective == ExplorerPerspective.KI -> Color(0xFFA855F7)
+                isSelected -> SignalBlue
+                else -> Color.Transparent
+              },
+              shape = RoundedCornerShape(6.dp),
+              modifier = Modifier
+                .weight(1f)
+                .clickable {
+                  if (isRestricted) {
+                    showAdminAccessRestrictedDialog = true
+                  } else {
+                    selectedPerspective = perspective
+                  }
+                }
+                .testTag("perspective_btn_${perspective.name.lowercase()}")
+            ) {
+              Row(
+                modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+              ) {
+                Text(perspective.iconEmoji, fontSize = 11.sp)
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                  text = when (perspective) {
+                    ExplorerPerspective.USER -> "Nutzer"
+                    ExplorerPerspective.KI -> "KI (Autonom)"
+                    ExplorerPerspective.ADMIN -> "Admin"
+                  },
+                  fontSize = 11.sp,
+                  fontWeight = if (isSelected) FontWeight.Black else FontWeight.Normal,
+                  color = if (isSelected) Color.White else if (isRestricted) Color(0xFF94A3B8) else Color(0xFFE2E8F0)
+                )
+                if (isRestricted) {
+                  Spacer(modifier = Modifier.width(3.dp))
+                  Icon(
+                    Icons.Default.Lock,
+                    contentDescription = "Gesperrt",
+                    tint = Color(0xFF94A3B8),
+                    modifier = Modifier.size(11.dp)
+                  )
+                }
+              }
+            }
           }
-        )
-      }
-    }
-
-    when (selectedTab) {
-      0 -> NecCertificatesTab(
-        certificates = certificates,
-        onInspect = { activeCertForInspection = it },
-        onTransferCopy = { cert ->
-          activeCertForTransfer = cert
-          isTransferringCopyOnly = true
-        },
-        onTransferOriginal = { cert ->
-          activeCertForTransfer = cert
-          isTransferringCopyOnly = false
-        },
-        onDownload = { cert ->
-          val hash = AESEncryption.signDocumentSeal(cert.id, cert.notarialSealHash, currentUser.walletAddress)
-          clipboardManager.setText(AnnotatedString("DOKUMENT-SIEGEL: $hash\nID: ${cert.id}\nTITEL: ${cert.title}"))
-          Toast.makeText(context, "Dokument ${cert.id} mit AES-Siegel verifiziert & gesichert!", Toast.LENGTH_LONG).show()
-        },
-        onShareEmail = { cert ->
-          val shareIntent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/plain"
-            putExtra(Intent.EXTRA_SUBJECT, "Beglaubigte Abschrift: ${cert.title} (${cert.id})")
-            putExtra(
-              Intent.EXTRA_TEXT,
-              "BEGLAUBIGTE ABSCHRIFT NACH § 36 BeurkG\n\n" +
-                "Zertifikats-ID: ${cert.id}\n" +
-                "Titel: ${cert.title}\n" +
-                "Fachgebiet: Kategorie #${cert.categoryId} (${cert.categoryName})\n" +
-                "MTK NFT Token-ID: ${cert.nftTokenId}\n" +
-                "XJustiz DB Record: ${cert.databaseRecordId}\n" +
-                "Notariats-Siegel-Hash: ${cert.notarialSealHash}\n" +
-                "Aussteller: ${cert.issuer}\n" +
-                "Inhaber: ${currentUser.username} (${currentUser.walletAddress})\n\n" +
-                "Diese Urkunde koexistiert parallel als unveränderliches NFT auf der Montalkanio Blockchain und in der Justiz-Datenbank."
-            )
-          }
-          context.startActivity(Intent.createChooser(shareIntent, "Urkunde per E-Mail versenden"))
         }
-      )
-      1 -> BlocksTab(blocks = recentBlocks)
-      2 -> TransactionsTab(transfers = transferredCopies)
+      }
+    }
+
+    // -------------------------------------------------------------
+    // PERSPECTIVE CONTENT ROUTING
+    // -------------------------------------------------------------
+    when (selectedPerspective) {
+      ExplorerPerspective.USER -> {
+        // User Perspective with sub-tabs
+        TabRow(
+          selectedTabIndex = selectedUserTab,
+          containerColor = Color.White,
+          contentColor = BlueprintNavy
+        ) {
+          userTabs.forEachIndexed { index, title ->
+            Tab(
+              selected = selectedUserTab == index,
+              onClick = { selectedUserTab = index },
+              text = {
+                Text(
+                  text = title,
+                  fontSize = 11.sp,
+                  fontWeight = if (selectedUserTab == index) FontWeight.Bold else FontWeight.Normal,
+                  maxLines = 1
+                )
+              }
+            )
+          }
+        }
+
+        when (selectedUserTab) {
+          0 -> UserProfileTransactionsTab(
+            walletTransactions = walletTransactions,
+            transferredCopies = transferredCopies,
+            currentUser = currentUser,
+            onInspectTx = { selectedTxForDetails = it }
+          )
+          1 -> GlobalLedgerTab(
+            blocks = recentBlocks,
+            transactions = globalTransactions,
+            onInspectBlock = { selectedBlockForDetails = it },
+            onInspectTx = { selectedTxForDetails = it }
+          )
+          2 -> NecCertificatesTab(
+            certificates = certificates,
+            onInspect = { activeCertForInspection = it },
+            onTransferCopy = { cert ->
+              activeCertForTransfer = cert
+              isTransferringCopyOnly = true
+            },
+            onTransferOriginal = { cert ->
+              activeCertForTransfer = cert
+              isTransferringCopyOnly = false
+            },
+            onDownload = { cert ->
+              val hash = AESEncryption.signDocumentSeal(cert.id, cert.notarialSealHash, currentUser.walletAddress)
+              clipboardManager.setText(AnnotatedString("DOKUMENT-SIEGEL: $hash\nID: ${cert.id}\nTITEL: ${cert.title}"))
+              Toast.makeText(context, "Dokument ${cert.id} mit AES-Siegel verifiziert & gesichert!", Toast.LENGTH_LONG).show()
+            },
+            onShareEmail = { cert ->
+              val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_SUBJECT, "Beglaubigte Abschrift: ${cert.title} (${cert.id})")
+                putExtra(
+                  Intent.EXTRA_TEXT,
+                  "BEGLAUBIGTE ABSCHRIFT NACH § 36 BeurkG\n\n" +
+                    "Zertifikats-ID: ${cert.id}\n" +
+                    "Titel: ${cert.title}\n" +
+                    "Fachgebiet: Kategorie #${cert.categoryId} (${cert.categoryName})\n" +
+                    "MTK NFT Token-ID: ${cert.nftTokenId}\n" +
+                    "XJustiz DB Record: ${cert.databaseRecordId}\n" +
+                    "Notariats-Siegel-Hash: ${cert.notarialSealHash}\n" +
+                    "Aussteller: ${cert.issuer}\n" +
+                    "Inhaber: ${currentUser.username} (${currentUser.walletAddress})\n\n" +
+                    "Diese Urkunde koexistiert parallel als unveränderliches NFT auf der Montalkanio Blockchain und in der Justiz-Datenbank."
+                )
+              }
+              context.startActivity(Intent.createChooser(shareIntent, "Urkunde per E-Mail versenden"))
+            }
+          )
+        }
+      }
+
+      ExplorerPerspective.KI -> {
+        // KI Perspective (Always viewable by both Users and Admin!)
+        KiAutonomyExplorerView()
+      }
+
+      ExplorerPerspective.ADMIN -> {
+        // Admin Sovereign Master View (Accessible only to RFOF-NETWORK Admin or KI)
+        AdminSovereignExplorerView()
+      }
     }
   }
 
-  // --- MODALS ---
+  // -------------------------------------------------------------
+  // DIALOGS & MODALS
+  // -------------------------------------------------------------
+
+  // Admin Access Restricted Dialog
+  if (showAdminAccessRestrictedDialog) {
+    Dialog(onDismissRequest = { showAdminAccessRestrictedDialog = false }) {
+      Surface(
+        shape = RoundedCornerShape(14.dp),
+        color = Color.White,
+        modifier = Modifier.fillMaxWidth().padding(16.dp)
+      ) {
+        Column(modifier = Modifier.padding(18.dp)) {
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Default.Lock, contentDescription = null, tint = UrkundeGoldDark, modifier = Modifier.size(24.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+              text = "ZUGRIFFSBESCHRÄNKUNG",
+              style = MaterialTheme.typography.titleMedium,
+              fontWeight = FontWeight.Black,
+              color = BlueprintNavy
+            )
+          }
+
+          Spacer(modifier = Modifier.height(10.dp))
+
+          Text(
+            text = "Gemäß § 36 BeurkG, XJustiz-Clearing und der System-Matrix ist die Admin-Sicht ausschließlich für das Administratorenkonto 'RFOF-NETWORK' reserviert.",
+            fontSize = 11.sp,
+            color = TextSecondary,
+            lineHeight = 15.sp
+          )
+
+          Spacer(modifier = Modifier.height(6.dp))
+          Surface(
+            color = Slate50,
+            shape = RoundedCornerShape(6.dp),
+            modifier = Modifier.fillMaxWidth()
+          ) {
+            Column(modifier = Modifier.padding(8.dp)) {
+              Text("Aktueller Nutzer: ${currentUser.username}", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = BlueprintNavy)
+              Text("Rolle: ${currentUser.role.displayName}", fontSize = 10.sp, color = TextMuted)
+              Text("Verfügbare Sichten: 👤 Nutzer-Sicht & 🤖 KI-Sicht", fontSize = 10.sp, color = SignalBlue)
+            }
+          }
+
+          Spacer(modifier = Modifier.height(14.dp))
+
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            TextButton(onClick = { showAdminAccessRestrictedDialog = false }) {
+              Text("Verstanden")
+            }
+            Spacer(modifier = Modifier.width(6.dp))
+            Button(
+              onClick = {
+                AuthManager.loginAsRfofNetwork()
+                selectedPerspective = ExplorerPerspective.ADMIN
+                showAdminAccessRestrictedDialog = false
+                Toast.makeText(context, "Als RFOF-NETWORK Admin angemeldet!", Toast.LENGTH_SHORT).show()
+              },
+              colors = ButtonDefaults.buttonColors(containerColor = UrkundeGoldDark)
+            ) {
+              Text("Als Admin anmelden", fontSize = 11.sp)
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Block Details Dialog
+  selectedBlockForDetails?.let { block ->
+    BlockDetailsDialog(
+      block = block,
+      onDismiss = { selectedBlockForDetails = null }
+    )
+  }
+
+  // Transaction Details Dialog
+  selectedTxForDetails?.let { tx ->
+    TransactionDetailsDialog(
+      tx = tx,
+      onDismiss = { selectedTxForDetails = null }
+    )
+  }
 
   // Inspection Dialog
   activeCertForInspection?.let { cert ->
@@ -232,6 +423,370 @@ fun BlockchainExplorerScreen(
 }
 
 // -------------------------------------------------------------
+// USER PROFILE TRANSACTIONS TAB (EIGENE TRANSAKTIONEN)
+// -------------------------------------------------------------
+@Composable
+private fun UserProfileTransactionsTab(
+  walletTransactions: List<WalletTransaction>,
+  transferredCopies: List<ExplorerRepository.CopyTransferRecord>,
+  currentUser: com.example.auth.UserProfile,
+  onInspectTx: (WalletTransaction) -> Unit
+) {
+  val context = LocalContext.current
+  val clipboardManager = LocalClipboardManager.current
+
+  LazyColumn(
+    modifier = Modifier
+      .fillMaxSize()
+      .padding(14.dp),
+    verticalArrangement = Arrangement.spacedBy(10.dp)
+  ) {
+    // Identity Card
+    item {
+      Card(
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, BlueprintBorder),
+        shape = RoundedCornerShape(8.dp),
+        modifier = Modifier.fillMaxWidth()
+      ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            Column {
+              Text(
+                text = "PROFIL: ${currentUser.username}",
+                fontWeight = FontWeight.Black,
+                fontSize = 12.sp,
+                color = BlueprintNavy
+              )
+              Text(
+                text = "Organisation: ${currentUser.organization} • Typ: ${currentUser.userType.label}",
+                fontSize = 10.sp,
+                color = TextSecondary
+              )
+            }
+            Surface(
+              color = SignalBlueLight,
+              shape = RoundedCornerShape(4.dp)
+            ) {
+              Text(
+                text = currentUser.role.badge,
+                color = SignalBlue,
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+              )
+            }
+          }
+
+          Spacer(modifier = Modifier.height(6.dp))
+
+          Row(
+            modifier = Modifier
+              .fillMaxWidth()
+              .background(Slate50, RoundedCornerShape(6.dp))
+              .padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            Column {
+              Text("Eigene Wallet-Adresse", fontSize = 9.sp, color = TextMuted)
+              Text(
+                text = currentUser.walletAddress,
+                fontSize = 10.sp,
+                fontFamily = FontFamily.Monospace,
+                color = BlueprintNavy,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+              )
+            }
+            IconButton(
+              onClick = {
+                clipboardManager.setText(AnnotatedString(currentUser.walletAddress))
+                Toast.makeText(context, "Adresse kopiert!", Toast.LENGTH_SHORT).show()
+              },
+              modifier = Modifier.size(26.dp)
+            ) {
+              Icon(Icons.Default.ContentCopy, contentDescription = "Kopieren", modifier = Modifier.size(15.dp))
+            }
+          }
+        }
+      }
+    }
+
+    item {
+      Text(
+        text = "EIGENE TRANSAKTIONSHISTORIE & ABSCHRIFTEN",
+        style = MaterialTheme.typography.labelSmall,
+        fontWeight = FontWeight.Bold,
+        color = BlueprintNavy
+      )
+    }
+
+    if (walletTransactions.isEmpty() && transferredCopies.isEmpty()) {
+      item {
+        Card(
+          colors = CardDefaults.cardColors(containerColor = Color.White),
+          border = BorderStroke(1.dp, BlueprintBorder),
+          modifier = Modifier.fillMaxWidth()
+        ) {
+          Text(
+            text = "Keine Transaktionen auf diesem Konto verzeichnet.",
+            fontSize = 11.sp,
+            color = TextMuted,
+            modifier = Modifier.padding(14.dp)
+          )
+        }
+      }
+    } else {
+      items(walletTransactions) { tx ->
+        Card(
+          colors = CardDefaults.cardColors(containerColor = Color.White),
+          border = BorderStroke(1.dp, BlueprintBorder),
+          shape = RoundedCornerShape(8.dp),
+          modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onInspectTx(tx) }
+        ) {
+          Column(modifier = Modifier.padding(12.dp)) {
+            Row(
+              modifier = Modifier.fillMaxWidth(),
+              horizontalArrangement = Arrangement.SpaceBetween,
+              verticalAlignment = Alignment.CenterVertically
+            ) {
+              Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Box(
+                  modifier = Modifier
+                    .size(24.dp)
+                    .background(tx.chain.color.copy(alpha = 0.15f), CircleShape),
+                  contentAlignment = Alignment.Center
+                ) {
+                  Text(tx.chain.symbol.take(2), fontSize = 9.sp, fontWeight = FontWeight.Bold, color = tx.chain.color)
+                }
+                Text(
+                  text = tx.type.label,
+                  fontWeight = FontWeight.Bold,
+                  fontSize = 12.sp,
+                  color = BlueprintNavy
+                )
+              }
+
+              Text(
+                text = "${tx.amount} ${tx.chain.symbol}",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Black,
+                color = if (tx.type == TxType.DEPOSIT) SignalGreen else BlueprintNavy
+              )
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(text = "TxHash: ${tx.txHash}", fontSize = 9.sp, color = TextMuted, maxLines = 1, overflow = TextOverflow.Ellipsis, fontFamily = FontFamily.Monospace)
+            if (tx.note.isNotBlank()) {
+              Text(text = tx.note, fontSize = 10.sp, color = TextSecondary)
+            }
+          }
+        }
+      }
+
+      // Transferred copies
+      items(transferredCopies) { record ->
+        Card(
+          colors = CardDefaults.cardColors(containerColor = Color.White),
+          border = BorderStroke(1.dp, UrkundeGoldDark.copy(alpha = 0.5f)),
+          shape = RoundedCornerShape(8.dp),
+          modifier = Modifier.fillMaxWidth()
+        ) {
+          Column(modifier = Modifier.padding(12.dp)) {
+            Row(
+              modifier = Modifier.fillMaxWidth(),
+              horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+              Text(
+                text = "Abschrift: ${record.certId}",
+                fontWeight = FontWeight.Bold,
+                fontSize = 11.sp,
+                color = UrkundeGoldDark
+              )
+              Text("Beglaubigt (§ 36 BeurkG)", fontSize = 9.sp, color = SignalGreen, fontWeight = FontWeight.Bold)
+            }
+            Spacer(modifier = Modifier.height(2.dp))
+            Text("Empfänger: ${record.recipientEmailOrAddress}", fontSize = 10.sp, color = TextSecondary)
+            Text("Siegel-Hash: ${record.sealVerificationHash}", fontSize = 9.sp, color = TextMuted, maxLines = 1, overflow = TextOverflow.Ellipsis, fontFamily = FontFamily.Monospace)
+          }
+        }
+      }
+    }
+  }
+}
+
+// -------------------------------------------------------------
+// GLOBAL LEDGER TAB (ALLE BLÖCKE & ALLE TRANSAKTIONEN)
+// -------------------------------------------------------------
+@Composable
+private fun GlobalLedgerTab(
+  blocks: List<BlockchainBlock>,
+  transactions: List<WalletTransaction>,
+  onInspectBlock: (BlockchainBlock) -> Unit,
+  onInspectTx: (WalletTransaction) -> Unit
+) {
+  var selectedSubMode by remember { mutableStateOf(0) }
+  val modes = listOf("Global Blöcke (${blocks.size})", "Global Transaktionen (${transactions.size})")
+
+  Column(modifier = Modifier.fillMaxSize()) {
+    // Mode Switcher
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 14.dp, vertical = 8.dp),
+      horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+      modes.forEachIndexed { idx, label ->
+        FilterChip(
+          selected = selectedSubMode == idx,
+          onClick = { selectedSubMode = idx },
+          label = { Text(label, fontSize = 10.sp) }
+        )
+      }
+    }
+
+    if (selectedSubMode == 0) {
+      // Blocks List
+      LazyColumn(
+        modifier = Modifier
+          .fillMaxSize()
+          .padding(horizontal = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+      ) {
+        items(blocks) { block ->
+          Card(
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            border = BorderStroke(1.dp, BlueprintBorder),
+            shape = RoundedCornerShape(8.dp),
+            modifier = Modifier
+              .fillMaxWidth()
+              .clickable { onInspectBlock(block) }
+          ) {
+            Column(modifier = Modifier.padding(12.dp)) {
+              Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+              ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                  Box(
+                    modifier = Modifier
+                      .size(24.dp)
+                      .background(block.chain.color.copy(alpha = 0.15f), CircleShape),
+                    contentAlignment = Alignment.Center
+                  ) {
+                    Text(block.chain.symbol.take(2), fontSize = 9.sp, fontWeight = FontWeight.Black, color = block.chain.color)
+                  }
+                  Text(
+                    text = "Block #${block.height}",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp,
+                    color = BlueprintNavy
+                  )
+                }
+
+                Text(
+                  text = "${block.txCount} Tx • ${String.format("%.1f", block.sizeKb)} KB",
+                  fontSize = 10.sp,
+                  color = SignalBlue,
+                  fontWeight = FontWeight.Bold
+                )
+              }
+
+              Spacer(modifier = Modifier.height(4.dp))
+              Text(
+                text = "Hash: ${block.hash}",
+                fontSize = 9.sp,
+                color = TextMuted,
+                fontFamily = FontFamily.Monospace,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+              )
+              Text(
+                text = "Miner / Validator: ${block.validatorOrMiner}",
+                fontSize = 10.sp,
+                color = TextSecondary
+              )
+              Text(
+                text = "Liquidiert: ${block.reward}",
+                fontSize = 9.sp,
+                color = SignalGreen,
+                fontWeight = FontWeight.Bold
+              )
+            }
+          }
+        }
+      }
+    } else {
+      // Transactions List
+      LazyColumn(
+        modifier = Modifier
+          .fillMaxSize()
+          .padding(horizontal = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+      ) {
+        items(transactions) { tx ->
+          Card(
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            border = BorderStroke(1.dp, BlueprintBorder),
+            shape = RoundedCornerShape(8.dp),
+            modifier = Modifier
+              .fillMaxWidth()
+              .clickable { onInspectTx(tx) }
+          ) {
+            Column(modifier = Modifier.padding(12.dp)) {
+              Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+              ) {
+                Text(
+                  text = tx.id,
+                  fontWeight = FontWeight.Bold,
+                  fontSize = 11.sp,
+                  color = BlueprintNavy
+                )
+                Text(
+                  text = "${tx.amount} ${tx.chain.symbol}",
+                  fontWeight = FontWeight.Black,
+                  fontSize = 12.sp,
+                  color = SignalBlue
+                )
+              }
+              Spacer(modifier = Modifier.height(2.dp))
+              Text(
+                text = "TxHash: ${tx.txHash}",
+                fontSize = 9.sp,
+                color = TextMuted,
+                fontFamily = FontFamily.Monospace,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+              )
+              Text(
+                text = "${tx.fromAddress.take(16)}... ➔ ${tx.toAddress.take(16)}...",
+                fontSize = 9.sp,
+                color = TextSecondary,
+                fontFamily = FontFamily.Monospace
+              )
+              if (tx.note.isNotBlank()) {
+                Text(text = tx.note, fontSize = 9.sp, color = UrkundeGoldDark)
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// -------------------------------------------------------------
 // NEC CERTIFICATES TAB (GAMIFICATION & DUAL SINGULARITY)
 // -------------------------------------------------------------
 @Composable
@@ -257,7 +812,7 @@ private fun NecCertificatesTab(
     modifier = Modifier
       .fillMaxSize()
       .padding(14.dp),
-    verticalArrangement = Arrangement.spacedBy(10.dp)
+    verticalArrangement = Arrangement.spacedBy(12.dp)
   ) {
     item {
       Row(
@@ -267,15 +822,15 @@ private fun NecCertificatesTab(
       ) {
         Column {
           Text(
-            text = "DOKUMENTEN- & URKUNDEN-REGISTRY",
+            text = "PARALLELE SINGULARITÄT: 28 FACHKATEGORIEN",
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
             color = BlueprintNavy
           )
           Text(
-            text = "Freischaltung basiert auf Gamifizierung & Aktivitäten",
+            text = "Echtzeit-Abgleich: Blockchain-NFT & XJustiz-Datenbank",
             style = MaterialTheme.typography.bodySmall,
-            color = TextMuted,
+            color = TextSecondary,
             fontSize = 10.sp
           )
         }
@@ -283,7 +838,7 @@ private fun NecCertificatesTab(
         FilterChip(
           selected = filterOnlyUnlocked,
           onClick = { filterOnlyUnlocked = !filterOnlyUnlocked },
-          label = { Text("Nur erlangte Dokumente", fontSize = 10.sp) }
+          label = { Text("Nur Freigeschaltete", fontSize = 10.sp) }
         )
       }
     }
@@ -291,282 +846,158 @@ private fun NecCertificatesTab(
     items(filtered) { cert ->
       val isUnlocked = ExplorerRepository.isCertificateUnlocked(cert)
 
-      NecCertificateCard(
-        cert = cert,
-        isUnlocked = isUnlocked,
-        onInspect = { onInspect(cert) },
-        onTransferCopy = { onTransferCopy(cert) },
-        onTransferOriginal = { onTransferOriginal(cert) },
-        onDownload = { onDownload(cert) },
-        onShareEmail = { onShareEmail(cert) }
-      )
-    }
-  }
-}
-
-@Composable
-private fun NecCertificateCard(
-  cert: NecCertificate,
-  isUnlocked: Boolean,
-  onInspect: () -> Unit,
-  onTransferCopy: () -> Unit,
-  onTransferOriginal: () -> Unit,
-  onDownload: () -> Unit,
-  onShareEmail: () -> Unit
-) {
-  val borderColor = if (isUnlocked) UrkundeGold else BlueprintBorder
-  val cardBg = if (isUnlocked) Color.White else Slate50
-
-  Card(
-    modifier = Modifier
-      .fillMaxWidth()
-      .testTag("nec_cert_card_${cert.id}"),
-    colors = CardDefaults.cardColors(containerColor = cardBg),
-    border = BorderStroke(1.dp, borderColor),
-    shape = RoundedCornerShape(10.dp)
-  ) {
-    Column(modifier = Modifier.padding(14.dp)) {
-      // Top Row: ID, Policy Badge & Status
-      Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-      ) {
-        Row(
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-          Surface(
-            color = BlueprintNavy,
-            shape = RoundedCornerShape(4.dp)
-          ) {
-            Text(
-              text = cert.id,
-              color = Color.White,
-              fontWeight = FontWeight.Black,
-              fontSize = 10.sp,
-              modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-            )
-          }
-
-          Surface(
-            color = UrkundeGoldBg,
-            shape = RoundedCornerShape(4.dp)
-          ) {
-            Text(
-              text = "NFT & URKUNDE",
-              color = UrkundeGoldDark,
-              fontWeight = FontWeight.Bold,
-              fontSize = 9.sp,
-              modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
-            )
-          }
-        }
-
-        Surface(
-          color = if (isUnlocked) SignalGreenLight else Color(0xFFF1F5F9),
-          shape = RoundedCornerShape(4.dp)
-        ) {
-          Text(
-            text = if (isUnlocked) "ERLANGT / FREIGESCHALTET" else "GESPERRT (Gamifizierung)",
-            color = if (isUnlocked) SignalGreen else TextMuted,
-            fontWeight = FontWeight.Bold,
-            fontSize = 9.sp,
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-          )
-        }
-      }
-
-      Spacer(modifier = Modifier.height(8.dp))
-
-      Text(
-        text = cert.title,
-        style = MaterialTheme.typography.titleSmall,
-        fontWeight = FontWeight.Bold,
-        color = BlueprintNavy
-      )
-
-      Text(
-        text = "Kategorie #${cert.categoryId}: ${cert.categoryName}",
-        style = MaterialTheme.typography.bodySmall,
-        color = SignalBlue,
-        fontSize = 11.sp
-      )
-
-      Spacer(modifier = Modifier.height(6.dp))
-
-      // Dual Coexistence Badges
-      Row(
-        modifier = Modifier
-          .fillMaxWidth()
-          .background(Color(0xFFF8FAFC), RoundedCornerShape(6.dp))
-          .padding(8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-      ) {
-        Column {
-          Text("MTK NFT Token", fontSize = 9.sp, color = TextMuted)
-          Text(cert.nftTokenId.take(18) + "...", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = BlueprintNavy)
-        }
-        Column(horizontalAlignment = Alignment.End) {
-          Text("XJustiz DB Record", fontSize = 9.sp, color = TextMuted)
-          Text(cert.databaseRecordId, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = UrkundeGoldDark)
-        }
-      }
-
-      Spacer(modifier = Modifier.height(6.dp))
-
-      Text(
-        text = "Transfer-Regel: ${cert.transferPolicy.label}",
-        style = MaterialTheme.typography.labelSmall,
-        color = TextSecondary,
-        fontSize = 10.sp
-      )
-
-      if (!isUnlocked) {
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-          text = "Voraussetzung: ${cert.unlockRequirement}",
-          style = MaterialTheme.typography.bodySmall,
-          color = UrkundeWax,
-          fontSize = 10.sp
-        )
-      }
-
-      Spacer(modifier = Modifier.height(10.dp))
-
-      // Action Buttons Row (Only enabled if unlocked)
-      Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-        verticalAlignment = Alignment.CenterVertically
-      ) {
-        OutlinedButton(
-          onClick = onInspect,
-          shape = RoundedCornerShape(6.dp),
-          contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
-        ) {
-          Icon(Icons.Default.Visibility, contentDescription = null, modifier = Modifier.size(14.dp))
-          Spacer(modifier = Modifier.width(4.dp))
-          Text("Details", fontSize = 10.sp)
-        }
-
-        if (isUnlocked) {
-          Button(
-            onClick = onDownload,
-            colors = ButtonDefaults.buttonColors(containerColor = BlueprintNavy),
-            shape = RoundedCornerShape(6.dp),
-            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
-          ) {
-            Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(14.dp))
-            Spacer(modifier = Modifier.width(4.dp))
-            Text("Download", fontSize = 10.sp)
-          }
-
-          // Transfer verified copy button
-          Button(
-            onClick = onTransferCopy,
-            colors = ButtonDefaults.buttonColors(containerColor = SignalBlue),
-            shape = RoundedCornerShape(6.dp),
-            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
-          ) {
-            Icon(Icons.Default.FileCopy, contentDescription = null, modifier = Modifier.size(14.dp))
-            Spacer(modifier = Modifier.width(4.dp))
-            Text("Kopie senden", fontSize = 10.sp)
-          }
-
-          IconButton(
-            onClick = onShareEmail,
-            modifier = Modifier.size(32.dp)
-          ) {
-            Icon(Icons.Default.Email, contentDescription = "E-Mail", tint = SignalBlue, modifier = Modifier.size(18.dp))
-          }
-        }
-      }
-    }
-  }
-}
-
-// -------------------------------------------------------------
-// BLOCKS TAB
-// -------------------------------------------------------------
-@Composable
-private fun BlocksTab(blocks: List<BlockchainBlock>) {
-  LazyColumn(
-    modifier = Modifier
-      .fillMaxSize()
-      .padding(14.dp),
-    verticalArrangement = Arrangement.spacedBy(10.dp)
-  ) {
-    item {
-      Text(
-        text = "ECHTZEIT-BLÖCKE ÜBER ALLE NETZWERKE",
-        style = MaterialTheme.typography.labelSmall,
-        fontWeight = FontWeight.Bold,
-        color = BlueprintNavy
-      )
-    }
-
-    items(blocks) { block ->
       Card(
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = BorderStroke(1.dp, BlueprintBorder),
+        colors = CardDefaults.cardColors(
+          containerColor = if (isUnlocked) Color.White else Color(0xFFF1F5F9)
+        ),
+        border = BorderStroke(
+          width = 1.dp,
+          color = if (isUnlocked) UrkundeGoldDark.copy(alpha = 0.5f) else BlueprintBorder
+        ),
         shape = RoundedCornerShape(8.dp),
         modifier = Modifier.fillMaxWidth()
       ) {
-        Column(modifier = Modifier.padding(12.dp)) {
+        Column(modifier = Modifier.padding(14.dp)) {
           Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.Top
           ) {
-            Row(
-              verticalAlignment = Alignment.CenterVertically,
-              horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-              Box(
-                modifier = Modifier
-                  .size(24.dp)
-                  .background(block.chain.color.copy(alpha = 0.15f), CircleShape),
-                contentAlignment = Alignment.Center
-              ) {
-                Text(block.chain.symbol.take(2), fontSize = 9.sp, fontWeight = FontWeight.Black, color = block.chain.color)
+            Column(modifier = Modifier.weight(1f)) {
+              Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Surface(
+                  color = if (isUnlocked) UrkundeGoldBg else Slate50,
+                  shape = RoundedCornerShape(4.dp)
+                ) {
+                  Text(
+                    text = cert.id,
+                    color = if (isUnlocked) UrkundeGoldDark else TextMuted,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Black,
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                  )
+                }
+
+                Text(
+                  text = "Kat. #${cert.categoryId}",
+                  fontSize = 10.sp,
+                  fontWeight = FontWeight.Bold,
+                  color = BlueprintNavy
+                )
               }
+
+              Spacer(modifier = Modifier.height(4.dp))
+
               Text(
-                text = "Block #${block.height}",
+                text = cert.title,
+                style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
-                fontSize = 12.sp,
-                color = BlueprintNavy
+                color = if (isUnlocked) BlueprintNavy else TextMuted
               )
             }
 
+            Surface(
+              color = if (isUnlocked) SignalGreenLight else Color(0xFFE2E8F0),
+              shape = RoundedCornerShape(4.dp)
+            ) {
+              Text(
+                text = if (isUnlocked) "Freigeschaltet" else "Gesperrt",
+                color = if (isUnlocked) SignalGreen else TextMuted,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+              )
+            }
+          }
+
+          Spacer(modifier = Modifier.height(8.dp))
+
+          // Dual Identifiers (NFT + Database)
+          Row(
+            modifier = Modifier
+              .fillMaxWidth()
+              .background(Color(0xFFF8FAFC), RoundedCornerShape(6.dp))
+              .padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+          ) {
+            Column {
+              Text("MTK NFT Token", fontSize = 9.sp, color = TextMuted)
+              Text(cert.nftTokenId.take(18) + "...", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = BlueprintNavy)
+            }
+            Column(horizontalAlignment = Alignment.End) {
+              Text("XJustiz DB Record", fontSize = 9.sp, color = TextMuted)
+              Text(cert.databaseRecordId, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = UrkundeGoldDark)
+            }
+          }
+
+          Spacer(modifier = Modifier.height(6.dp))
+
+          Text(
+            text = "Transfer-Regel: ${cert.transferPolicy.label}",
+            style = MaterialTheme.typography.labelSmall,
+            color = TextSecondary,
+            fontSize = 10.sp
+          )
+
+          if (!isUnlocked) {
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
-              text = "${block.txCount} Transaktionen",
-              fontSize = 11.sp,
-              color = SignalBlue,
-              fontWeight = FontWeight.Bold
+              text = "Voraussetzung: ${cert.unlockRequirement}",
+              style = MaterialTheme.typography.bodySmall,
+              color = UrkundeWax,
+              fontSize = 10.sp
             )
           }
 
-          Spacer(modifier = Modifier.height(4.dp))
+          Spacer(modifier = Modifier.height(10.dp))
 
-          Text(
-            text = "Hash: ${block.hash}",
-            fontSize = 10.sp,
-            color = TextMuted,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-          )
-          Text(
-            text = "Extension License: ${block.extensionLicenseHash.take(18)}... (PRAI / MTK / NEC)",
-            fontSize = 9.sp,
-            color = UrkundeGoldDark,
-            fontWeight = FontWeight.Bold
-          )
-          Text(
-            text = "Validierer / Pool: ${block.validatorOrMiner}",
-            fontSize = 10.sp,
-            color = TextSecondary
-          )
+          // Action Buttons Row (Only enabled if unlocked)
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            OutlinedButton(
+              onClick = { onInspect(cert) },
+              shape = RoundedCornerShape(6.dp),
+              contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+              Icon(Icons.Default.Visibility, contentDescription = null, modifier = Modifier.size(14.dp))
+              Spacer(modifier = Modifier.width(4.dp))
+              Text("Details", fontSize = 10.sp)
+            }
+
+            if (isUnlocked) {
+              Button(
+                onClick = { onDownload(cert) },
+                colors = ButtonDefaults.buttonColors(containerColor = BlueprintNavy),
+                shape = RoundedCornerShape(6.dp),
+                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+              ) {
+                Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(14.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("Download", fontSize = 10.sp)
+              }
+
+              Button(
+                onClick = { onTransferCopy(cert) },
+                colors = ButtonDefaults.buttonColors(containerColor = SignalBlue),
+                shape = RoundedCornerShape(6.dp),
+                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+              ) {
+                Icon(Icons.Default.FileCopy, contentDescription = null, modifier = Modifier.size(14.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("Kopie senden", fontSize = 10.sp)
+              }
+
+              IconButton(
+                onClick = { onShareEmail(cert) },
+                modifier = Modifier.size(32.dp)
+              ) {
+                Icon(Icons.Default.Email, contentDescription = "E-Mail", tint = SignalBlue, modifier = Modifier.size(18.dp))
+              }
+            }
+          }
         }
       }
     }
@@ -574,76 +1005,156 @@ private fun BlocksTab(blocks: List<BlockchainBlock>) {
 }
 
 // -------------------------------------------------------------
-// TRANSACTIONS & COPIES TAB
+// BLOCK DETAILS DIALOG
 // -------------------------------------------------------------
 @Composable
-private fun TransactionsTab(transfers: List<ExplorerRepository.CopyTransferRecord>) {
-  LazyColumn(
-    modifier = Modifier
-      .fillMaxSize()
-      .padding(14.dp),
-    verticalArrangement = Arrangement.spacedBy(10.dp)
-  ) {
-    item {
-      Text(
-        text = "TRANSFERIERTE BEGLAUBIGTE KOPIEN & NACHWEISE",
-        style = MaterialTheme.typography.labelSmall,
-        fontWeight = FontWeight.Bold,
-        color = BlueprintNavy
-      )
-    }
+private fun BlockDetailsDialog(
+  block: BlockchainBlock,
+  onDismiss: () -> Unit
+) {
+  val clipboardManager = LocalClipboardManager.current
+  val context = LocalContext.current
 
-    if (transfers.isEmpty()) {
-      item {
-        Card(
-          colors = CardDefaults.cardColors(containerColor = Color.White),
-          border = BorderStroke(1.dp, BlueprintBorder),
-          modifier = Modifier.fillMaxWidth()
+  Dialog(onDismissRequest = onDismiss) {
+    Surface(
+      shape = RoundedCornerShape(14.dp),
+      color = Color.White,
+      modifier = Modifier.fillMaxWidth().padding(16.dp)
+    ) {
+      Column(modifier = Modifier.padding(16.dp)) {
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
         ) {
-          Text(
-            text = "Bisher wurden noch keine Kopien oder Nachweise transferiert. Wählen Sie im Reiter 'NEC-Urkunden' ein freigeschaltetes Dokument und tippen Sie auf 'Kopie senden'.",
-            fontSize = 11.sp,
-            color = TextMuted,
-            modifier = Modifier.padding(14.dp)
-          )
+          Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Box(
+              modifier = Modifier.size(24.dp).background(block.chain.color.copy(alpha = 0.2f), CircleShape),
+              contentAlignment = Alignment.Center
+            ) {
+              Text(block.chain.symbol.take(2), fontSize = 9.sp, fontWeight = FontWeight.Black, color = block.chain.color)
+            }
+            Text(
+              text = "BLOCK #${block.height}",
+              style = MaterialTheme.typography.titleMedium,
+              fontWeight = FontWeight.Black,
+              color = BlueprintNavy
+            )
+          }
+          IconButton(onClick = onDismiss) {
+            Icon(Icons.Default.Close, contentDescription = "Schließen")
+          }
         }
-      }
-    } else {
-      items(transfers) { record ->
-        Card(
-          colors = CardDefaults.cardColors(containerColor = Color.White),
-          border = BorderStroke(1.dp, BlueprintBorder),
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Surface(
+          color = Slate50,
           shape = RoundedCornerShape(8.dp),
           modifier = Modifier.fillMaxWidth()
         ) {
-          Column(modifier = Modifier.padding(12.dp)) {
-            Row(
-              modifier = Modifier.fillMaxWidth(),
-              horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-              Text(
-                text = "${record.certId} ${if (record.isCopyOnly) "(Beglaubigte Kopie)" else "(Original-Transfer)"}",
-                fontWeight = FontWeight.Bold,
-                fontSize = 12.sp,
-                color = BlueprintNavy
-              )
-              Text(
-                text = "Status: Verifiziert",
-                color = SignalGreen,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold
-              )
-            }
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(text = "Empfänger: ${record.recipientEmailOrAddress}", fontSize = 11.sp, color = TextSecondary)
-            Text(
-              text = "Siegel-Hash: ${record.sealVerificationHash}",
-              fontSize = 9.sp,
-              color = TextMuted,
-              maxLines = 1,
-              overflow = TextOverflow.Ellipsis
-            )
+          Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+            Text("Blockchain: ${block.chain.fullName}", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = BlueprintNavy)
+            Text("Hash: ${block.hash}", fontSize = 9.sp, color = SignalBlue, fontFamily = FontFamily.Monospace)
+            Text("Transaktionen: ${block.txCount}", fontSize = 10.sp, color = TextSecondary)
+            Text("Block-Größe: ${String.format("%.2f", block.sizeKb)} KB", fontSize = 10.sp, color = TextSecondary)
+            Text("Validierer / Miner: ${block.validatorOrMiner}", fontSize = 10.sp, color = TextSecondary)
+            Text("Gebühren-Liquidierung / Reward: ${block.reward}", fontSize = 10.sp, color = SignalGreen, fontWeight = FontWeight.Bold)
+            Text("Sovereign License: ${block.extensionLicenseHash.take(24)}... (PRAI / MTK / NEC)", fontSize = 9.sp, color = UrkundeGoldDark)
           }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        Button(
+          onClick = {
+            clipboardManager.setText(AnnotatedString(block.hash))
+            Toast.makeText(context, "Block-Hash kopiert!", Toast.LENGTH_SHORT).show()
+          },
+          colors = ButtonDefaults.buttonColors(containerColor = BlueprintNavy),
+          modifier = Modifier.fillMaxWidth(),
+          shape = RoundedCornerShape(8.dp)
+        ) {
+          Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(16.dp))
+          Spacer(modifier = Modifier.width(6.dp))
+          Text("Block-Hash kopieren", fontSize = 11.sp)
+        }
+      }
+    }
+  }
+}
+
+// -------------------------------------------------------------
+// TRANSACTION DETAILS DIALOG
+// -------------------------------------------------------------
+@Composable
+private fun TransactionDetailsDialog(
+  tx: WalletTransaction,
+  onDismiss: () -> Unit
+) {
+  val clipboardManager = LocalClipboardManager.current
+  val context = LocalContext.current
+
+  Dialog(onDismissRequest = onDismiss) {
+    Surface(
+      shape = RoundedCornerShape(14.dp),
+      color = Color.White,
+      modifier = Modifier.fillMaxWidth().padding(16.dp)
+    ) {
+      Column(modifier = Modifier.padding(16.dp)) {
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Text(
+            text = "TRANSAKTIONS-DETAILS",
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.Black,
+            color = BlueprintNavy
+          )
+          IconButton(onClick = onDismiss) {
+            Icon(Icons.Default.Close, contentDescription = "Schließen")
+          }
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Surface(
+          color = Slate50,
+          shape = RoundedCornerShape(8.dp),
+          modifier = Modifier.fillMaxWidth()
+        ) {
+          Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+            Text("Tx ID: ${tx.id}", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = BlueprintNavy)
+            Text("Netzwerk: ${tx.chain.fullName}", fontSize = 10.sp, color = TextSecondary)
+            Text("Typ: ${tx.type.label}", fontSize = 10.sp, color = SignalBlue, fontWeight = FontWeight.Bold)
+            Text("Betrag: ${tx.amount} ${tx.chain.symbol}", fontSize = 11.sp, fontWeight = FontWeight.Black, color = SignalGreen)
+            Text("TxHash: ${tx.txHash}", fontSize = 9.sp, color = TextMuted, fontFamily = FontFamily.Monospace)
+            Text("Von: ${tx.fromAddress}", fontSize = 9.sp, color = TextSecondary, fontFamily = FontFamily.Monospace)
+            Text("An: ${tx.toAddress}", fontSize = 9.sp, color = TextSecondary, fontFamily = FontFamily.Monospace)
+            Text("Gebühr: ${tx.fee} ${tx.chain.symbol}", fontSize = 9.sp, color = TextMuted)
+            Text("Status: Bestätigt (Sovereign Consensus)", fontSize = 10.sp, color = SignalGreen, fontWeight = FontWeight.Bold)
+            if (tx.note.isNotBlank()) {
+              Text("Vermerk: ${tx.note}", fontSize = 10.sp, color = UrkundeGoldDark)
+            }
+          }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        Button(
+          onClick = {
+            clipboardManager.setText(AnnotatedString(tx.txHash))
+            Toast.makeText(context, "Transaktions-Hash kopiert!", Toast.LENGTH_SHORT).show()
+          },
+          colors = ButtonDefaults.buttonColors(containerColor = BlueprintNavy),
+          modifier = Modifier.fillMaxWidth(),
+          shape = RoundedCornerShape(8.dp)
+        ) {
+          Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(16.dp))
+          Spacer(modifier = Modifier.width(6.dp))
+          Text("TxHash kopieren", fontSize = 11.sp)
         }
       }
     }
@@ -665,9 +1176,7 @@ private fun CertificateDetailDialog(
     Surface(
       shape = RoundedCornerShape(14.dp),
       color = Color.White,
-      modifier = Modifier
-        .fillMaxWidth()
-        .padding(16.dp)
+      modifier = Modifier.fillMaxWidth().padding(16.dp)
     ) {
       Column(modifier = Modifier.padding(18.dp)) {
         Row(
@@ -756,9 +1265,7 @@ private fun TransferDocumentDialog(
     Surface(
       shape = RoundedCornerShape(14.dp),
       color = Color.White,
-      modifier = Modifier
-        .fillMaxWidth()
-        .padding(16.dp)
+      modifier = Modifier.fillMaxWidth().padding(16.dp)
     ) {
       Column(modifier = Modifier.padding(18.dp)) {
         Text(

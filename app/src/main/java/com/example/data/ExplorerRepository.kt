@@ -29,6 +29,73 @@ object ExplorerRepository {
   init {
     initCertificates()
     initBlocks()
+    initTransactions()
+  }
+
+  private fun initTransactions() {
+    val now = System.currentTimeMillis()
+    _globalTransactions.value = listOf(
+      WalletTransaction(
+        id = "TX-GLB-001",
+        txHash = "0x89ab10f2c842398402948209384029384092834092834092834092834092834a",
+        chain = CryptoChain.MTK,
+        type = TxType.ESCROW_LOCK,
+        amount = 100_000.0,
+        fromAddress = "0xRFOF9842A7b2F366c8B01C5D19E77F32e2A8321",
+        toAddress = "ESCROW_TREUHAND_NOTARIAT_§36",
+        timestamp = now - 18_000,
+        fee = 0.0001,
+        note = "Notarielle Deckungshinterlegung nach § 36 BeurkG"
+      ),
+      WalletTransaction(
+        id = "TX-GLB-002",
+        txHash = "0xZON_TX_71c2b04e5f931ac2388c89284de15f458b43a890",
+        chain = CryptoChain.ZON,
+        type = TxType.SWAP,
+        amount = 2_500.0,
+        fromAddress = "0x71C2B04E5F931aC2388C89284De15f458B43a890",
+        toAddress = "0xZON_EXPONENTIAL_BONDING_CURVE",
+        timestamp = now - 45_000,
+        fee = 0.002,
+        note = "ZON 50/50 Exponential Swap (100% Fee-Liquidation in Reserves)"
+      ),
+      WalletTransaction(
+        id = "TX-GLB-003",
+        txHash = "0xETH_a92847c190823b471a9823b1092847c190823b4",
+        chain = CryptoChain.ETH,
+        type = TxType.DEPOSIT,
+        amount = 3.5,
+        fromAddress = "0x3Fa2919E5D491EAcC182479B2912DDE34892E1C9",
+        toAddress = "0xETH_SOVEREIGN_GATEWAY",
+        timestamp = now - 120_000,
+        fee = 0.0042,
+        note = "Alchemy RPC Node Deposit (eth-mainnet)"
+      ),
+      WalletTransaction(
+        id = "TX-GLB-004",
+        txHash = "EQD_f192847c190823b471a9823b1092847c190823b4",
+        chain = CryptoChain.TON,
+        type = TxType.STAKE,
+        amount = 1_200.0,
+        fromAddress = "0x71C2B04E5F931aC2388C89284De15f458B43a890",
+        toAddress = "TON_NOMINATOR_STAKE_POOL",
+        timestamp = now - 360_000,
+        fee = 0.05,
+        note = "Nominator Pool Delegation (4.6% APY)"
+      ),
+      WalletTransaction(
+        id = "TX-GLB-005",
+        txHash = "0xMTK_FLASH_FEE_LIQUIDATION_8942",
+        chain = CryptoChain.MTK,
+        type = TxType.SWAP,
+        amount = 3_140.40,
+        fromAddress = "PRAI_AUTONOMOUS_KI_ENGINE",
+        toAddress = "MTK_ZON_PERMANENT_LIQUIDITY_RESERVES",
+        timestamp = now - 60_000,
+        fee = 0.0,
+        note = "Vollautonome Gebühren- & Flash-Loan-Liquidierung (100% Reserve)"
+      )
+    )
   }
 
   private fun initCertificates() {
@@ -211,6 +278,32 @@ object ExplorerRepository {
 
   fun unlockCertificate(certId: String) {
     AuthManager.unlockCertificateForCurrentUser(certId)
+  }
+
+  fun recordGenesisSwapBlock(receipt: com.example.network.GenesisSwapReceipt) {
+    val block = BlockchainBlock(
+      height = receipt.ethBlockHeight,
+      hash = receipt.txHashSha256,
+      chain = CryptoChain.MTK,
+      timestamp = receipt.timestamp,
+      validatorOrMiner = "Genesis Protocol (Alchemy Node & RFOF Admin)",
+      txCount = 1,
+      sizeKb = 48.6,
+      reward = "Genesis Swap (${receipt.amountFrom} ${receipt.fromSymbol} ➔ ${String.format("%.4f", receipt.amountTo)} ${receipt.toSymbol})",
+      extensionLicenseHash = receipt.licenseHash
+    )
+    _recentBlocks.value = listOf(block) + _recentBlocks.value
+  }
+
+  fun recordMinedBlock(block: BlockchainBlock) {
+    _recentBlocks.value = (listOf(block) + _recentBlocks.value).take(60)
+  }
+
+  private val _globalTransactions = MutableStateFlow<List<WalletTransaction>>(emptyList())
+  val globalTransactions: StateFlow<List<WalletTransaction>> = _globalTransactions.asStateFlow()
+
+  fun recordGlobalTransaction(tx: WalletTransaction) {
+    _globalTransactions.value = (listOf(tx) + _globalTransactions.value).take(100)
   }
 
   fun initializeDatabase(context: android.content.Context) {
