@@ -11,37 +11,25 @@ plugins {
 
 android {
   namespace = "com.example"
-  compileSdk = 36
+  compileSdk { version = release(36) { minorApiLevel = 1 } }
 
   defaultConfig {
     applicationId = "com.aistudio.praimtknec.qvzkxp"
     minSdk = 24
-    targetSdk = 3
- security-hardening-release
-    versionCode = 2
-    versionName = "1.1.0-security"
+    targetSdk = 36
     versionCode = 8
     versionName = "8.0"
-   main
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-    vectorDrawables {
-      useSupportLibrary = true
-    }
   }
 
   signingConfigs {
     create("release") {
-      val keystorePath = System.getenv("KEYSTORE_PATH")
-      if (!keystorePath.isNullOrBlank()) {
-        storeFile = file(keystorePath)
-        storePassword = System.getenv("STORE_PASSWORD") ?: ""
-        keyAlias = System.getenv("KEY_ALIAS") ?: "upload"
-        keyPassword = System.getenv("KEY_PASSWORD") ?: ""
-      } else {
-        println("WARNING: Release signing info is missing. Set KEYSTORE_PATH, STORE_PASSWORD, KEY_ALIAS and KEY_PASSWORD before publishing.")
-      }
+      val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
+      storeFile = file(keystorePath)
+      storePassword = System.getenv("STORE_PASSWORD")
+      keyAlias = "upload"
+      keyPassword = System.getenv("KEY_PASSWORD")
     }
     create("debugConfig") {
       storeFile = file("${rootDir}/debug.keystore")
@@ -52,43 +40,23 @@ android {
   }
 
   buildTypes {
-    debug {
-      isDebuggable = true
-      applicationIdSuffix = ".debug"
-      signingConfig = signingConfigs.getByName("debugConfig")
-    }
     release {
-      isDebuggable = false
-      isMinifyEnabled = true
-      isShrinkResources = true
-      isCrunchPngs = true
+      isCrunchPngs = false
+      isMinifyEnabled = false
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
       signingConfig = signingConfigs.getByName("release")
     }
+    debug { signingConfig = signingConfigs.getByName("debugConfig") }
   }
-
   compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
   }
-
-  kotlin {
-    jvmToolchain(17)
-  }
-
   buildFeatures {
     compose = true
     buildConfig = true
   }
-
   testOptions { unitTests { isIncludeAndroidResources = true } }
-
-  packaging {
-    resources {
-      excludes += "/META-INF/{AL2.0,LGPL2.1}"
-    }
-  }
-
   dependenciesInfo {
     includeInApk = false
     includeInBundle = true
