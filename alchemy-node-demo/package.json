@@ -1,0 +1,12 @@
+{
+  "name": "alchemy-node-demo",
+  "version": "1.0.0",
+  "description": "Alchemy Ethereum Mainnet Node RPC Demo",
+  "main": "demo-script.js",
+  "scripts": {
+    "start": "node demo-script.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7"
+  }
+}

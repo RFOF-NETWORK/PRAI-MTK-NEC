@@ -16,9 +16,13 @@ android {
   defaultConfig {
     applicationId = "com.aistudio.praimtknec.qvzkxp"
     minSdk = 24
-    targetSdk = 36
+    targetSdk = 3
+ security-hardening-release
     versionCode = 2
     versionName = "1.1.0-security"
+    versionCode = 8
+    versionName = "8.0"
+   main
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

@@ -230,7 +230,11 @@ fun ArenaMatrixScreen(
           .fillMaxSize()
           .horizontalScroll(scrollState)
       ) {
-        Column(modifier = Modifier.width(980.dp)) {
+        Column(
+          modifier = Modifier
+            .width(980.dp)
+            .fillMaxHeight()
+        ) {
           // Table Header
           Row(
             modifier = Modifier
@@ -256,7 +260,11 @@ fun ArenaMatrixScreen(
               Text("Keine Kategorien mit diesen Filterkriterien gefunden.", color = TextMuted, fontSize = 12.sp)
             }
           } else {
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(
+              modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+            ) {
               items(filteredCategories, key = { it.id }) { cat ->
                 val rfColor = when (cat.rechtsform) {
                   "©" -> UrkundeGold

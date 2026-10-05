@@ -6,8 +6,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -17,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -25,27 +28,43 @@ import com.example.auth.AuthManager
 import com.example.data.WalletRepository
 import com.example.model.CryptoAsset
 import com.example.model.CryptoChain
+import com.example.model.SovereignLicenseData
+import com.example.network.AlchemyMultiChainService
+import com.example.network.GenesisSwapReceipt
 import com.example.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TradingOverlayDialog(
-  initialTab: Int = 0, // 0 = Swap, 1 = Einzahlen, 2 = Auszahlen
+  initialTab: Int = 0, // 0 = Swap, 1 = Genesis Swap, 2 = Einzahlen, 3 = Auszahlen
   onDismiss: () -> Unit
 ) {
   val context = LocalContext.current
   val assets by WalletRepository.assets.collectAsState()
   val currentUser by AuthManager.currentUser.collectAsState()
   val isAdmin = AuthManager.isAdmin
+  val chainStatus by AlchemyMultiChainService.chainStatus.collectAsState()
+  val isSyncingChains by AlchemyMultiChainService.isSyncing.collectAsState()
 
-  var activeTab by remember { mutableStateOf(initialTab) }
-  val tabTitles = listOf("Swap / Tausch", "Einzahlen", "Auszahlen")
+  val tabTitles = if (isAdmin) {
+    listOf("Swap / Tausch", "Genesis Swap", "Einzahlen", "Auszahlen")
+  } else {
+    listOf("Swap / Tausch", "Einzahlen", "Auszahlen")
+  }
 
-  // Default selections
+  var activeTab by remember { mutableStateOf(if (initialTab < tabTitles.size) initialTab else 0) }
+
+  // Default Swap selections
   var fromAssetIndex by remember { mutableStateOf(0) }
   var toAssetIndex by remember { mutableStateOf(if (assets.size > 1) 1 else 0) }
   var fromAmountText by remember { mutableStateOf("0.5") }
   var slippageTolerance by remember { mutableStateOf("0.5%") }
+
+  // Genesis Swap selections (MTK <-> Multi-Chain)
+  var genesisFromIndex by remember { mutableStateOf(0) }
+  var genesisToIndex by remember { mutableStateOf(if (assets.size > 1) 1 else 0) }
+  var genesisAmountText by remember { mutableStateOf("100.0") }
+  var lastGenesisReceipt by remember { mutableStateOf<GenesisSwapReceipt?>(null) }
 
   // Deposit / Withdraw selections
   var targetAssetIndex by remember { mutableStateOf(0) }
@@ -56,16 +75,25 @@ fun TradingOverlayDialog(
   val toAsset = assets.getOrNull(toAssetIndex) ?: assets.getOrNull(1) ?: fromAsset
   val targetAsset = assets.getOrNull(targetAssetIndex) ?: assets.firstOrNull()
 
+  val genesisFromAsset = assets.getOrNull(genesisFromIndex) ?: assets.firstOrNull()
+  val genesisToAsset = assets.getOrNull(genesisToIndex) ?: assets.getOrNull(1) ?: genesisFromAsset
+
   Dialog(onDismissRequest = onDismiss) {
     Surface(
       shape = RoundedCornerShape(16.dp),
       color = Color.White,
       modifier = Modifier
         .fillMaxWidth()
-        .padding(12.dp)
+        .padding(horizontal = 8.dp, vertical = 16.dp)
         .testTag("trading_overlay_dialog")
     ) {
-      Column(modifier = Modifier.padding(18.dp)) {
+      Column(
+        modifier = Modifier
+          .fillMaxWidth()
+          .heightIn(max = 660.dp)
+          .padding(16.dp)
+          .verticalScroll(rememberScrollState())
+      ) {
         // Header
         Row(
           modifier = Modifier.fillMaxWidth(),
@@ -88,11 +116,20 @@ fun TradingOverlayDialog(
                 fontWeight = FontWeight.Black,
                 color = BlueprintNavy
               )
-              Text(
-                text = if (isAdmin) "Admin Modus • MTK voll aktiviert" else "Nutzer Modus • BTC / ETH / TON",
-                style = MaterialTheme.typography.labelSmall,
-                color = if (isAdmin) UrkundeGoldDark else TextMuted
-              )
+              Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                  modifier = Modifier
+                    .size(6.dp)
+                    .background(if (chainStatus.alchemyEthConnected) SignalGreen else Color(0xFFEAB308), CircleShape)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                  text = if (isAdmin) "Admin Modus • Alchemy ETH #${chainStatus.ethBlockNumber}" else "Nutzer Modus • Multi-Chain Live",
+                  style = MaterialTheme.typography.labelSmall,
+                  color = if (isAdmin) UrkundeGoldDark else TextMuted,
+                  fontSize = 10.sp
+                )
+              }
             }
           }
 
@@ -101,13 +138,14 @@ fun TradingOverlayDialog(
           }
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         // Tab Selector
-        TabRow(
+        ScrollableTabRow(
           selectedTabIndex = activeTab,
           containerColor = Slate100,
           contentColor = BlueprintNavy,
+          edgePadding = 0.dp,
           modifier = Modifier.background(Slate100, RoundedCornerShape(8.dp))
         ) {
           tabTitles.forEachIndexed { idx, title ->
@@ -118,7 +156,9 @@ fun TradingOverlayDialog(
                 Text(
                   text = title,
                   fontSize = 11.sp,
-                  fontWeight = if (activeTab == idx) FontWeight.Bold else FontWeight.Normal
+                  fontWeight = if (activeTab == idx) FontWeight.Bold else FontWeight.Normal,
+                  maxLines = 1,
+                  softWrap = false
                 )
               }
             )
@@ -132,8 +172,10 @@ fun TradingOverlayDialog(
           return@Column
         }
 
-        when (activeTab) {
-          0 -> {
+        val tabLabel = tabTitles.getOrElse(activeTab) { "Swap / Tausch" }
+
+        when (tabLabel) {
+          "Swap / Tausch" -> {
             // SWAP SECTION
             val fromRate = fromAsset.usdRate
             val toRate = toAsset.usdRate
@@ -170,7 +212,6 @@ fun TradingOverlayDialog(
                   )
                   Spacer(modifier = Modifier.width(8.dp))
 
-                  // Asset selector chip
                   Surface(
                     color = fromAsset.chain.color.copy(alpha = 0.15f),
                     shape = RoundedCornerShape(8.dp),
@@ -262,7 +303,6 @@ fun TradingOverlayDialog(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Slippage tolerance selector
             Row(
               modifier = Modifier.fillMaxWidth(),
               horizontalArrangement = Arrangement.SpaceBetween,
@@ -289,7 +329,7 @@ fun TradingOverlayDialog(
                   Toast.makeText(context, "Swap ausgeführt: $fromVal ${fromAsset.chain.symbol} ➔ ${String.format("%.4f", result)} ${toAsset.chain.symbol}", Toast.LENGTH_LONG).show()
                   onDismiss()
                 } else {
-                  Toast.makeText(context, "Swap fehlgeschlagen! Überprüfen Sie Guthaben.", Toast.LENGTH_SHORT).show()
+                  Toast.makeText(context, "Swap fehlgeschlagen! Bitte Guthaben prüfen.", Toast.LENGTH_SHORT).show()
                 }
               },
               colors = ButtonDefaults.buttonColors(containerColor = SignalBlue),
@@ -300,7 +340,169 @@ fun TradingOverlayDialog(
             }
           }
 
-          1 -> {
+          "Genesis Swap" -> {
+            // GENESIS SWAP SECTION (NO PROCESS BYPASSED)
+            if (genesisFromAsset == null || genesisToAsset == null) return@Column
+
+            val fromVal = genesisAmountText.toDoubleOrNull() ?: 0.0
+            val fromRate = genesisFromAsset.usdRate
+            val toRate = genesisToAsset.usdRate
+            val estimatedTo = if (toRate > 0) (fromVal * fromRate) / toRate else 0.0
+
+            Card(
+              colors = CardDefaults.cardColors(containerColor = UrkundeGoldBg),
+              border = BorderStroke(1.dp, UrkundeGold),
+              shape = RoundedCornerShape(10.dp),
+              modifier = Modifier.fillMaxWidth()
+            ) {
+              Column(modifier = Modifier.padding(12.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                  Icon(Icons.Default.Verified, contentDescription = null, tint = UrkundeGoldDark, modifier = Modifier.size(16.dp))
+                  Spacer(modifier = Modifier.width(6.dp))
+                  Text(
+                    text = "GENESIS SWAP (ALCHEMY ON-CHAIN GEPRÜFT)",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Black,
+                    color = BlueprintNavy
+                  )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                  text = "Prozess-Souveränität: Kein Schritt wird umgangen. Strikte Prüfung über Alchemy Ethereum Mainnet (Block #${chainStatus.ethBlockNumber}, Gas ${String.format("%.1f", chainStatus.ethGasPriceGwei)} Gwei), Notariats-Siegel nach § 36 BeurkG und XJustiz-Dual-Parität.",
+                  fontSize = 10.sp,
+                  color = TextSecondary,
+                  lineHeight = 14.sp
+                )
+              }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Multi-Chain Node Live Stats Bar
+            Card(
+              colors = CardDefaults.cardColors(containerColor = Slate50),
+              border = BorderStroke(1.dp, BlueprintBorder),
+              shape = RoundedCornerShape(8.dp),
+              modifier = Modifier.fillMaxWidth()
+            ) {
+              Column(modifier = Modifier.padding(10.dp)) {
+                Row(
+                  modifier = Modifier.fillMaxWidth(),
+                  horizontalArrangement = Arrangement.SpaceBetween,
+                  verticalAlignment = Alignment.CenterVertically
+                ) {
+                  Text("Alchemy ETH Node:", fontSize = 10.sp, color = TextMuted)
+                  Text("Block #${chainStatus.ethBlockNumber} (${String.format("%.1f", chainStatus.ethGasPriceGwei)} Gwei)", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = BlueprintNavy)
+                }
+                Row(
+                  modifier = Modifier.fillMaxWidth(),
+                  horizontalArrangement = Arrangement.SpaceBetween,
+                  verticalAlignment = Alignment.CenterVertically
+                ) {
+                  Text("Parallel BTC / TON:", fontSize = 10.sp, color = TextMuted)
+                  Text("BTC #${chainStatus.btcBlockHeight} • TON #${chainStatus.tonMasterSeqno}", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = BlueprintNavy)
+                }
+                Row(
+                  modifier = Modifier.fillMaxWidth(),
+                  horizontalArrangement = Arrangement.SpaceBetween,
+                  verticalAlignment = Alignment.CenterVertically
+                ) {
+                  Text("MTK Ledger & Lizenz:", fontSize = 10.sp, color = TextMuted)
+                  Text("Ledger #${chainStatus.mtkLedgerHeight} • Hash: ${SovereignLicenseData.LICENSE_HASH.take(10)}...", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = UrkundeGoldDark)
+                }
+              }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Input fields
+            OutlinedTextField(
+              value = genesisAmountText,
+              onValueChange = { genesisAmountText = it },
+              label = { Text("Genesis Betrag (${genesisFromAsset.chain.symbol})") },
+              modifier = Modifier.fillMaxWidth(),
+              singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+              modifier = Modifier.fillMaxWidth(),
+              horizontalArrangement = Arrangement.SpaceBetween,
+              verticalAlignment = Alignment.CenterVertically
+            ) {
+              Text("Tauschpaar:", fontSize = 11.sp, color = TextMuted)
+              Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Surface(
+                  color = genesisFromAsset.chain.color.copy(alpha = 0.15f),
+                  shape = RoundedCornerShape(6.dp),
+                  modifier = Modifier.clickable {
+                    genesisFromIndex = (genesisFromIndex + 1) % assets.size
+                  }
+                ) {
+                  Text("${genesisFromAsset.chain.symbol} ▾", modifier = Modifier.padding(6.dp), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = genesisFromAsset.chain.color)
+                }
+                Icon(Icons.Default.ArrowForward, contentDescription = null, tint = TextMuted, modifier = Modifier.size(16.dp).align(Alignment.CenterVertically))
+                Surface(
+                  color = genesisToAsset.chain.color.copy(alpha = 0.15f),
+                  shape = RoundedCornerShape(6.dp),
+                  modifier = Modifier.clickable {
+                    genesisToIndex = (genesisToIndex + 1) % assets.size
+                  }
+                ) {
+                  Text("${genesisToAsset.chain.symbol} ▾", modifier = Modifier.padding(6.dp), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = genesisToAsset.chain.color)
+                }
+              }
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Text(
+              text = "Ergebnis: ${String.format("%.4f", estimatedTo)} ${genesisToAsset.chain.symbol} (Guthaben: ${String.format("%.2f", genesisFromAsset.balance)})",
+              fontSize = 11.sp,
+              fontWeight = FontWeight.Bold,
+              color = BlueprintNavy
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Button(
+              onClick = {
+                val receipt = WalletRepository.executeGenesisSwap(genesisFromAsset.chain, genesisToAsset.chain, fromVal)
+                if (receipt != null) {
+                  lastGenesisReceipt = receipt
+                  Toast.makeText(context, "Genesis Swap #${receipt.swapId} validiert & ausgeführt!", Toast.LENGTH_LONG).show()
+                } else {
+                  Toast.makeText(context, "Fehlgeschlagen: Unzureichende Reserven.", Toast.LENGTH_SHORT).show()
+                }
+              },
+              colors = ButtonDefaults.buttonColors(containerColor = UrkundeGoldDark),
+              modifier = Modifier.fillMaxWidth(),
+              shape = RoundedCornerShape(8.dp)
+            ) {
+              Text("Genesis Swap protokollieren & ausführen", fontWeight = FontWeight.Bold)
+            }
+
+            // Receipt display if present
+            lastGenesisReceipt?.let { rec ->
+              Spacer(modifier = Modifier.height(10.dp))
+              Card(
+                colors = CardDefaults.cardColors(containerColor = Slate100),
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.fillMaxWidth()
+              ) {
+                Column(modifier = Modifier.padding(10.dp)) {
+                  Text("GENESIS PROTOKOLL-QUITTUNG:", fontSize = 10.sp, fontWeight = FontWeight.Black, color = SignalGreen)
+                  Text("ID: ${rec.swapId} | Alchemy ETH Block #${rec.ethBlockHeight}", fontSize = 9.sp, fontFamily = FontFamily.Monospace)
+                  Text("TX: ${rec.txHashSha256.take(30)}...", fontSize = 9.sp, fontFamily = FontFamily.Monospace)
+                  Text("Notarielles Siegel: ${rec.dualParityNotarialSeal}", fontSize = 9.sp, fontFamily = FontFamily.Monospace, color = UrkundeWax)
+                  Text("Status: ${rec.executionStatus}", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = SignalGreen)
+                }
+              }
+            }
+          }
+
+          "Einzahlen" -> {
             // DEPOSIT SECTION
             Text("Asset zur Einzahlung auswählen:", fontSize = 11.sp, color = TextMuted)
             Row(
@@ -322,7 +524,8 @@ fun TradingOverlayDialog(
               value = transferAmountText,
               onValueChange = { transferAmountText = it },
               label = { Text("Betrag in ${targetAsset.chain.symbol}") },
-              modifier = Modifier.fillMaxWidth()
+              modifier = Modifier.fillMaxWidth(),
+              singleLine = true
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -355,7 +558,7 @@ fun TradingOverlayDialog(
             }
           }
 
-          2 -> {
+          "Auszahlen" -> {
             // WITHDRAW SECTION
             Text("Asset zur Auszahlung auswählen:", fontSize = 11.sp, color = TextMuted)
             Row(
@@ -377,7 +580,8 @@ fun TradingOverlayDialog(
               value = transferAmountText,
               onValueChange = { transferAmountText = it },
               label = { Text("Auszahlungsbetrag (${targetAsset.chain.symbol})") },
-              modifier = Modifier.fillMaxWidth()
+              modifier = Modifier.fillMaxWidth(),
+              singleLine = true
             )
 
             Spacer(modifier = Modifier.height(6.dp))

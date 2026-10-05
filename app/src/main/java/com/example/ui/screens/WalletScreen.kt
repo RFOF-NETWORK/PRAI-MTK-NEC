@@ -52,9 +52,19 @@ fun WalletScreen(
   val stakingStates by WalletRepository.stakingStates.collectAsState()
   val miningState by WalletRepository.miningState.collectAsState()
   val transactions by WalletRepository.transactions.collectAsState()
+  val chainStatus by com.example.network.AlchemyMultiChainService.chainStatus.collectAsState()
 
   var selectedTab by remember { mutableStateOf(0) }
-  val tabs = listOf("Vermögen & Assets", "Treuhand & Escrow", "Mining & Staking", "AES-Schlüssel")
+  val tabs = listOf(
+    "Vermögen & Assets",
+    "Treuhand & Escrow",
+    "Mining & Staking",
+    "Launchpad & DEX",
+    "Staking & Mining Pools",
+    "NFT Marktplatz",
+    "Multi-Explorer",
+    "AES-Schlüssel"
+  )
 
   // Modal dialog states
   var showDepositDialog by remember { mutableStateOf(false) }
@@ -136,6 +146,21 @@ fun WalletScreen(
           color = Color(0xFFCBD5E1),
           fontSize = 11.sp
         )
+
+        Spacer(modifier = Modifier.height(4.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+          Box(
+            modifier = Modifier
+              .size(6.dp)
+              .background(if (chainStatus.alchemyEthConnected) SignalGreen else Color(0xFFEAB308), CircleShape)
+          )
+          Spacer(modifier = Modifier.width(4.dp))
+          Text(
+            text = "Alchemy ETH #${chainStatus.ethBlockNumber} (${String.format("%.1f", chainStatus.ethGasPriceGwei)} Gwei) • BTC #${chainStatus.btcBlockHeight} • TON #${chainStatus.tonMasterSeqno}",
+            fontSize = 9.sp,
+            color = Color(0xFF94A3B8)
+          )
+        }
 
         Spacer(modifier = Modifier.height(14.dp))
 
@@ -258,7 +283,11 @@ fun WalletScreen(
           }
         }
       )
-      3 -> KeyManagementTabContent(
+      3 -> com.example.ui.components.LaunchpadTabContent()
+      4 -> com.example.ui.components.StakingMiningPoolsTabContent()
+      5 -> com.example.ui.components.NftMarketplaceTabContent()
+      6 -> com.example.ui.components.MultiChainExplorerTabContent()
+      7 -> KeyManagementTabContent(
         seedPhrase = WalletRepository.getSeedPhrase(),
         onCopy = {
           clipboardManager.setText(AnnotatedString(it))
@@ -301,20 +330,11 @@ fun WalletScreen(
     )
   }
 
-  // Swap Dialog
+  // Swap / Trading Dialog (including Genesis Swap)
   if (showSwapDialog) {
-    SwapDialog(
-      assets = assets,
-      onDismiss = { showSwapDialog = false },
-      onSwap = { from, to, amount ->
-        val result = WalletRepository.swap(from, to, amount)
-        showSwapDialog = false
-        if (result != null) {
-          Toast.makeText(context, "Erfolgreich getauscht: $amount ${from.symbol} -> $result ${to.symbol}", Toast.LENGTH_SHORT).show()
-        } else {
-          Toast.makeText(context, "Tausch fehlgeschlagen (Guthaben prüfen)!", Toast.LENGTH_SHORT).show()
-        }
-      }
+    com.example.ui.components.TradingOverlayDialog(
+      initialTab = 0,
+      onDismiss = { showSwapDialog = false }
     )
   }
 }

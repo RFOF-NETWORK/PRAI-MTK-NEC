@@ -13,11 +13,65 @@ enum class CryptoChain(
   BTC("BTC", "Bitcoin Network", false, supportsMining = true, supportsStaking = false, primaryColorHex = 0xFFF7931A),
   ETH("ETH", "Ethereum (EVM / W3C)", false, supportsMining = false, supportsStaking = true, primaryColorHex = 0xFF627EEA),
   TON("TON", "The Open Network", false, supportsMining = false, supportsStaking = true, primaryColorHex = 0xFF0098EA),
-  MTK("MTK", "Montalkanio Sovereign Chain", true, supportsMining = false, supportsStaking = true, primaryColorHex = 0xFFB45309);
+  MTK("MTK", "Montalkanio Sovereign Chain", true, supportsMining = false, supportsStaking = true, primaryColorHex = 0xFFB45309),
+  ZON("ZON", "ZON Universal Currency (ETH/TON Bridged)", true, supportsMining = true, supportsStaking = true, primaryColorHex = 0xFF10B981),
+  CUSTOM("OWN", "Eigene Währung (Custom Token)", false, supportsMining = true, supportsStaking = true, primaryColorHex = 0xFF8B5CF6);
 
   val color: Color
     get() = Color(primaryColorHex)
 }
+
+data class LaunchedToken(
+  val id: String,
+  val name: String,
+  val symbol: String,
+  val creatorAddress: String,
+  val totalSupply: Double,
+  val circulatingSupply: Double,
+  val priceEur: Double,
+  val liquidityEur: Double,
+  val isMiningSupported: Boolean,
+  val isStakingSupported: Boolean,
+  val iconEmoji: String = "⚡",
+  val creationDate: String,
+  val extensionOf: String = "ZON"
+)
+
+data class CommunityStakingPool(
+  val poolId: String,
+  val tokenSymbol: String,
+  val tokenName: String,
+  val totalStaked: Double,
+  val apyPercent: Double,
+  val minStake: Double,
+  val lockPeriodDays: Int,
+  val participantsCount: Int,
+  val liquidityBackedEur: Double
+)
+
+data class CommunityMiningPool(
+  val poolId: String,
+  val tokenSymbol: String,
+  val algorithm: String = "SHA-256 / JK-Automaton",
+  val hashrateGh: Double,
+  val activeMiners: Int,
+  val blockReward: Double,
+  val difficulty: Double,
+  val liquidityBackedEur: Double
+)
+
+data class NftCertificate(
+  val tokenId: String,
+  val title: String,
+  val urkundenNummer: String,
+  val notarialSealDate: String,
+  val ownerAddress: String,
+  val priceZon: Double,
+  val ipfsCid: String,
+  val categoryId: Int,
+  val rechtsform: String,
+  val isVerifiedByNotar: Boolean = true
+)
 
 data class CryptoAsset(
   val chain: CryptoChain,
