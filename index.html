@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PRAI / MTK / NEC</title>
+    <style>
+      :root {
+        --bg: #07111f;
+        --panel: #0e1b2a;
+        --primary: #7dd3fc;
+        --accent: #fbbf24;
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+        --border: rgba(148, 163, 184, 0.2);
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: linear-gradient(180deg, var(--bg), #0b1220 100%);
+        color: var(--text);
+      }
+      .wrap {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 56px 24px 80px;
+      }
+      .card {
+        background: rgba(14, 27, 42, 0.88);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 32px;
+        box-shadow: 0 18px 45px rgba(0,0,0,0.25);
+      }
+      h1 { margin-top: 0; font-size: clamp(2rem, 4vw, 3rem); }
+      p { color: var(--muted); line-height: 1.6; }
+      .meta {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin: 20px 0 28px;
+      }
+      .chip {
+        border: 1px solid var(--border);
+        background: rgba(125, 211, 252, 0.08);
+        color: var(--primary);
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: 0.82rem;
+      }
+      .actions { display: flex; gap: 14px; flex-wrap: wrap; }
+      a.primary, a.secondary {
+        display: inline-block;
+        text-decoration: none;
+        padding: 12px 18px;
+        border-radius: 12px;
+        transition: transform 0.2s ease;
+      }
+      a.primary {
+        background: linear-gradient(135deg, var(--primary), #38bdf8);
+        color: #06131d;
+        font-weight: 700;
+      }
+      a.secondary {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text);
+      }
+      a.primary:hover, a.secondary:hover { transform: translateY(-1px); }
+      code {
+        background: rgba(255,255,255,0.05);
+        padding: 2px 8px;
+        border-radius: 8px;
+        font-family: "SFMono-Regular", Consolas, monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <h1>PRAI / MTK / NEC</h1>
+        <p>
+          Zentrales Systemhandbuch und Schnittstelle für das dezentrale PRAI / MTK / NEC Ökosystem.
+          Die App ist auf sichere Android-Distribution und GitHub Pages-Downloadbereitstellung ausgelegt.
+        </p>
+        <div class="meta">
+          <span class="chip">Android App</span>
+          <span class="chip">GitHub Pages</span>
+          <span class="chip">Gemini / Firebase AI</span>
+          <span class="chip">Signed Release</span>
+        </div>
+        <div class="actions">
+          <a class="primary" href="https://github.com/RFOF-NETWORK/PRAI-MTK-NEC/releases">Releases öffnen</a>
+          <a class="secondary" href="https://github.com/RFOF-NETWORK/PRAI-MTK-NEC">Repository</a>
+        </div>
+        <p>
+          Domain bleibt erhalten: <code>https://rfof-network.github.io/PRAI-MTK-NEC/</code><br />
+          Dies dient als Landing- und Downloadseite, während der Play Store den offiziellen App-Release verwaltet.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
