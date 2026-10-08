@@ -625,7 +625,7 @@
           <span class="badge-dual">DUAL LIVE</span>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
-          <button class="btn btn-primary" onclick="navigateTo('web-portal')">🌐 Web Portal öffnen</button>
+          <button class="btn btn-primary" onclick="navigateTo('rapp-center')">🏬 rApp Center (Web App)</button>
           <button class="btn btn-outline" onclick="copyCliClone()">💻 gh repo clone</button>
         </div>
       </div>
@@ -748,6 +748,14 @@
             <span>💎 TON Sharded Network</span>
             <strong class="mono">3.400 TON</strong>
           </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 6px;">
+            <span>🌉 Sepolia Multi-Chain Relayer (Testnet)</span>
+            <strong class="mono" style="color: #2563EB;">125.000 SEP-MTK · SYNC</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px; background: #FEF9C3; border: 1px solid #FDE047; border-radius: 6px;">
+            <span>🏦 Alchemy Treasury & Escrow Vault (Mainnet)</span>
+            <strong class="mono" style="color: #B45309;">10.000.000 MTK · 100% VAULT</strong>
+          </div>
         </div>
       </div>
 
@@ -832,15 +840,17 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
           <div style="display: flex; align-items: center; gap: 6px;">
             <span style="font-size: 16px;">🔗</span>
-            <strong style="font-size: 12px; color: var(--navy-main);">VERZAHNUNG: 1 PRIMÄR-RAPP & 2 RAPP-EXTENSIONS</strong>
+            <strong style="font-size: 12px; color: var(--navy-main);">VERZAHNUNG: 1 PRIMÄR-RAPP & 4 RAPP-EXTENSIONS</strong>
           </div>
-          <span class="badge-dual">3 APPS SYNCHRON</span>
+          <span class="badge-dual">5 APPS SYNCHRON</span>
         </div>
         <p style="font-size: 11px; color: var(--text-muted); line-height: 1.5;">
-          • <strong>Primär-rApp: PRAI / MTK / NEC</strong> (v8.0) ➔ Klick auf 'rApp Ausführen' leitet direkt in die synchrone Web-Portal Version mit voller Dual-Parität weiter.<br>
+          • <strong>Primär-rApp: PRAI / MTK / NEC</strong> (v8.0) ➔ In der Web App führt der Button direkt zur <strong>APK App</strong> (Singularität).<br>
           • <strong>Extension 1: ZON Universal DEX & Launchpad</strong> ➔ Autonome Bonding-Curve Börse & Token-Erstellung.<br>
           • <strong>Extension 2: XJustiz Notar & Grundbuch Archiv</strong> ➔ Urkundenarchiv & XJustiz-XML Notariat (§ 36 BeurkG / § 415 ZPO).<br>
-          Alle 3 Apps sind modular verzahnt und funktionieren identisch in der Android APK und im Web.
+          • <strong>Extension 3: Sepolia Multi-Chain Relayer</strong> ➔ Bidirektionale Testnet-Brücke (Sovereign Testnet ⮂ Ethereum Sepolia).<br>
+          • <strong>Extension 4: Alchemy Treasury & Escrow Vault</strong> ➔ Produktions-Treuhandtresor auf Ethereum Mainnet (10.000.000 MTK Deckung).<br>
+          Alle 5 rApps sind modular verzahnt und funktionieren identisch in der Android APK und im Web.
         </p>
       </div>
 
@@ -909,6 +919,50 @@
         <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
           <button class="btn btn-primary" style="background: #4F46E5;" onclick="executeRApp('rapp-003')">▶️ rApp Ausführen (Notariats-Archiv)</button>
           <button class="btn btn-outline" onclick="showRAppDetails('rapp-003')">Details</button>
+        </div>
+      </div>
+
+      <!-- APP 4: EXTENSION 3 SEPOLIA MULTI-CHAIN RELAYER -->
+      <div class="card" style="border: 1px solid var(--navy-border);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <div style="width: 44px; height: 44px; background: #EFF6FF; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px;">🌉</div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <h3 style="font-size: 14px; font-weight: 800; color: var(--navy-main);">Sepolia Multi-Chain Relayer</h3>
+                <span style="background: #EFF6FF; color: #2563EB; font-size: 8px; font-weight: 800; padding: 2px 5px; border-radius: 3px;">EXTENSION</span>
+              </div>
+              <p style="font-size: 11px; color: var(--text-muted);">Cross-Chain Bridge • v1.2 • com.rfof.sepolia.bridge</p>
+            </div>
+          </div>
+          <span style="background: #EFF6FF; color: #2563EB; font-size: 9px; font-weight: 800; padding: 3px 6px; border-radius: 4px;">TESTNET</span>
+        </div>
+        <p style="font-size: 12px; color: var(--navy-main); margin: 8px 0;">Bidirektionale Testnet-Brücke zwischen dem autonomen Sovereign Testnet und dem öffentlichen Ethereum Sepolia Testnet.</p>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+          <button class="btn btn-primary" style="background: #2563EB;" onclick="executeRApp('rapp-004')">▶️ rApp Ausführen (Sepolia Relayer)</button>
+          <button class="btn btn-outline" onclick="showRAppDetails('rapp-004')">Details</button>
+        </div>
+      </div>
+
+      <!-- APP 5: EXTENSION 4 ALCHEMY TREASURY & ESCROW VAULT -->
+      <div class="card" style="border: 1px solid var(--navy-border);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <div style="width: 44px; height: 44px; background: #FEF9C3; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px;">💎</div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <h3 style="font-size: 14px; font-weight: 800; color: var(--navy-main);">Alchemy Treasury & Escrow Vault</h3>
+                <span style="background: #FEF9C3; color: #B45309; font-size: 8px; font-weight: 800; padding: 2px 5px; border-radius: 3px;">EXTENSION</span>
+              </div>
+              <p style="font-size: 11px; color: var(--text-muted);">Mainnet Escrow • v3.0 • com.rfof.alchemy.vault</p>
+            </div>
+          </div>
+          <span style="background: var(--gold-bg); color: var(--gold-dark); font-size: 9px; font-weight: 800; padding: 3px 6px; border-radius: 4px;">MAINNET VAULT</span>
+        </div>
+        <p style="font-size: 12px; color: var(--navy-main); margin: 8px 0;">Produktions-Treuhandtresor auf dem realen Ethereum Mainnet mit Alchemy Multi-Chain RPC Schnittstelle (10.000.000 MTK Deckung).</p>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+          <button class="btn btn-gold" onclick="executeRApp('rapp-005')">▶️ rApp Ausführen (Treasury Vault)</button>
+          <button class="btn btn-outline" onclick="showRAppDetails('rapp-005')">Details</button>
         </div>
       </div>
     </section>
@@ -1372,6 +1426,28 @@ PARITÄT:           Android APK v8.0 & Web App 100% SYNCHRON
         desc: 'Vollautomatische Beurkundungsprüfung, XJustiz-XML Export und 100% notarielle Beweissicherung.',
         action: 'explorer',
         msg: 'rApp Extension ausgeführt: XJustiz Notariats- & Urkundenarchiv geöffnet!'
+      },
+      'rapp-004': {
+        name: 'Sepolia Multi-Chain Relayer',
+        category: 'Cross-Chain Bridge',
+        version: '1.2 (Build #12)',
+        channel: 'Ethereum Testnet (Sepolia)',
+        cert: 'URK-NR. 1895/2026 (§ 36 BeurkG)',
+        repo: 'https://github.com/rfof-network/sepolia-relayer',
+        desc: 'Bidirektionale Testnet-Brücke zwischen dem autonomen Sovereign Testnet und dem öffentlichen Ethereum Sepolia Testnet.',
+        action: 'wallet',
+        msg: 'rApp Extension ausgeführt: Sepolia Multi-Chain Relayer aktiv (Testnet Bridge)!'
+      },
+      'rapp-005': {
+        name: 'Alchemy Treasury & Escrow Vault',
+        category: 'Mainnet Escrow',
+        version: '3.0 (Build #30)',
+        channel: 'Ethereum Mainnet (Alchemy)',
+        cert: 'URK-NR. 1896/2026 (§ 36 BeurkG)',
+        repo: 'https://github.com/rfof-network/alchemy-vault',
+        desc: 'Produktions-Treuhandtresor auf dem realen Ethereum Mainnet mit Alchemy Multi-Chain RPC Schnittstelle (10.000.000 MTK Deckung).',
+        action: 'wallet',
+        msg: 'rApp Extension ausgeführt: Alchemy Treasury & Escrow Vault aktiv (100% Notariatsreserve)!'
       }
     };
 
@@ -1400,7 +1476,7 @@ PARITÄT:           Android APK v8.0 & Web App 100% SYNCHRON
       content.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
           <div style="display:flex; align-items:center; gap:12px;">
-            <div style="font-size:28px;">${appId === 'rapp-001' ? '🏛️' : appId === 'rapp-002' ? '⚡' : '📜'}</div>
+            <div style="font-size:28px;">${appId === 'rapp-001' ? '🏛️' : appId === 'rapp-002' ? '⚡' : appId === 'rapp-003' ? '📜' : appId === 'rapp-004' ? '🌉' : '💎'}</div>
             <div>
               <h3 style="font-size:16px; font-weight:800; color:var(--navy-main);">${app.name}</h3>
               <p style="font-size:11px; color:var(--text-muted);">${app.category} • v${app.version}</p>
