@@ -1,5 +1,7 @@
 package com.example.ui.screens
 
+import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -408,38 +410,57 @@ private fun RepositoryCard(
   repo: CodeRepository,
   onCopyPagesUrl: () -> Unit
 ) {
+  val context = LocalContext.current
+  val clipboardManager = LocalClipboardManager.current
+  val isFlagship = repo.name == "PRAI-MTK-NEC"
+
   Card(
-    colors = CardDefaults.cardColors(containerColor = Color.White),
-    border = BorderStroke(1.dp, BlueprintBorder),
-    shape = RoundedCornerShape(8.dp),
+    colors = CardDefaults.cardColors(containerColor = if (isFlagship) BlueprintNavy.copy(alpha = 0.03f) else Color.White),
+    border = BorderStroke(if (isFlagship) 1.5.dp else 1.dp, if (isFlagship) UrkundeGold else BlueprintBorder),
+    shape = RoundedCornerShape(10.dp),
     modifier = Modifier.fillMaxWidth()
   ) {
-    Column(modifier = Modifier.padding(12.dp)) {
+    Column(modifier = Modifier.padding(14.dp)) {
       Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
       ) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-          Icon(Icons.Default.Folder, contentDescription = null, tint = SignalBlue, modifier = Modifier.size(18.dp))
-          Text(
-            text = repo.name,
-            fontWeight = FontWeight.Bold,
-            fontSize = 13.sp,
-            color = BlueprintNavy
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+          Icon(
+            if (isFlagship) Icons.Default.Language else Icons.Default.Folder,
+            contentDescription = null,
+            tint = if (isFlagship) UrkundeGoldDark else SignalBlue,
+            modifier = Modifier.size(20.dp)
           )
+          Column {
+            Text(
+              text = repo.name,
+              fontWeight = FontWeight.Bold,
+              fontSize = 14.sp,
+              color = BlueprintNavy
+            )
+            if (isFlagship) {
+              Text(
+                text = "FLAGGSCHIFF · WEB & ANDROID APP",
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Black,
+                color = UrkundeGoldDark
+              )
+            }
+          }
         }
 
         Surface(
-          color = UrkundeGoldBg,
+          color = if (isFlagship) UrkundeGoldBg else Slate100,
           shape = RoundedCornerShape(4.dp)
         ) {
           Text(
             text = repo.organization.take(18),
-            color = UrkundeGoldDark,
+            color = if (isFlagship) UrkundeGoldDark else TextMuted,
             fontWeight = FontWeight.Bold,
             fontSize = 9.sp,
-            modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
           )
         }
       }
@@ -481,26 +502,67 @@ private fun RepositoryCard(
         }
       }
 
-      Spacer(modifier = Modifier.height(6.dp))
+      Spacer(modifier = Modifier.height(8.dp))
 
+      // Direct Action Buttons: Web App, GitHub, CLI
       Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically
       ) {
-        Text(
-          text = "Lizenz: ${repo.licenseType.take(24)}...",
-          fontSize = 9.sp,
-          color = TextMuted
-        )
-
-        TextButton(
-          onClick = onCopyPagesUrl,
-          contentPadding = PaddingValues(0.dp)
+        // Web App Link Button
+        OutlinedButton(
+          onClick = {
+            try {
+              val intent = Intent(Intent.ACTION_VIEW, Uri.parse(repo.computedPagesUrl))
+              context.startActivity(intent)
+            } catch (_: Exception) {
+              clipboardManager.setText(AnnotatedString(repo.computedPagesUrl))
+              Toast.makeText(context, "URL kopiert: ${repo.computedPagesUrl}", Toast.LENGTH_SHORT).show()
+            }
+          },
+          contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+          shape = RoundedCornerShape(6.dp),
+          modifier = Modifier.weight(1f)
         ) {
-          Icon(Icons.Default.Language, contentDescription = null, modifier = Modifier.size(12.dp), tint = SignalBlue)
-          Spacer(modifier = Modifier.width(3.dp))
-          Text("RFOF Pages Link", fontSize = 10.sp, color = SignalBlue)
+          Icon(Icons.Default.Language, contentDescription = null, modifier = Modifier.size(13.dp), tint = SignalBlue)
+          Spacer(modifier = Modifier.width(4.dp))
+          Text("Web App", fontSize = 10.sp, maxLines = 1, color = SignalBlue)
+        }
+
+        // GitHub Repo Button
+        OutlinedButton(
+          onClick = {
+            try {
+              val intent = Intent(Intent.ACTION_VIEW, Uri.parse(repo.computedRepoUrl))
+              context.startActivity(intent)
+            } catch (_: Exception) {
+              clipboardManager.setText(AnnotatedString(repo.computedRepoUrl))
+              Toast.makeText(context, "Repo kopiert: ${repo.computedRepoUrl}", Toast.LENGTH_SHORT).show()
+            }
+          },
+          contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+          shape = RoundedCornerShape(6.dp),
+          modifier = Modifier.weight(1f)
+        ) {
+          Icon(Icons.Default.Code, contentDescription = null, modifier = Modifier.size(13.dp), tint = BlueprintNavy)
+          Spacer(modifier = Modifier.width(4.dp))
+          Text("GitHub", fontSize = 10.sp, maxLines = 1, color = BlueprintNavy)
+        }
+
+        // CLI Clone Button
+        OutlinedButton(
+          onClick = {
+            clipboardManager.setText(AnnotatedString(repo.computedCloneCommand))
+            Toast.makeText(context, "Kopiert: ${repo.computedCloneCommand}", Toast.LENGTH_SHORT).show()
+          },
+          contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+          shape = RoundedCornerShape(6.dp),
+          modifier = Modifier.weight(1f)
+        ) {
+          Icon(Icons.Default.Terminal, contentDescription = null, modifier = Modifier.size(13.dp), tint = SignalGreen)
+          Spacer(modifier = Modifier.width(4.dp))
+          Text("CLI Clone", fontSize = 10.sp, maxLines = 1, color = SignalGreen)
         }
       }
     }

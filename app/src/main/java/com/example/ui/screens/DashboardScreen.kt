@@ -39,6 +39,8 @@ fun DashboardScreen(
   onNavigateToWallet: () -> Unit = {},
   onNavigateToExplorer: () -> Unit = {},
   onNavigateToProfile: () -> Unit = {},
+  onNavigateToWebPortal: () -> Unit = {},
+  onNavigateToRAppCenter: () -> Unit = {},
   onOpenTrading: () -> Unit = {},
   onOpenAuth: () -> Unit = {},
   modifier: Modifier = Modifier
@@ -98,6 +100,98 @@ fun DashboardScreen(
             color = Color(0xFFE2E8F0),
             fontSize = 13.sp
           )
+        }
+      }
+      Spacer(modifier = Modifier.height(12.dp))
+    }
+
+    // Dual Web & GitHub Ecosystem Banner
+    item {
+      Card(
+        modifier = Modifier
+          .fillMaxWidth()
+          .clickable { onNavigateToRAppCenter() }
+          .testTag("dashboard_dual_portal_banner"),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, UrkundeGold),
+        shape = RoundedCornerShape(12.dp)
+      ) {
+        Column(modifier = Modifier.padding(14.dp)) {
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+              Surface(
+                color = UrkundeGoldBg,
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.size(34.dp)
+              ) {
+                Box(contentAlignment = Alignment.Center) {
+                  Icon(Icons.Default.Language, contentDescription = null, tint = UrkundeGoldDark, modifier = Modifier.size(20.dp))
+                }
+              }
+              Spacer(modifier = Modifier.width(10.dp))
+              Column {
+                Text(
+                  text = "Web App ⮂ Android App ⮂ GitHub",
+                  fontWeight = FontWeight.Black,
+                  fontSize = 13.sp,
+                  color = BlueprintNavy
+                )
+                Text(
+                  text = "Simultan: Browser-Web-App & Native Android-App v8.0",
+                  fontSize = 11.sp,
+                  color = TextSecondary
+                )
+              }
+            }
+
+            Surface(
+              color = SignalGreen.copy(alpha = 0.15f),
+              shape = RoundedCornerShape(12.dp)
+            ) {
+              Text(
+                text = "DUAL LIVE",
+                color = SignalGreen,
+                fontWeight = FontWeight.Bold,
+                fontSize = 10.sp,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+              )
+            }
+          }
+
+          Spacer(modifier = Modifier.height(10.dp))
+
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+          ) {
+            Button(
+              onClick = onNavigateToRAppCenter,
+              colors = ButtonDefaults.buttonColors(containerColor = SignalBlue),
+              shape = RoundedCornerShape(8.dp),
+              contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
+              modifier = Modifier.weight(1f)
+            ) {
+              Icon(Icons.Default.Storefront, contentDescription = null, modifier = Modifier.size(14.dp))
+              Spacer(modifier = Modifier.width(4.dp))
+              Text("rApp Center", fontSize = 11.sp, maxLines = 1)
+            }
+
+            OutlinedButton(
+              onClick = onNavigateToWebPortal,
+              border = BorderStroke(1.dp, BlueprintNavy),
+              shape = RoundedCornerShape(8.dp),
+              contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
+              modifier = Modifier.weight(1f)
+            ) {
+              Icon(Icons.Default.Language, contentDescription = null, tint = BlueprintNavy, modifier = Modifier.size(14.dp))
+              Spacer(modifier = Modifier.width(4.dp))
+              Text("Web App (Live)", color = BlueprintNavy, fontSize = 11.sp, maxLines = 1)
+            }
+          }
         }
       }
       Spacer(modifier = Modifier.height(12.dp))

@@ -24,13 +24,24 @@ data class CodeRepository(
   val isPrivate: Boolean = false,
   val linkedNecCertId: String = "",
   val pagesUrl: String = "",
+  val repositoryUrl: String = "",
+  val cloneCommand: String = "",
   val latestCommitHash: String = "",
   val collaboratorRole: String = "Erfinder",
   val commitsCount: Int = 12,
   val starsCount: Int = 8,
   val forksCount: Int = 3,
   val createdAt: Long = System.currentTimeMillis()
-)
+) {
+  val computedRepoUrl: String
+    get() = if (repositoryUrl.isNotBlank()) repositoryUrl else "https://github.com/$ownerHandle/$name"
+
+  val computedCloneCommand: String
+    get() = if (cloneCommand.isNotBlank()) cloneCommand else "gh repo clone $ownerHandle/$name"
+
+  val computedPagesUrl: String
+    get() = if (pagesUrl.isNotBlank()) pagesUrl else "https://${ownerHandle.lowercase()}.github.io/$name/"
+}
 
 object RepositoryManager {
   val ORGANIZATIONS = listOf(
@@ -72,6 +83,23 @@ object RepositoryManager {
   private fun initDefaultRepositories() {
     _repositories.value = listOf(
       CodeRepository(
+        id = "repo-flagship-001",
+        name = "PRAI-MTK-NEC",
+        ownerHandle = "RFOF-NETWORK",
+        organization = "© (Urheber & Erfinder)",
+        description = "Offizielles Flaggschiff-Repository & Web-App: 4 Layer, 28 Fachkategorien, 8 Sichten, Multi-Chain Wallet & Treuhand-Register (§ 36 BeurkG). Synchron nutzbar als Web App und native Android App.",
+        licenseType = SovereignLicenseData.LICENSE_NAME,
+        linkedNecCertId = "NEC-001",
+        pagesUrl = "https://rfof-network.github.io/PRAI-MTK-NEC/",
+        repositoryUrl = "https://github.com/RFOF-NETWORK/PRAI-MTK-NEC",
+        cloneCommand = "gh repo clone RFOF-NETWORK/PRAI-MTK-NEC",
+        latestCommitHash = AESEncryption.sha256("COMMIT_FLAGSHIP_PRAI_MTK_NEC_V8").take(16),
+        collaboratorRole = "Admin & Urheber",
+        commitsCount = 284,
+        starsCount = 128,
+        forksCount = 42
+      ),
+      CodeRepository(
         id = "repo-001",
         name = "prai-core-engine",
         ownerHandle = "RFOF-NETWORK",
@@ -80,6 +108,8 @@ object RepositoryManager {
         licenseType = SovereignLicenseData.LICENSE_NAME,
         linkedNecCertId = "NEC-001",
         pagesUrl = "https://rfof-network.github.io/prai-core-engine",
+        repositoryUrl = "https://github.com/RFOF-NETWORK/prai-core-engine",
+        cloneCommand = "gh repo clone RFOF-NETWORK/prai-core-engine",
         latestCommitHash = AESEncryption.sha256("COMMIT_001_PRAI_CORE_INIT").take(16),
         collaboratorRole = "Admin",
         commitsCount = 142,

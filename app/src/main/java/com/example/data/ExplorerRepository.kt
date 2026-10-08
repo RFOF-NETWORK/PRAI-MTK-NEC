@@ -18,6 +18,9 @@ object ExplorerRepository {
   private val _transferredCopies = MutableStateFlow<List<CopyTransferRecord>>(emptyList())
   val transferredCopies: StateFlow<List<CopyTransferRecord>> = _transferredCopies.asStateFlow()
 
+  private val _globalTransactions = MutableStateFlow<List<WalletTransaction>>(emptyList())
+  val globalTransactions: StateFlow<List<WalletTransaction>> = _globalTransactions.asStateFlow()
+
   data class CopyTransferRecord(
     val certId: String,
     val recipientEmailOrAddress: String,
@@ -298,9 +301,6 @@ object ExplorerRepository {
   fun recordMinedBlock(block: BlockchainBlock) {
     _recentBlocks.value = (listOf(block) + _recentBlocks.value).take(60)
   }
-
-  private val _globalTransactions = MutableStateFlow<List<WalletTransaction>>(emptyList())
-  val globalTransactions: StateFlow<List<WalletTransaction>> = _globalTransactions.asStateFlow()
 
   fun recordGlobalTransaction(tx: WalletTransaction) {
     _globalTransactions.value = (listOf(tx) + _globalTransactions.value).take(100)

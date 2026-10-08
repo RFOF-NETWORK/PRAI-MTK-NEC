@@ -29,6 +29,7 @@ fun SystemHubScreen(
   onNavigateToWallet: () -> Unit = {},
   onNavigateToExplorer: () -> Unit = {},
   onNavigateToProfile: () -> Unit = {},
+  onNavigateToWebPortal: () -> Unit = {},
   onOpenAuth: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
@@ -51,6 +52,16 @@ fun SystemHubScreen(
         style = MaterialTheme.typography.bodySmall,
         color = TextMuted,
         modifier = Modifier.padding(bottom = 6.dp)
+      )
+    }
+
+    item {
+      HubItemCard(
+        title = "Web App & GitHub Dual-Portal",
+        subtitle = "rfof-network.github.io/PRAI-MTK-NEC, GitHub Repo v8.0 & gh CLI Klonbefehl",
+        icon = Icons.Default.Language,
+        iconTint = UrkundeGoldDark,
+        onClick = onNavigateToWebPortal
       )
     }
 

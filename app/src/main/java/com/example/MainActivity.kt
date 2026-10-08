@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -14,6 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -23,12 +25,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.auth.AuthManager
 import com.example.auth.UserRole
 import com.example.data.RepositoryManager
+import com.example.model.ExecutionMode
 import com.example.ui.components.AuthDialog
 import com.example.ui.components.GlobalSearchDialog
 import com.example.ui.components.TradingOverlayDialog
@@ -67,7 +71,10 @@ enum class Screen {
   WOHNZENTREN,
   GLOSSAR,
   HEALTH,
-  PROFILE
+  PROFILE,
+  WEB_PORTAL,
+  ZON_DEX,
+  XJUSTIZ_NOTAR
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -81,6 +88,8 @@ fun MainAppContent() {
   var showGlobalSearch by remember { mutableStateOf(false) }
   var showAuthDialog by remember { mutableStateOf(false) }
   var showTradingOverlay by remember { mutableStateOf(false) }
+  var rappExecutionMode by remember { mutableStateOf(ExecutionMode.MAIN_REAL) }
+  var isWebAppMode by remember { mutableStateOf(false) }
   val screenStack = remember { mutableStateListOf(Screen.DASHBOARD) }
 
   fun navigateTo(screen: Screen) {
@@ -130,38 +139,123 @@ fun MainAppContent() {
       .fillMaxSize()
       .testTag("main_app_scaffold"),
     topBar = {
-      TopAppBar(
-        title = {
-          Column {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-              Text(
-                text = "PRAI / MTK / NEC",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Black,
-                color = Color.White
-              )
+      Column {
+        if (isWebAppMode) {
+          Surface(
+            color = Color(0xFF0F172A),
+            border = BorderStroke(1.dp, SignalGreen.copy(alpha = 0.5f)),
+            modifier = Modifier
+              .fillMaxWidth()
+              .testTag("web_app_browser_bar")
+          ) {
+            Row(
+              modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 5.dp),
+              horizontalArrangement = Arrangement.SpaceBetween,
+              verticalAlignment = Alignment.CenterVertically
+            ) {
+              Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f, fill = false)
+              ) {
+                Surface(
+                  color = Color.Black.copy(alpha = 0.5f),
+                  shape = RoundedCornerShape(16.dp),
+                  border = BorderStroke(1.dp, SignalGreen.copy(alpha = 0.4f))
+                ) {
+                  Row(
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                  ) {
+                    Icon(
+                      Icons.Default.Lock,
+                      contentDescription = "SSL Gesichert",
+                      tint = SignalGreen,
+                      modifier = Modifier.size(11.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                      text = "https://rfof-network.github.io/PRAI-MTK-NEC/",
+                      fontSize = 10.sp,
+                      fontFamily = FontFamily.Monospace,
+                      color = Color.White,
+                      maxLines = 1
+                    )
+                  }
+                }
+              }
+
               Spacer(modifier = Modifier.width(6.dp))
-              Box(
-                modifier = Modifier
-                  .size(7.dp)
-                  .background(if (isOnline) SignalGreen else Color(0xFFEF4444), CircleShape)
-              )
-              Spacer(modifier = Modifier.width(3.dp))
+
+              Row(verticalAlignment = Alignment.CenterVertically) {
+                Surface(
+                  color = SignalGreen.copy(alpha = 0.2f),
+                  shape = RoundedCornerShape(4.dp),
+                  border = BorderStroke(1.dp, SignalGreen)
+                ) {
+                  Text(
+                    text = "WEB APP PARITÄT",
+                    color = SignalGreen,
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                  )
+                }
+                Spacer(modifier = Modifier.width(4.dp))
+                IconButton(
+                  onClick = {
+                    isWebAppMode = false
+                    Toast.makeText(context, "Zurück zur nativen APK App gewechselt", Toast.LENGTH_SHORT).show()
+                  },
+                  modifier = Modifier
+                    .size(28.dp)
+                    .testTag("exit_web_app_btn")
+                ) {
+                  Icon(
+                    Icons.Default.Android,
+                    contentDescription = "Zurück zur APK App",
+                    tint = SignalGreen,
+                    modifier = Modifier.size(16.dp)
+                  )
+                }
+              }
+            }
+          }
+        }
+
+        TopAppBar(
+          title = {
+            Column {
+              Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                  text = "PRAI / MTK / NEC",
+                  style = MaterialTheme.typography.titleMedium,
+                  fontWeight = FontWeight.Black,
+                  color = Color.White
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Box(
+                  modifier = Modifier
+                    .size(7.dp)
+                    .background(if (isOnline) SignalGreen else Color(0xFFEF4444), CircleShape)
+                )
+                Spacer(modifier = Modifier.width(3.dp))
+                Text(
+                  text = if (isOnline) "LIVE" else "OFFLINE",
+                  fontSize = 8.sp,
+                  fontWeight = FontWeight.Bold,
+                  color = if (isOnline) SignalGreen else Color(0xFFEF4444)
+                )
+              }
               Text(
-                text = if (isOnline) "LIVE" else "OFFLINE",
-                fontSize = 8.sp,
-                fontWeight = FontWeight.Bold,
-                color = if (isOnline) SignalGreen else Color(0xFFEF4444)
+                text = if (isWebAppMode) "Web App Version · 100% Parität" else if (currentUser.role == UserRole.ADMIN) "Admin: RFOF-NETWORK" else "Nutzer: ${currentUser.username}",
+                style = MaterialTheme.typography.labelSmall,
+                color = if (isWebAppMode) SignalGreen else if (currentUser.role == UserRole.ADMIN) UrkundeGold else Color(0xFF94A3B8),
+                maxLines = 1
               )
             }
-            Text(
-              text = if (currentUser.role == UserRole.ADMIN) "Admin: RFOF-NETWORK" else "Nutzer: ${currentUser.username}",
-              style = MaterialTheme.typography.labelSmall,
-              color = if (currentUser.role == UserRole.ADMIN) UrkundeGold else Color(0xFF94A3B8),
-              maxLines = 1
-            )
-          }
-        },
+          },
         colors = TopAppBarDefaults.topAppBarColors(
           containerColor = BlueprintNavy,
           titleContentColor = Color.White,
@@ -204,6 +298,13 @@ fun MainAppContent() {
           }
 
           IconButton(
+            onClick = { navigateTo(Screen.RAPP_CENTER) },
+            modifier = Modifier.testTag("top_rapp_center_button")
+          ) {
+            Icon(Icons.Default.Storefront, contentDescription = "rApp Center & PlayStore", tint = UrkundeGold)
+          }
+
+          IconButton(
             onClick = { navigateTo(Screen.PROFILE) },
             modifier = Modifier.testTag("top_profile_button")
           ) {
@@ -225,8 +326,9 @@ fun MainAppContent() {
           }
         }
       )
-    },
-    bottomBar = {
+    }
+  },
+  bottomBar = {
       val navScrollState = rememberScrollState()
       Surface(
         color = Color.White,
@@ -292,10 +394,10 @@ fun MainAppContent() {
           )
           // 7th Button: rApp Center (PlayStore)
           NavigationBarItem(
-            selected = currentScreen == Screen.RAPP_CENTER,
+            selected = currentScreen in listOf(Screen.RAPP_CENTER, Screen.WEB_PORTAL, Screen.ZON_DEX, Screen.XJUSTIZ_NOTAR),
             onClick = { navigateTo(Screen.RAPP_CENTER) },
             icon = { Icon(Icons.Default.Storefront, contentDescription = "rApp Center") },
-            label = { Text("rApp Center", fontSize = 9.sp, maxLines = 1, softWrap = false, color = if (currentScreen == Screen.RAPP_CENTER) SignalBlue else Color.Unspecified) },
+            label = { Text("rApp Center", fontSize = 9.sp, maxLines = 1, softWrap = false, color = if (currentScreen in listOf(Screen.RAPP_CENTER, Screen.WEB_PORTAL, Screen.ZON_DEX, Screen.XJUSTIZ_NOTAR)) SignalBlue else Color.Unspecified) },
             alwaysShowLabel = true,
             modifier = Modifier.width(76.dp)
           )
@@ -303,7 +405,7 @@ fun MainAppContent() {
           NavigationBarItem(
             selected = currentScreen == Screen.DOCUMENTATION,
             onClick = { navigateTo(Screen.DOCUMENTATION) },
-            icon = { Icon(Icons.Default.MenuBook, contentDescription = "Dokumentation") },
+            icon = { Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = "Dokumentation") },
             label = { Text("Dokumentation", fontSize = 9.sp, maxLines = 1, softWrap = false, color = if (currentScreen == Screen.DOCUMENTATION) Color(0xFFA855F7) else Color.Unspecified) },
             alwaysShowLabel = true,
             modifier = Modifier.width(82.dp)
@@ -334,6 +436,8 @@ fun MainAppContent() {
           onNavigateToWallet = { navigateTo(Screen.WALLET) },
           onNavigateToExplorer = { navigateTo(Screen.EXPLORER) },
           onNavigateToProfile = { navigateTo(Screen.PROFILE) },
+          onNavigateToWebPortal = { navigateTo(Screen.WEB_PORTAL) },
+          onNavigateToRAppCenter = { navigateTo(Screen.RAPP_CENTER) },
           onOpenTrading = { showTradingOverlay = true },
           onOpenAuth = { showAuthDialog = true }
         )
@@ -378,10 +482,38 @@ fun MainAppContent() {
           onNavigateToWallet = { navigateTo(Screen.WALLET) },
           onNavigateToExplorer = { navigateTo(Screen.EXPLORER) },
           onNavigateToProfile = { navigateTo(Screen.PROFILE) },
+          onNavigateToWebPortal = { navigateTo(Screen.WEB_PORTAL) },
           onOpenAuth = { showAuthDialog = true }
         )
 
-        Screen.RAPP_CENTER -> RAppCenterScreen()
+        Screen.RAPP_CENTER -> RAppCenterScreen(
+          isWebAppMode = isWebAppMode,
+          onExecuteApp = { app, mode ->
+            rappExecutionMode = mode
+            val modeLabel = if (mode == ExecutionMode.TEST_DEMO) "Test (Demo)" else "Main (Real)"
+            if (app.id != "rapp-001") {
+              Toast.makeText(context, "Starte ${app.name} im $modeLabel Modus...", Toast.LENGTH_SHORT).show()
+            }
+            when (app.id) {
+              "rapp-001" -> {
+                // Primäre rApp PRAI / MTK / NEC: Öffnet die Web App (Website des Repositories)
+                Toast.makeText(context, "Öffne Web App von PRAI / MTK / NEC...", Toast.LENGTH_SHORT).show()
+                navigateTo(Screen.WEB_PORTAL)
+              }
+              "rapp-002" -> {
+                // Extension 1: ZON Universal DEX & Launchpad
+                navigateTo(Screen.ZON_DEX)
+              }
+              "rapp-003" -> {
+                // Extension 2: XJustiz Notar & Grundbuch Archiv
+                navigateTo(Screen.XJUSTIZ_NOTAR)
+              }
+              else -> {
+                navigateTo(Screen.WEB_PORTAL)
+              }
+            }
+          }
+        )
 
         Screen.DOCUMENTATION -> DocumentationScreen()
 
@@ -399,6 +531,42 @@ fun MainAppContent() {
           onNavigateToExplorer = { navigateTo(Screen.EXPLORER) },
           onNavigateToWallet = { navigateTo(Screen.WALLET) },
           onBack = { navigateBack() }
+        )
+
+        Screen.WEB_PORTAL -> WebPortalScreen(
+          onBack = { navigateTo(Screen.RAPP_CENTER) },
+          onNavigateToDex = { navigateTo(Screen.ZON_DEX) },
+          onNavigateToNotariat = { navigateTo(Screen.XJUSTIZ_NOTAR) },
+          onNavigateToRAppCenter = { navigateTo(Screen.RAPP_CENTER) },
+          onActivateWebAppMode = {
+            isWebAppMode = true
+            Toast.makeText(context, "Web App von PRAI / MTK / NEC betreten (Singularität)", Toast.LENGTH_SHORT).show()
+            navigateTo(Screen.DASHBOARD)
+          }
+        )
+
+        Screen.ZON_DEX -> ZonDexScreen(
+          executionMode = rappExecutionMode,
+          onBack = { navigateTo(Screen.RAPP_CENTER) },
+          onNavigateToWebPortal = {
+            isWebAppMode = true
+            Toast.makeText(context, "Web App von PRAI / MTK / NEC betreten (Singularität)", Toast.LENGTH_SHORT).show()
+            navigateTo(Screen.DASHBOARD)
+          },
+          onNavigateToNotariat = { navigateTo(Screen.XJUSTIZ_NOTAR) },
+          onNavigateToRAppCenter = { navigateTo(Screen.RAPP_CENTER) }
+        )
+
+        Screen.XJUSTIZ_NOTAR -> XJustizArchiveScreen(
+          executionMode = rappExecutionMode,
+          onBack = { navigateTo(Screen.RAPP_CENTER) },
+          onNavigateToWebPortal = {
+            isWebAppMode = true
+            Toast.makeText(context, "Web App von PRAI / MTK / NEC betreten (Singularität)", Toast.LENGTH_SHORT).show()
+            navigateTo(Screen.DASHBOARD)
+          },
+          onNavigateToDex = { navigateTo(Screen.ZON_DEX) },
+          onNavigateToRAppCenter = { navigateTo(Screen.RAPP_CENTER) }
         )
       }
     }

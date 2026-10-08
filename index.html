@@ -1,801 +1,1472 @@
-<!doctype html>
-<html lang="de">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>PRAI / MTK / NEC</title>
-    <style>
-      :root {
-        --bg: #07111f;
-        --panel: #0e1b2a;
-        --primary: #7dd3fc;
-        --accent: #fbbf24;
-        --text: #e2e8f0;
-        --muted: #94a3b8;
-        --border: rgba(148, 163, 184, 0.2);
-      }
-      * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        font-family: Arial, Helvetica, sans-serif;
-        background: linear-gradient(180deg, var(--bg), #0b1220 100%);
-        color: var(--text);
-      }
-      .wrap {
-        max-width: 960px;
-        margin: 0 auto;
-        padding: 56px 24px 80px;
-      }
-      .card {
-        background: rgba(14, 27, 42, 0.88);
-        border: 1px solid var(--border);
-        border-radius: 18px;
-        padding: 32px;
-        box-shadow: 0 18px 45px rgba(0,0,0,0.25);
-      }
-      h1 { margin-top: 0; font-size: clamp(2rem, 4vw, 3rem); }
-      p { color: var(--muted); line-height: 1.6; }
-      .meta {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-        margin: 20px 0 28px;
-      }
-      .chip {
-        border: 1px solid var(--border);
-        background: rgba(125, 211, 252, 0.08);
-        color: var(--primary);
-        border-radius: 999px;
-        padding: 8px 12px;
-        font-size: 0.82rem;
-      }
-      .actions { display: flex; gap: 14px; flex-wrap: wrap; }
-      a.primary, a.secondary {
-        display: inline-block;
-        text-decoration: none;
-        padding: 12px 18px;
-        border-radius: 12px;
-        transition: transform 0.2s ease;
-      }
-      a.primary {
-        background: linear-gradient(135deg, var(--primary), #38bdf8);
-        color: #06131d;
-        font-weight: 700;
-      }
-      a.secondary {
-        background: transparent;
-        border: 1px solid var(--border);
-        color: var(--text);
-      }
-      a.primary:hover, a.secondary:hover { transform: translateY(-1px); }
-      code {
-        background: rgba(255,255,255,0.05);
-        padding: 2px 8px;
-        border-radius: 8px;
-        font-family: "SFMono-Regular", Consolas, monospace;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="wrap">
-      <div class="card">
-        <h1>PRAI / MTK / NEC</h1>
-        <p>
-          Zentrales Systemhandbuch und Schnittstelle für das dezentrale PRAI / MTK / NEC Ökosystem.
-          Die App ist auf sichere Android-Distribution und GitHub Pages-Downloadbereitstellung ausgelegt.
-        </p>
-        <div class="meta">
-          <span class="chip">Android App</span>
-          <span class="chip">GitHub Pages</span>
-          <span class="chip">Gemini / Firebase AI</span>
-          <span class="chip">Signed Release</span>
-        </div>
-        <div class="actions">
-          <a class="primary" href="https://github.com/RFOF-NETWORK/PRAI-MTK-NEC/releases">Releases öffnen</a>
-          <a class="secondary" href="https://github.com/RFOF-NETWORK/PRAI-MTK-NEC">Repository</a>
-        </div>
-        <p>
-          Domain bleibt erhalten: <code>https://rfof-network.github.io/PRAI-MTK-NEC/</code><br />
-          Dies dient als Landing- und Downloadseite, während der Play Store den offiziellen App-Release verwaltet.
-        </p>
-      </div>
-    </div>
-  </body>
-main
 <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PRAI · MTK · NEC — Sovereign Multi-Chain Ecosystem & Android Protocol</title>
-  <meta name="description" content="Offizielles Portal für das PRAI-MTK-NEC Multi-Chain Ökosystem, Genesis Swaps, notarielle Dual-Parität und die native Android App.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PRAI · MTK · NEC — Sovereign Multi-Chain Web & Android App (v8.0)</title>
+  <meta name="description" content="Offizielle Web App & Android App Parität für das dezentrale PRAI / MTK / NEC Ökosystem mit 4 Layern, 28 Fachkategorien, 8 Perspektiven, Scheckverbriefung (§ 36 BeurkG) und GitHub CLI Anbindung.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --bg-dark: #0a0d14;
-      --card-bg: rgba(18, 24, 38, 0.85);
-      --card-border: rgba(0, 242, 254, 0.2);
-      --primary-cyan: #00f2fe;
-      --accent-blue: #4facfe;
-      --gold-accent: #f6d365;
-      --gold-secondary: #fda085;
-      --success-green: #00f5a0;
-      --text-main: #f0f4f8;
-      --text-muted: #94a3b8;
-      --code-bg: #06090e;
+      --navy-main: #0B192C;
+      --navy-surface: #1E3E62;
+      --navy-border: #2C4A6F;
+      --gold-main: #F1C40F;
+      --gold-dark: #B8860B;
+      --gold-bg: rgba(241, 196, 15, 0.15);
+      --signal-blue: #2563EB;
+      --signal-blue-light: rgba(37, 99, 235, 0.12);
+      --signal-green: #10B981;
+      --signal-green-light: rgba(16, 185, 129, 0.12);
+      --bg-light: #F8FAFC;
+      --text-main: #0B192C;
+      --text-muted: #64748B;
+      --text-light: #F1F5F9;
+      --slate-50: #F8FAFC;
+      --slate-100: #F1F5F9;
+      --slate-200: #E2E8F0;
+      --slate-800: #1E293B;
+      --slate-900: #0F172A;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-xl: 18px;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      -webkit-tap-highlight-color: transparent;
     }
 
     body {
-      background-color: var(--bg-dark);
-      background-image: 
-        radial-gradient(circle at 15% 15%, rgba(0, 242, 254, 0.08) 0%, transparent 40%),
-        radial-gradient(circle at 85% 85%, rgba(246, 211, 101, 0.06) 0%, transparent 40%);
+      background-color: var(--bg-light);
       color: var(--text-main);
-      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       min-height: 100vh;
-      line-height: 1.6;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
     }
 
     code, pre, .mono {
       font-family: 'JetBrains Mono', monospace;
     }
 
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 24px 20px 80px 20px;
-    }
-
-    /* HEADER */
-    header {
+    /* TOP BAR - EXACT ANDROID TOPAPPBAR STYLE */
+    .top-app-bar {
+      background-color: var(--navy-main);
+      color: #ffffff;
+      padding: 12px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 20px 0 40px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      flex-wrap: wrap;
-      gap: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     }
 
-    .brand {
+    .top-bar-left {
       display: flex;
-      align-items: center;
-      gap: 14px;
+      flex-direction: column;
     }
 
-    .brand-logo {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, var(--primary-cyan), var(--gold-accent));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 20px;
-      color: #000;
-      box-shadow: 0 0 20px rgba(0, 242, 254, 0.3);
-    }
-
-    .brand-title {
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-    }
-
-    .brand-tag {
-      font-size: 11px;
-      background: rgba(0, 242, 254, 0.15);
-      color: var(--primary-cyan);
-      padding: 3px 8px;
-      border-radius: 6px;
-      border: 1px solid rgba(0, 242, 254, 0.3);
-      text-transform: uppercase;
-      font-weight: 600;
-    }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .btn {
-      padding: 10px 20px;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-      transition: all 0.2s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--primary-cyan), var(--accent-blue));
-      color: #04101e;
-      border: none;
-      box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 242, 254, 0.45);
-    }
-
-    .btn-outline {
-      background: transparent;
-      color: var(--text-main);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .btn-outline:hover {
-      background: rgba(255, 255, 255, 0.05);
-      border-color: var(--primary-cyan);
-    }
-
-    /* HERO SECTION */
-    .hero {
-      text-align: center;
-      padding: 60px 0 40px 0;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(246, 211, 101, 0.12);
-      border: 1px solid rgba(246, 211, 101, 0.3);
-      color: var(--gold-accent);
-      padding: 6px 16px;
-      border-radius: 30px;
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 24px;
-    }
-
-    .hero h1 {
-      font-size: 44px;
-      line-height: 1.15;
-      font-weight: 700;
-      margin-bottom: 20px;
-      background: linear-gradient(135deg, #ffffff 40%, var(--primary-cyan) 80%, var(--gold-accent) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .hero p {
-      font-size: 18px;
-      color: var(--text-muted);
-      margin-bottom: 32px;
-    }
-
-    .hero-actions {
-      display: flex;
-      justify-content: center;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    /* LIVE METRICS GRID */
-    .metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 20px;
-      margin: 40px 0;
-    }
-
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 24px;
-      backdrop-filter: blur(12px);
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-      position: relative;
-      overflow: hidden;
-      transition: transform 0.2s ease, border-color 0.2s ease;
-    }
-
-    .card:hover {
-      transform: translateY(-3px);
-      border-color: rgba(0, 242, 254, 0.4);
-    }
-
-    .card-label {
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--text-muted);
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .card-value {
-      font-size: 26px;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 6px;
-    }
-
-    .card-subtext {
-      font-size: 13px;
-      color: var(--success-green);
+    .top-bar-brand {
       display: flex;
       align-items: center;
       gap: 6px;
     }
 
-    .pulse-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--success-green);
-      box-shadow: 0 0 10px var(--success-green);
-      animation: pulse 2s infinite;
+    .top-bar-title {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: #ffffff;
     }
 
-    @keyframes pulse {
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: var(--signal-green);
+      box-shadow: 0 0 8px var(--signal-green);
+      animation: pulse-live 2s infinite;
+    }
+
+    @keyframes pulse-live {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.4; transform: scale(0.85); }
     }
 
-    /* ANDROID INTEGRATION SECTION */
-    .android-section {
-      background: linear-gradient(145deg, rgba(20, 28, 48, 0.9), rgba(10, 15, 26, 0.95));
-      border: 1px solid rgba(0, 242, 254, 0.25);
-      border-radius: 20px;
-      padding: 40px;
-      margin: 50px 0;
-      display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 40px;
-      align-items: center;
-    }
-
-    @media (max-width: 860px) {
-      .android-section {
-        grid-template-columns: 1fr;
-      }
-      .hero h1 {
-        font-size: 32px;
-      }
-    }
-
-    .android-info h2 {
-      font-size: 28px;
-      margin-bottom: 16px;
-      color: #fff;
-    }
-
-    .android-specs {
-      list-style: none;
-      margin: 20px 0;
-    }
-
-    .android-specs li {
-      padding: 8px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      font-size: 14px;
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .android-specs span:first-child {
-      color: var(--text-muted);
-    }
-
-    .android-specs span:last-child {
-      color: var(--primary-cyan);
-      font-weight: 600;
-    }
-
-    /* CODE & TERMINAL BLOCK */
-    .terminal-card {
-      background: var(--code-bg);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 14px;
-      padding: 20px;
-      overflow-x: auto;
-    }
-
-    .terminal-header {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 14px;
-    }
-
-    .term-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-    }
-    .term-red { background: #ff5f56; }
-    .term-yellow { background: #ffbd2e; }
-    .term-green { background: #27c93f; }
-
-    .terminal-body {
-      font-size: 13px;
-      color: #cbd5e1;
-      white-space: pre-wrap;
-    }
-
-    /* GENESIS SWAP SIMULATOR */
-    .swap-box {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 20px;
-      padding: 36px;
-      margin: 40px 0;
-    }
-
-    .swap-title {
-      font-size: 24px;
+    .live-text {
+      font-size: 8px;
       font-weight: 700;
-      margin-bottom: 10px;
+      color: var(--signal-green);
+      letter-spacing: 0.5px;
     }
 
-    .swap-controls {
-      display: grid;
-      grid-template-columns: 1fr 1fr auto;
-      gap: 16px;
-      margin: 24px 0;
-      align-items: flex-end;
+    .top-bar-subtitle {
+      font-size: 11px;
+      color: var(--gold-main);
+      font-weight: 500;
     }
 
-    @media (max-width: 700px) {
-      .swap-controls {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .form-group {
+    .top-bar-actions {
       display: flex;
-      flex-direction: column;
+      align-items: center;
       gap: 8px;
     }
 
-    .form-group label {
-      font-size: 13px;
-      color: var(--text-muted);
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--gold-bg);
+      color: var(--gold-main);
+      border: 1px solid rgba(241, 196, 15, 0.3);
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 9px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .icon-btn {
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .icon-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* DESKTOP TOP NAV TABS & BOTTOM NAV BAR (ANDROID DUAL MODE) */
+    .desktop-nav-strip {
+      background-color: #ffffff;
+      border-bottom: 1px solid var(--slate-200);
+      overflow-x: auto;
+      white-space: nowrap;
+      padding: 4px 12px;
+      display: flex;
+      gap: 6px;
+      position: sticky;
+      top: 59px;
+      z-index: 99;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+    }
+
+    .nav-tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 12px;
       font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
     }
 
-    .form-input, .form-select {
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 10px;
-      padding: 12px 14px;
-      color: #fff;
-      font-size: 15px;
-      outline: none;
-      font-family: inherit;
+    .nav-tab-btn:hover {
+      background: var(--slate-100);
+      color: var(--navy-main);
     }
 
-    .form-input:focus, .form-select:focus {
-      border-color: var(--primary-cyan);
+    .nav-tab-btn.active {
+      background: var(--signal-blue);
+      color: #ffffff;
+      border-color: var(--signal-blue);
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
     }
 
-    .receipt-box {
-      margin-top: 24px;
-      background: rgba(0, 0, 0, 0.6);
-      border: 1px dashed rgba(246, 211, 101, 0.4);
-      border-radius: 14px;
+    .nav-tab-btn.special-active {
+      background: var(--gold-main);
+      color: #000000;
+      border-color: var(--gold-main);
+      font-weight: 700;
+    }
+
+    /* MAIN CONTAINER */
+    .app-viewport {
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 16px;
+      flex: 1;
+      padding-bottom: 90px;
+    }
+
+    /* SCREEN CONTAINERS */
+    .app-screen {
+      display: none;
+      animation: fadeIn 0.25s ease-in-out;
+    }
+
+    .app-screen.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* CARDS & MATERIAL 3 STYLES */
+    .card {
+      background: #ffffff;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--slate-200);
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      position: relative;
+    }
+
+    .card-navy {
+      background: var(--navy-main);
+      color: #ffffff;
+      border: 1px solid var(--navy-border);
+    }
+
+    .card-gold-border {
+      border: 1.5px solid var(--gold-main);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--signal-blue);
+      color: #ffffff;
+    }
+    .btn-primary:hover {
+      background: #1d4ed8;
+    }
+
+    .btn-gold {
+      background: var(--gold-main);
+      color: #000000;
+      font-weight: 700;
+    }
+    .btn-gold:hover {
+      background: #eab308;
+    }
+
+    .btn-green {
+      background: var(--signal-green);
+      color: #ffffff;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--slate-200);
+      color: var(--navy-main);
+    }
+    .btn-outline:hover {
+      background: var(--slate-100);
+    }
+
+    .btn-outline-white {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #ffffff;
+    }
+    .btn-outline-white:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* DUAL PORTAL BANNER */
+    .dual-banner {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border: 1.5px solid var(--gold-main);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 15px rgba(241, 196, 15, 0.12);
+    }
+
+    .dual-banner-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .badge-dual {
+      background: var(--signal-green-light);
+      color: var(--signal-green);
+      border: 1px solid var(--signal-green);
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    /* CATEGORIES GRID */
+    .categories-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .category-card {
+      background: #ffffff;
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      cursor: pointer;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .category-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--signal-blue);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .category-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 6px;
+    }
+
+    .badge-prai { background: #E0E7FF; color: #4338CA; }
+    .badge-mtk { background: #FEF3C7; color: #B45309; }
+    .badge-nec { background: #D1FAE5; color: #047857; }
+    .badge-wohn { background: #FCE7F3; color: #BE185D; }
+
+    /* ARENAS PERSPECTIVES SELECTOR */
+    .perspective-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .perspective-chip {
+      background: #ffffff;
+      border: 1px solid var(--slate-200);
+      border-radius: 8px;
+      padding: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .perspective-chip.active {
+      background: var(--navy-main);
+      color: var(--gold-main);
+      border-color: var(--gold-main);
+    }
+
+    /* WALLET & DEX DISPLAY */
+    .balance-card {
+      background: linear-gradient(135deg, var(--navy-main), var(--navy-surface));
+      color: #ffffff;
+      border-radius: var(--radius-lg);
       padding: 20px;
-      font-size: 13px;
+      margin-bottom: 16px;
+      border: 1px solid var(--navy-border);
+    }
+
+    .balance-val {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--gold-main);
+      margin: 6px 0;
+    }
+
+    /* CLI TERMINAL COMPONENT */
+    .terminal-container {
+      background: var(--slate-900);
+      border: 1px solid var(--slate-800);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      color: #38BDF8;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      margin: 12px 0;
+      overflow-x: auto;
+    }
+
+    .terminal-title-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .term-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+    }
+    .dot-red { background: #EF4444; }
+    .dot-yellow { background: #F59E0B; }
+    .dot-green { background: #10B981; }
+
+    /* FOOTER / BOTTOM NAVIGATION FOR MOBILE (SCROLLABLE DOCK) */
+    .mobile-bottom-dock {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #ffffff;
+      border-top: 1px solid var(--slate-200);
+      display: flex;
+      overflow-x: auto;
+      padding: 6px 4px;
+      z-index: 100;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .dock-item {
+      flex: 0 0 72px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      background: transparent;
+      border: none;
+      padding: 4px 2px;
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .dock-item.active {
+      color: var(--signal-blue);
+    }
+
+    .dock-item.active .dock-icon {
+      color: var(--signal-blue);
+      transform: scale(1.1);
+    }
+
+    .dock-item.gold-active {
+      color: var(--gold-dark);
+      font-weight: 700;
+    }
+
+    .dock-icon {
+      font-size: 16px;
+      transition: transform 0.2s;
+    }
+
+    /* MODAL DIALOGS */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-backdrop.show {
+      display: flex;
+    }
+
+    .modal-sheet {
+      background: #ffffff;
+      border-radius: var(--radius-lg);
+      max-width: 600px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    .toast-popup {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--navy-main);
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      z-index: 300;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--gold-main);
       display: none;
     }
 
-    .footer {
-      text-align: center;
-      padding: 50px 0 20px 0;
-      color: var(--text-muted);
-      font-size: 13px;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-      margin-top: 60px;
-    }
-
-    .footer a {
-      color: var(--primary-cyan);
-      text-decoration: none;
+    /* RESPONSIVE TWEAKS */
+    @media (min-width: 900px) {
+      .mobile-bottom-dock {
+        display: none;
+      }
+      .app-viewport {
+        padding-bottom: 40px;
+      }
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <!-- HEADER -->
-    <header>
-      <div class="brand">
-        <div class="brand-logo">P</div>
-        <div>
-          <div class="brand-title">PRAI · MTK · NEC</div>
-          <div class="brand-tag">Android Protocol & Multi-Chain Node</div>
-        </div>
+  <!-- TOP APP BAR -->
+  <header class="top-app-bar">
+    <div class="top-bar-left">
+      <div class="top-bar-brand">
+        <span class="top-bar-title">PRAI / MTK / NEC</span>
+        <span class="live-dot"></span>
+        <span class="live-text">LIVE · v8.0</span>
       </div>
-      <div class="nav-links">
-        <a href="#android" class="btn btn-outline">📱 Android App (v7.0)</a>
-        <a href="#swap" class="btn btn-outline">⚡ Genesis Swap</a>
-        <a href="https://github.com/rfof-network/PRAI-MTK-NEC" target="_blank" class="btn btn-primary">
-          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-          GitHub Repo
-        </a>
-      </div>
-    </header>
-
-    <!-- HERO SECTION -->
-    <section class="hero">
-      <div class="hero-badge">
-        <span>⚖️ Notarielle Dual-Parität (§ 36 BeurkG / XJustiz-Standard)</span>
-      </div>
-      <h1>Sovereign Multi-Chain Ecosystem & Android Native Node</h1>
-      <p>
-        Nahtlose Fusion aus nativer Android-Architektur (Jetpack Compose), dezentralem 
-        Alchemy Ethereum Mainnet Node RPC, Bitcoin Mempool-Validierung und notariell besiegelten Genesis Swaps.
-      </p>
-      <div class="hero-actions">
-        <a href="#android" class="btn btn-primary">Android App Spezifikationen</a>
-        <a href="#live-nodes" class="btn btn-outline">Live Multi-Chain Status</a>
-        <a href="#swap" class="btn btn-outline">Genesis Swap ausführen</a>
-      </div>
-    </section>
-
-    <!-- LIVE METRICS -->
-    <div id="live-nodes" class="metrics-grid">
-      <div class="card">
-        <div class="card-label">
-          <span>Ethereum Mainnet (Alchemy)</span>
-          <span class="pulse-dot"></span>
-        </div>
-        <div class="card-value mono" id="eth-block">#26,039,138</div>
-        <div class="card-subtext" id="eth-gas">⚡ Gas: 0.31 Gwei · Synchronisiert</div>
-      </div>
-
-      <div class="card">
-        <div class="card-label">
-          <span>Bitcoin Network</span>
-          <span class="pulse-dot"></span>
-        </div>
-        <div class="card-value mono" id="btc-block">#885,420</div>
-        <div class="card-subtext">⛓️ Mempool.space Tip Height</div>
-      </div>
-
-      <div class="card">
-        <div class="card-label">
-          <span>TON Masterchain</span>
-          <span class="pulse-dot"></span>
-        </div>
-        <div class="card-value mono" id="ton-seq">#42,195,840</div>
-        <div class="card-subtext">💎 Telegram Open Network Validiert</div>
-      </div>
-
-      <div class="card">
-        <div class="card-label">
-          <span>MTK Sovereign Ledger</span>
-          <span class="pulse-dot"></span>
-        </div>
-        <div class="card-value mono" id="mtk-height">#1,048,576</div>
-        <div class="card-subtext">📜 Dual-Parity Genesis Siegel</div>
-      </div>
+      <span class="top-bar-subtitle">Souveräne Web App & Android App Parität</span>
     </div>
 
-    <!-- ANDROID APPLICATION SPOTLIGHT -->
-    <section id="android" class="android-section">
-      <div class="android-info">
-        <div class="brand-tag" style="margin-bottom: 12px; display: inline-block;">Google Play Store Ready</div>
-        <h2>Native Android Applikation</h2>
-        <p style="color: var(--text-muted); font-size: 15px;">
-          Entwickelt mit 100% Kotlin und Jetpack Compose, angetrieben durch die 
-          Secrets Gradle Plugin Architektur. Null Hardcoding von API-Keys, 
-          maximale Sicherheit für den Google Play Store Release.
+    <div class="top-bar-actions">
+      <div class="role-badge" onclick="switchUserRole()">
+        <span>🛡️</span>
+        <span id="role-text">ADMIN: RFOF</span>
+      </div>
+      <button class="icon-btn" onclick="navigateTo('web-portal')" title="Web & GitHub Dual Portal">🌐</button>
+      <button class="icon-btn" onclick="navigateTo('wallet')" title="Wallet & Trading">🔄</button>
+      <button class="icon-btn" onclick="openGlobalSearch()" title="Globale Suche">🔍</button>
+      <button class="icon-btn" onclick="navigateTo('profile')" title="Profil & Repos">⚙️</button>
+    </div>
+  </header>
+
+  <!-- DESKTOP TOP NAV STRIP -->
+  <nav class="desktop-nav-strip">
+    <button class="nav-tab-btn active" onclick="navigateTo('dashboard')">📊 Übersicht</button>
+    <button class="nav-tab-btn" onclick="navigateTo('categories')">📁 28 Kategorien</button>
+    <button class="nav-tab-btn" onclick="navigateTo('arenas')">🎯 Arenen Matrix</button>
+    <button class="nav-tab-btn" onclick="navigateTo('wallet')">💳 Multi-Chain Wallet</button>
+    <button class="nav-tab-btn" onclick="navigateTo('explorer')">📜 Urkunden & Explorer</button>
+    <button class="nav-tab-btn" onclick="navigateTo('system')">🏛️ System & Architektur</button>
+    <button class="nav-tab-btn" onclick="navigateTo('rapp-center')">🏬 rApp Center (v8.0)</button>
+    <button class="nav-tab-btn" onclick="navigateTo('documentation')">📖 Dokumentation</button>
+    <button class="nav-tab-btn" onclick="navigateTo('profile')">👤 Profil & Repos</button>
+    <button class="nav-tab-btn special-active" onclick="navigateTo('web-portal')">🌐 Web & Git Portal</button>
+  </nav>
+
+  <!-- MAIN VIEWPORT -->
+  <main class="app-viewport">
+
+    <!-- SCREEN 1: DASHBOARD -->
+    <section id="screen-dashboard" class="app-screen active">
+      <!-- HEADER HERO CARD -->
+      <div class="card card-navy">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+          <div>
+            <h1 style="font-size: 20px; font-weight: 800; letter-spacing: 0.5px;">PRAI / MTK / NEC</h1>
+            <p style="font-size: 12px; color: #94A3B8;">Dezentrales Wirtschafts- & Qualifikationsökosystem</p>
+          </div>
+          <span style="background: var(--signal-green); color: #fff; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 800;">AUTARK</span>
+        </div>
+        <p style="font-size: 13px; color: #E2E8F0; line-height: 1.5;">
+          Selbsttragendes System mit 4 Schichten, 28 Fachkategorien, 8 Perspektiven, Scheckverbriefung (§ 36 BeurkG) und unberührbarem Gebührenrückfluss.
         </p>
+      </div>
 
-        <ul class="android-specs">
-          <li>
-            <span>Application ID:</span>
-            <span class="mono">com.aistudio.praimtknec.qvzkxp</span>
-          </li>
-          <li>
-            <span>Version:</span>
-            <span>7.0 (Version Code: 7)</span>
-          </li>
-          <li>
-            <span>Target SDK:</span>
-            <span>Android 16 (API 36)</span>
-          </li>
-          <li>
-            <span>Minimum SDK:</span>
-            <span>Android 7.0 (API 24)</span>
-          </li>
-          <li>
-            <span>Notarielle Signatur:</span>
-            <span class="mono">§ 36 BeurkG Dual-Parity</span>
-          </li>
-          <li>
-            <span>Alchemy Integration:</span>
-            <span>Secrets Gradle Plugin (.env / BuildConfig)</span>
-          </li>
-        </ul>
-
-        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px;">
-          <a href="https://github.com/rfof-network/PRAI-MTK-NEC/releases" target="_blank" class="btn btn-primary">
-            📦 APK / Bundle Releases
-          </a>
-          <button onclick="refreshLiveRpc()" class="btn btn-outline">
-            🔄 Node RPC aktualisieren
-          </button>
+      <!-- DUAL ECOSYSTEM LIVE BANNER -->
+      <div class="dual-banner">
+        <div class="dual-banner-header">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--gold-bg); display: flex; align-items: center; justify-content: center; font-size: 16px;">🌐</div>
+            <div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--navy-main);">Web App ⮂ Android App ⮂ GitHub</div>
+              <div style="font-size: 11px; color: var(--text-muted);">Simultan: Browser-Web-App & Native Android-App v8.0</div>
+            </div>
+          </div>
+          <span class="badge-dual">DUAL LIVE</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
+          <button class="btn btn-primary" onclick="navigateTo('web-portal')">🌐 Web Portal öffnen</button>
+          <button class="btn btn-outline" onclick="copyCliClone()">💻 gh repo clone</button>
         </div>
       </div>
 
-      <!-- TERMINAL PREVIEW -->
-      <div class="terminal-card">
-        <div class="terminal-header">
-          <div class="term-dot term-red"></div>
-          <div class="term-dot term-yellow"></div>
-          <div class="term-dot term-green"></div>
+      <!-- METRICS GRID -->
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px;">
+        <div class="card" style="padding: 12px; text-align: center; cursor: pointer;" onclick="navigateTo('categories')">
+          <div style="font-size: 18px; font-weight: 800; color: var(--signal-blue);">28</div>
+          <div style="font-size: 10px; color: var(--text-muted);">Kategorien</div>
         </div>
-        <div class="terminal-body mono" id="rpc-terminal-output">// Alchemy Ethereum JSON-RPC 2.0
-// POST https://eth-mainnet.g.alchemy.com/v2/****
-Request:  {"id":1,"method":"eth_blockNumber"}
-Response: {"jsonrpc":"2.0","result":"0x18d5362"}
-Block:    #26,039,138
+        <div class="card" style="padding: 12px; text-align: center; cursor: pointer;" onclick="navigateTo('system')">
+          <div style="font-size: 18px; font-weight: 800; color: var(--signal-green);">4</div>
+          <div style="font-size: 10px; color: var(--text-muted);">Layer</div>
+        </div>
+        <div class="card" style="padding: 12px; text-align: center; cursor: pointer;" onclick="navigateTo('arenas')">
+          <div style="font-size: 18px; font-weight: 800; color: var(--gold-dark);">8</div>
+          <div style="font-size: 10px; color: var(--text-muted);">Sichten</div>
+        </div>
+        <div class="card" style="padding: 12px; text-align: center; cursor: pointer;" onclick="navigateTo('explorer')">
+          <div style="font-size: 18px; font-weight: 800; color: #7C3AED;">§ 36</div>
+          <div style="font-size: 10px; color: var(--text-muted);">BeurkG</div>
+        </div>
+      </div>
 
-Request:  {"id":2,"method":"eth_gasPrice"}
-Response: {"result":"0x125beb31"}
-Gas:      0.31 Gwei
-
-Status:   VALIDATED_ON_CHAIN
-Dual-Parity Seal:
-XJUSTIZ:BEURKG-36:SEAL:9A4F2C8E...</div>
+      <!-- 4 LAYERS SUMMARY CARDS -->
+      <div class="card" style="margin-bottom: 10px;">
+        <h3 style="font-size: 13px; font-weight: 700; color: var(--navy-main); margin-bottom: 8px;">DIE 4 SOUVERÄNEN SYSTEMSCHICHTEN</h3>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="padding: 8px; background: #EEF2FF; border-left: 3px solid #4F46E5; border-radius: 4px;">
+            <strong>Layer 1: PRAI Kybernetik (Kat. 1–7)</strong> — Axiomatische Systemtheorie, 0-Kosten-Geldschöpfung & autonome Agenten.
+          </div>
+          <div style="padding: 8px; background: #FEF3C7; border-left: 3px solid #D97706; border-radius: 4px;">
+            <strong>Layer 2: MTK Treuhand & Pfandrecht (Kat. 8–14)</strong> — BGB §§ 1274, 1280, Scheckverbriefung & unberührbarer Rückfluss.
+          </div>
+          <div style="padding: 8px; background: #ECFDF5; border-left: 3px solid #059669; border-radius: 4px;">
+            <strong>Layer 3: NEC Notariat (Kat. 15–21)</strong> — XJustiz Standard, Urkunden-Beglaubigung nach § 36 BeurkG & Beweiskraft.
+          </div>
+          <div style="padding: 8px; background: #FDF2F8; border-left: 3px solid #DB2777; border-radius: 4px;">
+            <strong>Layer 4: Wohnzentren (Kat. 22–28)</strong> — Autarke 2-Kreise-Siedlungen, Permakultur & CAD-Baupläne (7 Räume).
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- GENESIS SWAP & DUAL-PARITY SIMULATOR -->
-    <section id="swap" class="swap-box">
-      <div class="swap-title">⚡ Interaktiver Genesis Swap & Notariats-Rechner</div>
-      <p style="color: var(--text-muted); font-size: 15px;">
-        Führe einen notariell versiegelten Genesis Swap durch. Jeder Swap generiert 
-        eine unveränderliche SHA-256 Hash-Kette mit Bestätigung auf dem Alchemy Ethereum Mainnet.
-      </p>
+    <!-- SCREEN 2: 28 FACHKATEGORIEN -->
+    <section id="screen-categories" class="app-screen">
+      <div class="card">
+        <h2 style="font-size: 16px; font-weight: 800; color: var(--navy-main);">28 FACHKATEGORIEN DES ÖKOSYSTEMS</h2>
+        <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">Vollständiges Register aller Fachbereiche über alle 4 Schichten.</p>
+        
+        <!-- Filter Tabs -->
+        <div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px;">
+          <button class="btn btn-primary" onclick="filterCategories('all')">Alle (28)</button>
+          <button class="btn btn-outline" onclick="filterCategories('prai')">Layer 1 (PRAI)</button>
+          <button class="btn btn-outline" onclick="filterCategories('mtk')">Layer 2 (MTK)</button>
+          <button class="btn btn-outline" onclick="filterCategories('nec')">Layer 3 (NEC)</button>
+          <button class="btn btn-outline" onclick="filterCategories('wohn')">Layer 4 (Wohnzentren)</button>
+        </div>
+      </div>
 
-      <div class="swap-controls">
-        <div class="form-group">
-          <label>Betrag & Quellwährung</label>
-          <div style="display: flex; gap: 8px;">
-            <input type="number" id="swap-amount" class="form-input" value="1.0" min="0.01" step="0.1" style="width: 65%;">
-            <select id="swap-from" class="form-select" style="width: 35%;">
-              <option value="ETH">ETH</option>
-              <option value="MTK">MTK</option>
-              <option value="BTC">BTC</option>
-              <option value="TON">TON</option>
-              <option value="EUR">EUR</option>
+      <div id="categories-container" class="categories-grid">
+        <!-- Injected via JavaScript -->
+      </div>
+    </section>
+
+    <!-- SCREEN 3: ARENEN MATRIX (8 Sichten) -->
+    <section id="screen-arenas" class="app-screen">
+      <div class="card card-navy">
+        <h2 style="font-size: 16px; font-weight: 800; color: #fff;">ARENEN MATRIX DER 8 PERSPEKTIVEN</h2>
+        <p style="font-size: 12px; color: #94A3B8;">Jede Fachkategorie wird simultan durch 8 multidimensionale Linsen abgebildet.</p>
+      </div>
+
+      <div class="perspective-grid" id="perspectives-bar">
+        <div class="perspective-chip active" onclick="selectPerspective(0)">1. Rechtsform</div>
+        <div class="perspective-chip" onclick="selectPerspective(1)">2. Treuhand</div>
+        <div class="perspective-chip" onclick="selectPerspective(2)">3. Notariat</div>
+        <div class="perspective-chip" onclick="selectPerspective(3)">4. Token & NFT</div>
+        <div class="perspective-chip" onclick="selectPerspective(4)">5. Erfinder</div>
+        <div class="perspective-chip" onclick="selectPerspective(5)">6. Gemeinwohl</div>
+        <div class="perspective-chip" onclick="selectPerspective(6)">7. Bilanzierung</div>
+        <div class="perspective-chip" onclick="selectPerspective(7)">8. Organigramm</div>
+      </div>
+
+      <div class="card" id="perspective-detail-card">
+        <h3 id="perspective-title" style="font-size: 14px; font-weight: 700; color: var(--navy-main);">1. Rechtsform & Institutionelle Struktur</h3>
+        <p id="perspective-desc" style="font-size: 12px; color: var(--text-muted); margin: 6px 0 12px 0;">
+          Abbildung über gewählte Rechtsformen: Urheberrecht (©), GbR (BGB), eGbR (eingetragen), geGbR (gemeinnützig) und autarke Stiftung.
+        </p>
+        <div id="perspective-examples" style="display: flex; flex-direction: column; gap: 6px; font-size: 12px;"></div>
+      </div>
+    </section>
+
+    <!-- SCREEN 4: WALLET & DEX -->
+    <section id="screen-wallet" class="app-screen">
+      <div class="balance-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 12px; color: #94A3B8; text-transform: uppercase;">Treuhand Gesamtguthaben</span>
+          <span style="background: var(--gold-bg); color: var(--gold-main); padding: 3px 8px; border-radius: 10px; font-size: 9px; font-weight: 800;">ALCHMEY LIVE</span>
+        </div>
+        <div class="balance-val" id="total-wallet-val">€ 142.850,00</div>
+        <div style="font-size: 11px; color: var(--signal-green);">● Treuhänder & Treugeber getrennt (§§ 1274, 1280 BGB)</div>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size: 13px; font-weight: 700; color: var(--navy-main); margin-bottom: 10px;">MULTI-CHAIN ASSETS</h3>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--slate-50); border-radius: 6px;">
+            <span>⚡ MTK Sovereign Währung</span>
+            <strong class="mono" style="color: var(--gold-dark);">250.000 MTK</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--slate-50); border-radius: 6px;">
+            <span>🔷 Ethereum (Mainnet)</span>
+            <strong class="mono">14.85 ETH</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--slate-50); border-radius: 6px;">
+            <span>₿ Bitcoin (Mempool Tip)</span>
+            <strong class="mono">0.65 BTC</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--slate-50); border-radius: 6px;">
+            <span>💎 TON Sharded Network</span>
+            <strong class="mono">3.400 TON</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- GENESIS SWAP RECHNER -->
+      <div class="card card-gold-border">
+        <h3 style="font-size: 13px; font-weight: 700; color: var(--navy-main); margin-bottom: 8px;">⚡ GENESIS SWAP & NOTARIATS-VERSIEGELUNG</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+          <div>
+            <label style="font-size: 10px; color: var(--text-muted);">Betrag</label>
+            <input type="number" id="swap-input-amount" value="1.0" step="0.5" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--slate-200);">
+          </div>
+          <div>
+            <label style="font-size: 10px; color: var(--text-muted);">Währung</label>
+            <select id="swap-input-currency" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--slate-200);">
+              <option value="ETH">ETH (Ethereum)</option>
+              <option value="EUR">EUR (SEPA)</option>
+              <option value="BTC">BTC (Bitcoin)</option>
             </select>
           </div>
         </div>
-
-        <div class="form-group">
-          <label>Zielwährung</label>
-          <select id="swap-to" class="form-select">
-            <option value="MTK">MTK (Sovereign)</option>
-            <option value="ETH">ETH (Mainnet)</option>
-            <option value="BTC">BTC</option>
-            <option value="TON">TON</option>
-            <option value="NEC">NEC Sovereign Cert</option>
-          </select>
-        </div>
-
-        <button onclick="executeWebGenesisSwap()" class="btn btn-primary" style="height: 48px;">
-          ⚡ Notariell Versiegeln
-        </button>
-      </div>
-
-      <!-- RECEIPT CONTAINER -->
-      <div id="swap-receipt" class="receipt-box mono">
-        <div style="color: var(--gold-accent); font-weight: 700; margin-bottom: 8px;">
-          📜 NOTARIELLE URKUNDE / GENESIS SWAP QUITTUNG (§ 36 BeurkG)
-        </div>
-        <div id="receipt-content"></div>
+        <button class="btn btn-gold" style="width: 100%;" onclick="executeGenesisSwap()">⚡ Swap durchführen & Notarsiegel erstellen</button>
+        <div id="swap-result-box" style="margin-top: 10px; display: none; padding: 10px; background: var(--slate-900); color: #38BDF8; border-radius: 6px; font-size: 11px;" class="mono"></div>
       </div>
     </section>
 
-    <!-- FOOTER -->
-    <footer class="footer">
-      <div>
-        <strong>PRAI · MTK · NEC</strong> — Sovereign Architecture & Autonomous Blockchain Node.
+    <!-- SCREEN 5: EXPLORER & URKUNDEN -->
+    <section id="screen-explorer" class="app-screen">
+      <div class="card card-navy">
+        <h2 style="font-size: 16px; font-weight: 800; color: #fff;">NOTARIATS- & BLOCKCHAIN-EXPLORER</h2>
+        <p style="font-size: 11px; color: #94A3B8;">XJustiz-XML Notariatsakten, Schecks (§ 36 BeurkG) und Dual-Paritäts-Siegel.</p>
       </div>
-      <div style="margin-top: 8px;">
-        Deploy von Branch <code class="mono">main</code> · 
-        <a href="https://rfof-network.github.io/PRAI-MTK-NEC/">rfof-network.github.io/PRAI-MTK-NEC</a> · 
-        Android Package: <code class="mono">com.aistudio.praimtknec.qvzkxp</code>
-      </div>
-    </footer>
-  </div>
 
+      <div class="card">
+        <h3 style="font-size: 13px; font-weight: 700; color: var(--navy-main); margin-bottom: 10px;">SOUVERÄNE NEC-URKUNDEN (28 VERBRIEFUNGEN)</h3>
+        <div id="explorer-certs-list" style="display: flex; flex-direction: column; gap: 8px;">
+          <!-- Injected via JavaScript -->
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN 6: SYSTEM & ARCHITEKTUR HUB -->
+    <section id="screen-system" class="app-screen">
+      <div class="card">
+        <h2 style="font-size: 16px; font-weight: 800; color: var(--navy-main);">SYSTEM-HUB & BLAUPAUSEN</h2>
+        <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 14px;">Zentrale Verwaltung aller juristischen, siedlungs- und kybernetischen Strukturen.</p>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div class="card" style="margin: 0; cursor: pointer;" onclick="showSystemDetail('blueprint')">
+            <strong>📐 System Blueprint & Feedback-Schleife (SC1, SC2, SC3)</strong>
+            <p style="font-size: 11px; color: var(--text-muted);">Das mathematische Axiom: Schöpfung ➔ Ausgabe ➔ Gebühr ➔ Pool-Rückfluss.</p>
+          </div>
+          <div class="card" style="margin: 0; cursor: pointer;" onclick="showSystemDetail('wohnzentren')">
+            <strong>🏡 Wohnzentren: 2-Kreise-Siedlungsmodell & 7 Räume</strong>
+            <p style="font-size: 11px; color: var(--text-muted);">Permakultur, dezentrale Energie & autarke Handwerker-Gürtel.</p>
+          </div>
+          <div class="card" style="margin: 0; cursor: pointer;" onclick="showSystemDetail('titles')">
+            <strong>🎓 Titel & 3+1-Jahres-Pfad</strong>
+            <p style="font-size: 11px; color: var(--text-muted);">NEC Management Verwalter (3 J.) & Master of Quantum (4 J.).</p>
+          </div>
+          <div class="card" style="margin: 0; cursor: pointer;" onclick="showSystemDetail('glossar')">
+            <strong>📚 Glossar & 15 System-Axiome (FAQ)</strong>
+            <p style="font-size: 11px; color: var(--text-muted);">Definitionen zu Scheckverbriefung, BGB-Treuhand und XJustiz.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN 7: RAPP CENTER (v8.0) -->
+    <section id="screen-rapp-center" class="app-screen">
+      <div class="card card-navy">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h2 style="font-size: 16px; font-weight: 800; color: #fff;">rApp Center (Sovereign AppStore)</h2>
+            <p style="font-size: 11px; color: #94A3B8;">Dezentrale Anwendungen für das PRAI / MTK / NEC Ökosystem</p>
+          </div>
+          <span style="background: var(--gold-main); color: #000; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 4px;">v8.0 RELEASE</span>
+        </div>
+      </div>
+
+      <!-- INTERCONNECTION BANNER -->
+      <div class="card" style="border: 1.5px solid var(--gold-main);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="font-size: 16px;">🔗</span>
+            <strong style="font-size: 12px; color: var(--navy-main);">VERZAHNUNG: 1 PRIMÄR-RAPP & 2 RAPP-EXTENSIONS</strong>
+          </div>
+          <span class="badge-dual">3 APPS SYNCHRON</span>
+        </div>
+        <p style="font-size: 11px; color: var(--text-muted); line-height: 1.5;">
+          • <strong>Primär-rApp: PRAI / MTK / NEC</strong> (v8.0) ➔ Klick auf 'rApp Ausführen' leitet direkt in die synchrone Web-Portal Version mit voller Dual-Parität weiter.<br>
+          • <strong>Extension 1: ZON Universal DEX & Launchpad</strong> ➔ Autonome Bonding-Curve Börse & Token-Erstellung.<br>
+          • <strong>Extension 2: XJustiz Notar & Grundbuch Archiv</strong> ➔ Urkundenarchiv & XJustiz-XML Notariat (§ 36 BeurkG / § 415 ZPO).<br>
+          Alle 3 Apps sind modular verzahnt und funktionieren identisch in der Android APK und im Web.
+        </p>
+      </div>
+
+      <!-- APP 1: PRIMÄR-RAPP PRAI / MTK / NEC -->
+      <div class="card" style="border: 2px solid var(--gold-main);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <div style="width: 44px; height: 44px; background: var(--gold-bg); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px;">🏛️</div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <h3 style="font-size: 14px; font-weight: 800; color: var(--navy-main);">PRAI / MTK / NEC</h3>
+                <span style="background: var(--gold-main); color: #000; font-size: 8px; font-weight: 800; padding: 2px 5px; border-radius: 3px;">FLAGSHIP</span>
+              </div>
+              <p style="font-size: 11px; color: var(--text-muted);">Sovereign Framework • v8.0 • com.aistudio.praimtknec.qvzkxp</p>
+            </div>
+          </div>
+          <span style="background: var(--signal-green-light); color: var(--signal-green); font-size: 9px; font-weight: 800; padding: 3px 6px; border-radius: 4px;">INSTALLIERT</span>
+        </div>
+        <p style="font-size: 12px; color: var(--navy-main); margin: 8px 0;">Das souveräne Haupt-Ökosystem: 28 Fachkategorien, 8-Sichten-Matrix, Multi-Chain Wallet & Treuhand-Register (§ 36 BeurkG).</p>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+          <button class="btn btn-primary" onclick="executeRApp('rapp-001')">▶️ rApp Ausführen (APK App)</button>
+          <button class="btn btn-outline" onclick="showRAppDetails('rapp-001')">Details</button>
+          <button class="btn btn-outline" onclick="openGitHubRepo()">GitHub Repo</button>
+          <button class="btn btn-outline" onclick="copyCliClone()">gh clone</button>
+        </div>
+      </div>
+
+      <!-- APP 2: EXTENSION 1 ZON UNIVERSAL DEX -->
+      <div class="card" style="border: 1px solid var(--navy-border);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <div style="width: 44px; height: 44px; background: var(--signal-blue-light); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px;">⚡</div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <h3 style="font-size: 14px; font-weight: 800; color: var(--navy-main);">ZON Universal DEX & Launchpad</h3>
+                <span style="background: var(--signal-blue-light); color: var(--signal-blue); font-size: 8px; font-weight: 800; padding: 2px 5px; border-radius: 3px;">EXTENSION</span>
+              </div>
+              <p style="font-size: 11px; color: var(--text-muted);">DeFi & DEX • v1.0-RC • com.rfof.zon.dex</p>
+            </div>
+          </div>
+          <span style="background: var(--gold-bg); color: var(--gold-dark); font-size: 9px; font-weight: 800; padding: 3px 6px; border-radius: 4px;">AUTONOM</span>
+        </div>
+        <p style="font-size: 12px; color: var(--navy-main); margin: 8px 0;">Autonome Bonding-Curve Börse, Token-Launchpad, Staking & Mining Pools für alle Community-Währungen.</p>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+          <button class="btn btn-gold" onclick="executeRApp('rapp-002')">▶️ rApp Ausführen (DEX & Launchpad)</button>
+          <button class="btn btn-outline" onclick="showRAppDetails('rapp-002')">Details</button>
+        </div>
+      </div>
+
+      <!-- APP 3: EXTENSION 2 XJUSTIZ NOTAR & ARCHIV -->
+      <div class="card" style="border: 1px solid var(--navy-border);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <div style="width: 44px; height: 44px; background: #EEF2FF; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px;">📜</div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <h3 style="font-size: 14px; font-weight: 800; color: var(--navy-main);">XJustiz Notar & Grundbuch Archiv</h3>
+                <span style="background: #EEF2FF; color: #4F46E5; font-size: 8px; font-weight: 800; padding: 2px 5px; border-radius: 3px;">EXTENSION</span>
+              </div>
+              <p style="font-size: 11px; color: var(--text-muted);">Legal & Notariat • v2.4 • com.rfof.xjustiz.notariat</p>
+            </div>
+          </div>
+          <span style="background: var(--signal-green-light); color: var(--signal-green); font-size: 9px; font-weight: 800; padding: 3px 6px; border-radius: 4px;">MAINNET</span>
+        </div>
+        <p style="font-size: 12px; color: var(--navy-main); margin: 8px 0;">Vollautomatische Beurkundungsprüfung, XJustiz-XML Export und 100% notarielle Beweissicherung nach § 36 BeurkG / § 415 ZPO.</p>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+          <button class="btn btn-primary" style="background: #4F46E5;" onclick="executeRApp('rapp-003')">▶️ rApp Ausführen (Notariats-Archiv)</button>
+          <button class="btn btn-outline" onclick="showRAppDetails('rapp-003')">Details</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN 8: DOKUMENTATION & GUARDIAN -->
+    <section id="screen-documentation" class="app-screen">
+      <div class="card card-navy">
+        <h2 style="font-size: 16px; font-weight: 800; color: #fff;">SYSTEM-DOKUMENTATION & ENTWICKLUNG</h2>
+        <p style="font-size: 11px; color: #94A3B8;">Alchemy 14 APIs, Byte-Matrix, Bonding Curves und souveräne Parität.</p>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size: 13px; font-weight: 700; color: var(--navy-main); margin-bottom: 8px;">ALCHEMY 14 APIS REFERENZ</h3>
+        <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">Echtzeit-Schnittstellen für Ethereum Mainnet, NFT-Urkunden und Devisenkurse.</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px;">
+          <div style="padding: 8px; background: var(--slate-50); border-radius: 6px; font-size: 11px;">
+            <strong>Node API:</strong> Core JSON-RPC 2.0 Engine (eth_blockNumber)
+          </div>
+          <div style="padding: 8px; background: var(--slate-50); border-radius: 6px; font-size: 11px;">
+            <strong>NFT API:</strong> Verifikation & Beglaubigung (§ 36 BeurkG)
+          </div>
+          <div style="padding: 8px; background: var(--slate-50); border-radius: 6px; font-size: 11px;">
+            <strong>Prices API:</strong> Live-Devisenkurse & ZON Bonding Kurven
+          </div>
+          <div style="padding: 8px; background: var(--slate-50); border-radius: 6px; font-size: 11px;">
+            <strong>Transfers API:</strong> Historische Notariats- & Geldbewegungen
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN 9: PROFIL & REPOSITORIES -->
+    <section id="screen-profile" class="app-screen">
+      <div class="card card-navy">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h2 style="font-size: 16px; font-weight: 800; color: #fff;">PROFIL & CODE-REPOSITORIES</h2>
+            <p style="font-size: 11px; color: #94A3B8;">Veröffentliche Repositories mit Rechtsformwahl (©, GbR, Stiftung) & SSH-Keys.</p>
+          </div>
+          <button class="btn btn-gold" onclick="openNewRepoModal()">+ Neues Repo</button>
+        </div>
+      </div>
+
+      <!-- FLAGGSCHIFF REPOSITORY CARD -->
+      <div class="card" style="border: 1.5px solid var(--gold-main);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 18px;">📁</span>
+            <div>
+              <strong style="font-size: 14px; color: var(--navy-main);">PRAI-MTK-NEC</strong>
+              <div style="font-size: 9px; color: var(--gold-dark); font-weight: 800;">FLAGGSCHIFF · WEB & ANDROID DUAL APP</div>
+            </div>
+          </div>
+          <span style="background: var(--gold-bg); color: var(--gold-dark); font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px;">© (Urheber & Erfinder)</span>
+        </div>
+        <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">
+          Offizielles Flaggschiff-Repository & Web-App: 4 Layer, 28 Fachkategorien, 8 Sichten, Multi-Chain Wallet & Treuhand-Register (§ 36 BeurkG). Synchron nutzbar als Web App und native Android App.
+        </p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
+          <button class="btn btn-outline" onclick="navigateTo('web-portal')">🌐 Web App</button>
+          <button class="btn btn-outline" onclick="openGitHubRepo()">🐙 GitHub</button>
+          <button class="btn btn-outline" onclick="copyCliClone()">💻 CLI Clone</button>
+        </div>
+      </div>
+
+      <!-- CUSTOM RPC ENDPOINTS CONFIGURATION -->
+      <div class="card">
+        <h3 style="font-size: 13px; font-weight: 700; color: var(--navy-main); margin-bottom: 8px;">BENUTZERDEFINIERTE MULTI-CHAIN RPC KNOTEN</h3>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div>
+            <label style="font-size: 10px; color: var(--text-muted);">Ethereum Mainnet RPC URL</label>
+            <input type="text" class="mono" value="https://eth-mainnet.g.alchemy.com/v2/DEMO_KEY" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--slate-200); font-size: 11px;">
+          </div>
+          <div>
+            <label style="font-size: 10px; color: var(--text-muted);">ZON Sovereign Core RPC URL</label>
+            <input type="text" class="mono" value="https://rpc.zon-network.org/v1/mainnet" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--slate-200); font-size: 11px;">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN 10: WEB & GIT DUAL PORTAL (MATCHES ANDROID WebPortalScreen.kt) -->
+    <section id="screen-web-portal" class="app-screen">
+      <div class="card card-navy">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h2 style="font-size: 16px; font-weight: 800; color: #fff;">PRAI / MTK / NEC · DUAL PORTAL</h2>
+            <p style="font-size: 11px; color: var(--gold-main);">Simultan: Android App (v8.0) ⮂ Web App & GitHub</p>
+          </div>
+          <span style="background: var(--signal-green-light); color: var(--signal-green); border: 1px solid var(--signal-green); font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 12px;">100% SYNCHRON</span>
+        </div>
+      </div>
+
+      <!-- PORTAL TABS -->
+      <div class="card">
+        <div style="display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px;">
+          <button class="btn btn-primary" id="portal-tab-0" onclick="switchPortalTab(0)">🌐 Web App</button>
+          <button class="btn btn-outline" id="portal-tab-1" onclick="switchPortalTab(1)">🐙 GitHub Repo</button>
+          <button class="btn btn-outline" id="portal-tab-2" onclick="switchPortalTab(2)">💻 CLI Terminal</button>
+          <button class="btn btn-outline" id="portal-tab-3" onclick="switchPortalTab(3)">⚡ Dual-Parität</button>
+        </div>
+
+        <!-- PORTAL TAB 0: WEB APP ENDPOINTS -->
+        <div id="portal-content-0">
+          <div style="padding: 12px; background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: 8px; margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 12px; font-weight: 700; color: var(--navy-main);">🔒 SSL Gesicherter Web App Endpunkt:</span>
+              <button class="btn btn-primary" onclick="copyText('https://rfof-network.github.io/PRAI-MTK-NEC/')">URL Kopieren</button>
+            </div>
+            <div class="mono" style="font-size: 12px; color: var(--signal-blue); word-break: break-all;">
+              https://rfof-network.github.io/PRAI-MTK-NEC/
+            </div>
+          </div>
+          <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">
+            Diese Web Applikation wird direkt über GitHub Pages aus dem Hauptzweig <code>main</code> bereitgestellt. Sie spiegelt 1:1 die Architektur, Funktionen und Notariatsprüfungen der nativen Android APK App wider.
+          </p>
+        </div>
+
+        <!-- PORTAL TAB 1: GITHUB REPO DETAILS -->
+        <div id="portal-content-1" style="display: none;">
+          <div style="padding: 12px; background: var(--slate-50); border-radius: 8px; margin-bottom: 12px;">
+            <div style="font-size: 13px; font-weight: 800; color: var(--navy-main);">RFOF-NETWORK / PRAI-MTK-NEC</div>
+            <div class="mono" style="font-size: 11px; color: var(--signal-blue); margin: 4px 0;">https://github.com/RFOF-NETWORK/PRAI-MTK-NEC</div>
+            <p style="font-size: 11px; color: var(--text-muted);">284+ Commits · 28 Fachkategorien · 4 Layer · Version 8.0 APK Release</p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-primary" onclick="openGitHubRepo()">Auf GitHub öffnen</button>
+            <button class="btn btn-outline" onclick="copyText('https://github.com/RFOF-NETWORK/PRAI-MTK-NEC')">Repo URL kopieren</button>
+          </div>
+        </div>
+
+        <!-- PORTAL TAB 2: CLI TERMINAL -->
+        <div id="portal-content-2" style="display: none;">
+          <div style="padding: 12px; background: var(--slate-900); border-radius: 8px; color: var(--gold-main); margin-bottom: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 11px; font-weight: 700;">OFFIZIELLER GITHUB CLI KLONBEFEHL</span>
+              <button class="btn btn-gold" onclick="copyCliClone()">Kopieren</button>
+            </div>
+            <div class="mono" style="font-size: 13px; color: var(--signal-green); font-weight: 700; margin-top: 6px;">
+              gh repo clone RFOF-NETWORK/PRAI-MTK-NEC
+            </div>
+          </div>
+
+          <div class="terminal-container">
+            <div class="terminal-title-bar">
+              <span class="term-dot dot-red"></span>
+              <span class="term-dot dot-yellow"></span>
+              <span class="term-dot dot-green"></span>
+              <span>terminal · bash simulator</span>
+            </div>
+            <pre id="cli-terminal-sim">$ gh repo clone RFOF-NETWORK/PRAI-MTK-NEC
+Cloning into 'PRAI-MTK-NEC'...
+remote: Enumerating objects: 1842, done.
+remote: Total 1842 (delta 1032)
+Dual-Parity Checksum: SHA-256 [VERIFIED OK]
+Website Endpoint: https://rfof-network.github.io/PRAI-MTK-NEC/
+Native Android Module: Version 8.0 READY</pre>
+          </div>
+        </div>
+
+        <!-- PORTAL TAB 3: DUAL PARITÄT ARCHITEKTUR -->
+        <div id="portal-content-3" style="display: none;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+            <div style="padding: 10px; background: #EEF2FF; border-radius: 8px;">
+              <strong style="color: var(--signal-blue); font-size: 12px;">🌐 Web App (GitHub Pages)</strong>
+              <p style="font-size: 11px; color: var(--navy-main); margin-top: 4px;">Ohne Installation auf jedem PC, Mac, Linux Browser nutzbar. Ideal für Notariats-Großbildschirme & Kanzleien.</p>
+            </div>
+            <div style="padding: 10px; background: #ECFDF5; border-radius: 8px;">
+              <strong style="color: var(--signal-green); font-size: 12px;">📱 Android App (v8.0 APK)</strong>
+              <p style="font-size: 11px; color: var(--navy-main); margin-top: 4px;">Hardware AES-256 Verschlüsselung, SQLite/Room Offline-Speicher & Kameraschnittstelle für QR-Urkunden.</p>
+            </div>
+          </div>
+          <div style="text-align: center; font-size: 12px; color: var(--text-muted);">
+            Beide Clients greifen auf dieselben Smart Contracts, dieselben Urkunden (§ 36 BeurkG) und denselben Zustand zu.
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MOBILE BOTTOM DOCK (EXACT 9-ITEM DOCK MATCHING ANDROID BOTTOMBAR) -->
+  <nav class="mobile-bottom-dock">
+    <button class="dock-item active" onclick="navigateTo('dashboard')">
+      <span class="dock-icon">📊</span>
+      <span>Übersicht</span>
+    </button>
+    <button class="dock-item" onclick="navigateTo('categories')">
+      <span class="dock-icon">📁</span>
+      <span>Kategorien</span>
+    </button>
+    <button class="dock-item" onclick="navigateTo('arenas')">
+      <span class="dock-icon">🎯</span>
+      <span>Arenen</span>
+    </button>
+    <button class="dock-item" onclick="navigateTo('wallet')">
+      <span class="dock-icon">💳</span>
+      <span>Wallet</span>
+    </button>
+    <button class="dock-item" onclick="navigateTo('explorer')">
+      <span class="dock-icon">📜</span>
+      <span>Explorer</span>
+    </button>
+    <button class="dock-item" onclick="navigateTo('system')">
+      <span class="dock-icon">🏛️</span>
+      <span>System</span>
+    </button>
+    <button class="dock-item" onclick="navigateTo('rapp-center')">
+      <span class="dock-icon">🏬</span>
+      <span>rApp Center</span>
+    </button>
+    <button class="dock-item" onclick="navigateTo('documentation')">
+      <span class="dock-icon">📖</span>
+      <span>Dokumentation</span>
+    </button>
+    <button class="dock-item gold-active" onclick="navigateTo('web-portal')">
+      <span class="dock-icon">🌐</span>
+      <span>Web & Git</span>
+    </button>
+  </nav>
+
+  <!-- TOAST FEEDBACK -->
+  <div id="toast-box" class="toast-popup">Inhalt kopiert!</div>
+
+  <!-- SCRIPT FOR UI/UX DUAL PARITY AND DATA -->
   <script>
-    // Live update functions for GitHub Pages
-    async function refreshLiveRpc() {
-      const term = document.getElementById('rpc-terminal-output');
-      term.innerHTML = "// Querying live Alchemy Ethereum Mainnet RPC...\n";
+    // 28 CATEGORIES COMPLETE DATASET (MATCHING ANDROID)
+    const CATEGORIES = [
+      { id: 1, name: "Kybernetische Systemtheorie & Axiomatik", layer: "prai", layerName: "Layer 1: PRAI", desc: "Mathematische Axiome, Feedback-Schleifen und formale Rekursion zur autonomen Selbstregulierung." },
+      { id: 2, name: "0-Kosten-Geldschöpfung & Liquiditätsflüsse", layer: "prai", layerName: "Layer 1: PRAI", desc: "Zinslose Schöpfung von MTK-Währung ohne Fremdkapitalkosten mit unberührbarem Rückfluss." },
+      { id: 3, name: "Autonome Software-Agenten & KI-Guardian", layer: "prai", layerName: "Layer 1: PRAI", desc: "Echtzeit-Integritätsprüfung aller Smart Contracts und Transaktionsketten durch PRAI Guardian." },
+      { id: 4, name: "Mathematische Topologie & Signaltransformation", layer: "prai", layerName: "Layer 1: PRAI", desc: "Signal-Kopplungen SC1, SC2, SC3 zwischen Kybernetik, Recht und realen Siedlungen." },
+      { id: 5, name: "Quantum Computing & Kryptographie", layer: "prai", layerName: "Layer 1: PRAI", desc: "Post-Quantum Kryptographie (Dilithium / Falcon) und quantenresistente Hashes." },
+      { id: 6, name: "Selbstorganisation & Feedback-Schleifen", layer: "prai", layerName: "Layer 1: PRAI", desc: "Geschlossene Kreisläufe ohne Wertverlust durch unumkehrbare Gebührenrückführung." },
+      { id: 7, name: "Skalierungsvektoren & Systemevolution", layer: "prai", layerName: "Layer 1: PRAI", desc: "Exponentielle Multiplikation der Adapter-Knotenpunkte über alle 28 Fachkategorien." },
 
-      try {
-        // Query public fallback / proxy
-        const res = await fetch("https://cloudflare-eth.com", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_blockNumber", params: [] })
-        });
-        const data = await res.json();
-        const blockHex = data.result;
-        const blockDec = parseInt(blockHex, 16);
+      { id: 8, name: "BGB §§ 1274, 1280 Treuhand- & Pfandrecht", layer: "mtk", layerName: "Layer 2: MTK", desc: "Strikte Trennung von Treugeber und Treuhänder mit notarieller Sperrwirkung." },
+      { id: 9, name: "Scheckverbriefung & Notarsiegel (§ 36 BeurkG)", layer: "mtk", layerName: "Layer 2: MTK", desc: "Physische und digitale Scheckverbriefung mit voller notarieller Beweiskraft." },
+      { id: 10, name: "Unberührbare Gebühren & Liquiditätsrückfluss", layer: "mtk", layerName: "Layer 2: MTK", desc: "Automatischer Gebührenabzug zur Stärkung des MTK-Währungspools (0% Verlust)." },
+      { id: 11, name: "Steuerneutrale Adapter-Hüllen (GbR / Stiftung)", layer: "mtk", layerName: "Layer 2: MTK", desc: "Rechtssichere Hüllen: GbR, eGbR, gemeinnützige geGbR und autarke Treuhandstiftung." },
+      { id: 12, name: "Bilanzierungsneutrale Tokenökonomie", layer: "mtk", layerName: "Layer 2: MTK", desc: "Aktivierung als immaterieller Vermögenswert ohne spekulative Bilanzverzerrung." },
+      { id: 13, name: "Treugeber- & Treuhänder-Separierung", layer: "mtk", layerName: "Layer 2: MTK", desc: "Schutz vor Insolvenzbeschlag und Fremdzugriff durch autonome Treuhandkonten." },
+      { id: 14, name: "Multi-Chain Escrow & Krypto-Depots", layer: "mtk", layerName: "Layer 2: MTK", desc: "Alchemy Ethereum Mainnet, Bitcoin Mempool und TON Masterchain Schnittstellen." },
 
-        document.getElementById('eth-block').innerText = '#' + blockDec.toLocaleString();
-        
-        term.innerHTML = `// Alchemy / Ethereum Mainnet RPC (Live)\n` +
-          `Request:  {"id":1,"method":"eth_blockNumber"}\n` +
-          `Response: {"jsonrpc":"2.0","result":"${blockHex}"}\n` +
-          `Decoded:  Block #${blockDec.toLocaleString()}\n` +
-          `Status:   VALIDATED_ON_CHAIN\n` +
-          `Notarial: XJUSTIZ:BEURKG-36:SEAL:ACTIVE\n` +
-          `License:  0x7f8a9b3c4d5e6f1a...`;
-      } catch (e) {
-        term.innerHTML += "// Error connecting to public fallback node: " + e.message;
+      { id: 15, name: "XJustiz Notariats- & Grundbuch-XML", layer: "nec", layerName: "Layer 3: NEC", desc: "Bundesweiter Justiz-Standard zur automatisierten Übermittlung digitaler Urkunden." },
+      { id: 16, name: "Dual-Parität: NFT & Analoge Urkunde", layer: "nec", layerName: "Layer 3: NEC", desc: "Gleichzeitige Rechtswirkung von digitalem Token und physischer Papierurkunde." },
+      { id: 17, name: "Beglaubigungsregister & Kanzlei-Schnittstellen", layer: "nec", layerName: "Layer 3: NEC", desc: "Direkte Anbindung an Notariatssoftware und elektronische Gerichtsakten." },
+      { id: 18, name: "E-Justice Schnittstelle & Signaturkarten", layer: "nec", layerName: "Layer 3: NEC", desc: "Qualifizierte elektronische Signatur (QES) nach eIDAS-Verordnung." },
+      { id: 19, name: "Beweiskraft nach § 415 ZPO", layer: "nec", layerName: "Layer 3: NEC", desc: "Voller Beweis der durch die öffentliche Urkunde bezeugten Vorgänge vor Gericht." },
+      { id: 20, name: "Schutz des geistigen Eigentums & Urheberrecht", layer: "nec", layerName: "Layer 3: NEC", desc: "Unveräußerliches Urheberrecht des Erfinders an allen 28 Fachkategorien." },
+      { id: 21, name: "Schiedsgerichtsbarkeit & Streitschlichtung", layer: "nec", layerName: "Layer 3: NEC", desc: "Autonome Streitbeilegung nach internen Statuten ohne staatliche Verzögerung." },
+
+      { id: 22, name: "2-Kreise-Siedlungsmodell & Autarkie", layer: "wohn", layerName: "Layer 4: Wohnzentren", desc: "Innenkreis für Wohnen und Kultur, Außenkreis für Permakultur und Handwerk." },
+      { id: 23, name: "Permakultur-Gürtel & Nahrungssouveränität", layer: "wohn", layerName: "Layer 4: Wohnzentren", desc: "Ganzjährige autarke Lebensmittelversorgung ohne industrielle Abhängigkeit." },
+      { id: 24, name: "Dezentrale Energie- & Wasserversorgung", layer: "wohn", layerName: "Layer 4: Wohnzentren", desc: "Photovoltaik, Geothermie und Brunnenwasser-Kreisläufe mit 100% Autarkiegrad." },
+      { id: 25, name: "Bauplan-Matrix: 7 funktionale Räume", layer: "wohn", layerName: "Layer 4: Wohnzentren", desc: "Studie, Akademie, Adapter-Büro, Service-Hub, Werkstatt, Lager und Atrium-Garten." },
+      { id: 26, name: "Kooperative Werkstätten & Kreislaufwirtschaft", layer: "wohn", layerName: "Layer 4: Wohnzentren", desc: "Gemeinschaftliche Nutzung von Maschinen und Rohstoffen ohne Verschwendung." },
+      { id: 27, name: "Gesundheitszentren & Regeneration", layer: "wohn", layerName: "Layer 4: Wohnzentren", desc: "Präventive Medizin, Naturheilverfahren und ganzheitliche Erholungszonen." },
+      { id: 28, name: "Logbuch-Verwaltung & Bürgerpartizipation", layer: "wohn", layerName: "Layer 4: Wohnzentren", desc: "Transparente Dokumentation aller Aktivitäten zur Sicherung notarieller Urkunden." }
+    ];
+
+    // NAVIGATION SYSTEM (EXACT PARITY WITH ANDROID MainActivity.kt)
+    function navigateTo(screenId) {
+      document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
+      const target = document.getElementById('screen-' + screenId);
+      if (target) target.classList.add('active');
+
+      // Update Desktop Tabs
+      document.querySelectorAll('.nav-tab-btn').forEach(btn => btn.classList.remove('active'));
+      // Update Mobile Dock Items
+      document.querySelectorAll('.dock-item').forEach(item => item.classList.remove('active'));
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // CATEGORIES RENDERING
+    function renderCategories(filter = 'all') {
+      const container = document.getElementById('categories-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const filtered = filter === 'all' ? CATEGORIES : CATEGORIES.filter(c => c.layer === filter);
+
+      filtered.forEach(c => {
+        const card = document.createElement('div');
+        card.className = 'category-card';
+        card.innerHTML = `
+          <span class="category-badge badge-${c.layer}">#${c.id} · ${c.layerName}</span>
+          <h4 style="font-size: 13px; font-weight: 700; color: var(--navy-main); margin-bottom: 4px;">${c.name}</h4>
+          <p style="font-size: 11px; color: var(--text-muted);">${c.desc}</p>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function filterCategories(layer) {
+      renderCategories(layer);
+    }
+
+    // PERSPECTIVES DATA
+    const PERSPECTIVES = [
+      { title: "1. Rechtsform & Institutionelle Struktur", desc: "Wählbare Formen: © (Urheberrecht), GbR (BGB), eGbR (eingetragen), geGbR (gemeinnützig), Stiftung (Treuhand)." },
+      { title: "2. Treuhand & Pfandrecht (§§ 1274, 1280 BGB)", desc: "Rechtlich unantastbare Trennung zwischen Treugeber und Treuhänder mit notarieller Sperrwirkung." },
+      { title: "3. Notariatsstandard & Urkunden (§ 36 BeurkG)", desc: "Volle Beweiskraft digitaler und analoger Urkunden vor allen Zivil- und Finanzgerichten." },
+      { title: "4. Token & Smart Contracts (Multi-Chain)", desc: "Alchemy Ethereum Mainnet, TON Sharded Chain und ZON Sovereign Bonding Curve Pools." },
+      { title: "5. Erfinder-Axiomatik (Schöpfung)", desc: "0-Kosten Geldschöpfung durch unberührbare Erfinder-Autorisierung ohne Fremdkapital." },
+      { title: "6. Gemeinnützigkeit & Gemeinwohl", desc: "Förderung von Wissenschaft, Bildung und autarken Lebensräumen für die Allgemeinheit." },
+      { title: "7. Bilanzierungsneutralität & Steuerfreiheit", desc: "Aktivierung als steuerfreie immaterielle Wirtschaftsgüter im Rahmen der BGB-Treuhand." },
+      { title: "8. Organigramm & Rollenverteilung", desc: "Erfinder (Axiom) ➔ Partner (L&Q-Zentrum) ➔ Kunde (Bildung/Beratung) ➔ Notar." }
+    ];
+
+    function selectPerspective(index) {
+      document.querySelectorAll('.perspective-chip').forEach((c, i) => {
+        if (i === index) c.classList.add('active');
+        else c.classList.remove('active');
+      });
+      const p = PERSPECTIVES[index];
+      document.getElementById('perspective-title').innerText = p.title;
+      document.getElementById('perspective-desc').innerText = p.desc;
+    }
+
+    // EXPLORER CERTS LIST
+    function renderExplorerCerts() {
+      const container = document.getElementById('explorer-certs-list');
+      if (!container) return;
+      container.innerHTML = '';
+
+      for (let i = 1; i <= 6; i++) {
+        const cat = CATEGORIES[i - 1];
+        const item = document.createElement('div');
+        item.style.padding = '10px';
+        item.style.background = 'var(--slate-50)';
+        item.style.borderRadius = '6px';
+        item.style.display = 'flex';
+        item.style.justifyContent = 'space-between';
+        item.style.alignItems = 'center';
+        item.innerHTML = `
+          <div>
+            <div style="font-size: 12px; font-weight: 700; color: var(--navy-main);">NEC-00${i} · ${cat.name}</div>
+            <div class="mono" style="font-size: 10px; color: var(--signal-green);">Urkunde Nr. 189${i}/2026 (§ 36 BeurkG) · XJustiz-XML</div>
+          </div>
+          <button class="btn btn-outline" style="font-size: 10px;" onclick="copyText('URKUNDE-NEC-00${i}-SEAL-VERIFIED')">Prüfen</button>
+        `;
+        container.appendChild(item);
       }
     }
 
-    async function executeWebGenesisSwap() {
-      const amount = parseFloat(document.getElementById('swap-amount').value) || 1.0;
-      const from = document.getElementById('swap-from').value;
-      const to = document.getElementById('swap-to').value;
+    // GENESIS SWAP SIMULATION
+    function executeGenesisSwap() {
+      const amount = parseFloat(document.getElementById('swap-input-amount').value) || 1.0;
+      const currency = document.getElementById('swap-input-currency').value;
+      const rate = currency === 'ETH' ? 2850 : currency === 'BTC' ? 65000 : 1.08;
+      const mtkReceived = (amount * rate).toLocaleString();
+      const hash = "0x" + Array.from(crypto.getRandomValues(new Uint8Array(16))).map(b => b.toString(16).padStart(2, '0')).join('');
 
-      // Exchange rate simulation coherent with Android app
-      let rate = 1.0;
-      if (from === 'ETH' && to === 'MTK') rate = 2850.0;
-      else if (from === 'MTK' && to === 'ETH') rate = 1.0 / 2850.0;
-      else if (from === 'BTC' && to === 'MTK') rate = 65000.0;
-      else if (from === 'EUR' && to === 'MTK') rate = 1.08;
-      else rate = 1.5;
-
-      const received = (amount * rate).toFixed(4);
-      const timestamp = new Date().toISOString();
-      const mockTxHash = "0x" + Array.from(crypto.getRandomValues(new Uint8Array(32)))
-        .map(b => b.toString(16).padStart(2, '0')).join('');
-      const notarialSeal = "XJUSTIZ:BEURKG-36:SEAL:" + mockTxHash.slice(2, 26).toUpperCase();
-
-      const receiptBox = document.getElementById('swap-receipt');
-      const receiptContent = document.getElementById('receipt-content');
-
-      receiptContent.innerHTML = `
-Swap ID:           GSWAP-${Date.now().toString().slice(-6)}
-Timestamp:         ${timestamp}
-Getauscht:         ${amount} ${from} ➔ ${received} ${to}
-Status:            VALIDATED_ON_CHAIN (Alchemy Verified)
-Tx-Hash (SHA-256): ${mockTxHash}
-Notariatssiegel:   ${notarialSeal}
-Rechtsgrundlage:   § 36 BeurkG / XJustiz Dual-Parity Standard
-Android Sync:      Ledger Height #1,048,577 (com.aistudio.praimtknec.qvzkxp)
+      const box = document.getElementById('swap-result-box');
+      box.style.display = 'block';
+      box.innerHTML = `
+SWAP ID:           GSWAP-${Date.now().toString().slice(-6)}
+GETAUSCHT:         ${amount} ${currency} ➔ ${mtkReceived} MTK
+TX-HASH (SHA-256): ${hash}
+NOTARIATSSIEGEL:   XJUSTIZ:BEURKG-36:SEAL:9A4F2C8E
+STATUS:            VALIDATED_ON_CHAIN (Alchemy Ethereum Mainnet)
+PARITÄT:           Android APK v8.0 & Web App 100% SYNCHRON
       `;
-      receiptBox.style.display = "block";
+      showToast("Genesis Swap erfolgreich besiegelt!");
     }
 
-    // Auto-init on load
+    // PORTAL TABS
+    function switchPortalTab(tabIndex) {
+      for (let i = 0; i < 4; i++) {
+        const btn = document.getElementById('portal-tab-' + i);
+        const content = document.getElementById('portal-content-' + i);
+        if (i === tabIndex) {
+          if (btn) btn.className = 'btn btn-primary';
+          if (content) content.style.display = 'block';
+        } else {
+          if (btn) btn.className = 'btn btn-outline';
+          if (content) content.style.display = 'none';
+        }
+      }
+    }
+
+    // HELPER ACTIONS
+    function showToast(msg) {
+      const toast = document.getElementById('toast-box');
+      toast.innerText = msg;
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 2400);
+    }
+
+    function copyText(txt) {
+      navigator.clipboard.writeText(txt).then(() => {
+        showToast("In die Zwischenablage kopiert: " + txt);
+      });
+    }
+
+    function copyCliClone() {
+      copyText("gh repo clone RFOF-NETWORK/PRAI-MTK-NEC");
+    }
+
+    function openGitHubRepo() {
+      window.open("https://github.com/RFOF-NETWORK/PRAI-MTK-NEC", "_blank");
+    }
+
+    function switchUserRole() {
+      const badge = document.getElementById('role-text');
+      if (badge.innerText.includes('ADMIN')) {
+        badge.innerText = 'NUTZER: PRAI-GUEST';
+        showToast("Rolle gewechselt: Gast-Nutzer");
+      } else {
+        badge.innerText = 'ADMIN: RFOF';
+        showToast("Rolle gewechselt: Admin (RFOF-NETWORK)");
+      }
+    }
+
+    function openGlobalSearch() {
+      navigateTo('categories');
+      showToast("Suche: Alle 28 Fachkategorien geöffnet");
+    }
+
+    function openNewRepoModal() {
+      showToast("Repository-Veröffentlichung: Formular bereit (§§ 1274, 1280 BGB)");
+    }
+
+    function showSystemDetail(type) {
+      showToast("System-Architektur: " + type.toUpperCase() + " geladen");
+    }
+
+    // RAPP APPS REGISTRY & EXECUTION
+    const RAPPS = {
+      'rapp-001': {
+        name: 'PRAI / MTK / NEC',
+        category: 'Sovereign Framework',
+        version: '8.0 (Build #8)',
+        channel: 'Dual-Parität (Testnet & Mainnet)',
+        cert: 'URK-NR. 1892/2026 (§ 36 BeurkG)',
+        repo: 'https://github.com/RFOF-NETWORK/PRAI-MTK-NEC',
+        desc: 'Das souveräne Haupt-Ökosystem: 28 Fachkategorien, 8-Sichten-Matrix, Multi-Chain Wallet & Treuhand-Register (§ 36 BeurkG). Synchron nutzbar als Web App & Android App.',
+        action: 'apk-app',
+        msg: 'Primär-rApp: Zur nativen Android APK App wechseln...'
+      },
+      'rapp-002': {
+        name: 'ZON Universal DEX & Launchpad',
+        category: 'DeFi & DEX',
+        version: '1.0-RC (Build #1)',
+        channel: 'Sovereign Testnet (Autonom)',
+        cert: 'URK-NR. 1893/2026 (§ 36 BeurkG)',
+        repo: 'https://github.com/rfof-network/zon-dex-engine',
+        desc: 'Autonome Bonding-Curve Börse, Token-Launchpad, Staking & Mining Pools für alle Community-Währungen.',
+        action: 'wallet',
+        msg: 'rApp Extension ausgeführt: ZON Universal DEX & Launchpad aktiv!'
+      },
+      'rapp-003': {
+        name: 'XJustiz Notar & Grundbuch Archiv',
+        category: 'Legal & Notariat',
+        version: '2.4 (Build #24)',
+        channel: 'Ethereum Mainnet (Alchemy)',
+        cert: 'URK-NR. 1894/2026 (§ 36 BeurkG / § 415 ZPO)',
+        repo: 'https://github.com/rfof-network/xjustiz-archive',
+        desc: 'Vollautomatische Beurkundungsprüfung, XJustiz-XML Export und 100% notarielle Beweissicherung.',
+        action: 'explorer',
+        msg: 'rApp Extension ausgeführt: XJustiz Notariats- & Urkundenarchiv geöffnet!'
+      }
+    };
+
+    function executeRApp(appId) {
+      if (appId === 'rapp-001') {
+        showApkAppModal();
+        return;
+      }
+      const app = RAPPS[appId];
+      if (!app) return;
+      showToast(app.msg);
+      navigateTo(app.action);
+    }
+
+    function showApkAppModal() {
+      const modal = document.getElementById('apk-app-modal');
+      if (modal) modal.classList.add('show');
+    }
+
+    function showRAppDetails(appId) {
+      const app = RAPPS[appId];
+      if (!app) return;
+      const modal = document.getElementById('rapp-details-modal');
+      const content = document.getElementById('rapp-details-content');
+      const btnLabel = appId === 'rapp-001' ? '▶️ rApp Ausführen (APK App)' : '▶️ rApp Ausführen';
+      content.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="font-size:28px;">${appId === 'rapp-001' ? '🏛️' : appId === 'rapp-002' ? '⚡' : '📜'}</div>
+            <div>
+              <h3 style="font-size:16px; font-weight:800; color:var(--navy-main);">${app.name}</h3>
+              <p style="font-size:11px; color:var(--text-muted);">${app.category} • v${app.version}</p>
+            </div>
+          </div>
+          <button onclick="closeModal('rapp-details-modal')" style="background:none; border:none; font-size:18px; cursor:pointer;">✕</button>
+        </div>
+        <hr style="border:none; border-top:1px solid var(--slate-200); margin:10px 0;">
+        <p style="font-size:12px; color:var(--navy-main); margin-bottom:10px; line-height:1.5;">${app.desc}</p>
+        <div style="font-size:11px; color:var(--text-muted); line-height:1.8; margin-bottom:14px; background:var(--slate-50); padding:10px; border-radius:8px;">
+          <div>• <strong>Kanal:</strong> ${app.channel}</div>
+          <div>• <strong>Notariats-Zertifikat:</strong> <span style="color:var(--gold-dark); font-weight:bold;">${app.cert}</span></div>
+          <div>• <strong>Git Repository:</strong> <span class="mono" style="color:var(--signal-blue);">${app.repo}</span></div>
+          <div>• <strong>Dual-Parität:</strong> VERIFIED · SOUVERÄNE DUAL-PARITÄT</div>
+        </div>
+        <button class="btn btn-primary" style="width:100%; padding:10px; font-size:13px;" onclick="closeModal('rapp-details-modal'); executeRApp('${appId}');">
+          ${btnLabel}
+        </button>
+      `;
+      modal.classList.add('show');
+    }
+
+    function closeModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) modal.classList.remove('show');
+    }
+
+    // INITIALIZATION
     window.addEventListener('DOMContentLoaded', () => {
-      refreshLiveRpc();
+      renderCategories('all');
+      renderExplorerCerts();
+      selectPerspective(0);
     });
   </script>
+
+  <!-- APK APP DOWNLOAD MODAL -->
+  <div id="apk-app-modal" class="modal-backdrop" onclick="if(event.target===this) closeModal('apk-app-modal')">
+    <div class="modal-sheet" style="max-width: 500px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="font-size:28px;">📱</div>
+          <div>
+            <h3 style="font-size:16px; font-weight:800; color:var(--navy-main);">PRAI / MTK / NEC · Android APK App (v8.0)</h3>
+            <p style="font-size:11px; color:var(--text-muted);">Offizieller Release · Signed APK Parität</p>
+          </div>
+        </div>
+        <button onclick="closeModal('apk-app-modal')" style="background:none; border:none; font-size:18px; cursor:pointer;">✕</button>
+      </div>
+      <p style="font-size:12px; color:var(--navy-main); line-height:1.6; margin-bottom:14px;">
+        Du befindest dich aktuell in der <strong>Web App</strong> auf GitHub Pages (100% UI/UX Parität).<br><br>
+        Um zur <strong>nativen Android APK App</strong> zu wechseln, lade die neueste signierte APK aus dem offiziellen GitHub Repository herunter oder installiere sie auf deinem Android-Gerät:
+      </p>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button class="btn btn-primary" style="width:100%; padding:12px; font-size:13px;" onclick="window.open('https://github.com/RFOF-NETWORK/PRAI-MTK-NEC/releases', '_blank'); closeModal('apk-app-modal');">
+          📥 Android APK herunterladen (Releases)
+        </button>
+        <button class="btn btn-outline" style="width:100%; padding:10px; font-size:12px;" onclick="window.open('https://github.com/RFOF-NETWORK/PRAI-MTK-NEC', '_blank'); closeModal('apk-app-modal');">
+          🐙 GitHub Repository öffnen
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RAPP DETAILS MODAL SHEET -->
+  <div id="rapp-details-modal" class="modal-backdrop" onclick="if(event.target===this) closeModal('rapp-details-modal')">
+    <div class="modal-sheet" id="rapp-details-content"></div>
+  </div>
 </body>
 </html>

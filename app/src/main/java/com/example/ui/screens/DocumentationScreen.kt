@@ -808,6 +808,71 @@ fun UserInfrastructureDocSection(
       }
     }
 
+    // Flagship Dual-App Card (Web App & GitHub Repo)
+    Card(
+      modifier = Modifier.fillMaxWidth(),
+      colors = CardDefaults.cardColors(containerColor = BlueprintNavy),
+      border = BorderStroke(1.dp, UrkundeGold),
+      shape = RoundedCornerShape(12.dp)
+    ) {
+      Column(modifier = Modifier.padding(16.dp)) {
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Default.Language, contentDescription = null, tint = UrkundeGold, modifier = Modifier.size(20.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+              text = "FLAGGSCHIFF: PRAI / MTK / NEC",
+              fontWeight = FontWeight.Black,
+              fontSize = 13.sp,
+              color = Color.White
+            )
+          }
+          Surface(color = SignalGreen, shape = RoundedCornerShape(4.dp)) {
+            Text(
+              text = "DUAL PARITÄT",
+              color = Color.White,
+              fontSize = 9.sp,
+              fontWeight = FontWeight.Bold,
+              modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+            )
+          }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+          text = "Wie bei GitHub existiert das gesamte System synchron als Web Applikation und native Android Applikation. Beide Clients sind vollkommen gleichberechtigt und greifen auf dieselben smarten Treuhandverträge und Urkunden zu.",
+          fontSize = 11.sp,
+          color = Color(0xFFE2E8F0),
+          lineHeight = 16.sp
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // Three Endpoints: Repo, Web, CLI
+        Surface(color = Color.Black.copy(alpha = 0.4f), shape = RoundedCornerShape(6.dp)) {
+          Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+              Text("• GitHub Repo:", color = UrkundeGold, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+              Text("https://github.com/RFOF-NETWORK/PRAI-MTK-NEC", color = Color(0xFF38BDF8), fontSize = 10.sp, fontFamily = FontFamily.Monospace)
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+              Text("• Web App:", color = UrkundeGold, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+              Text("https://rfof-network.github.io/PRAI-MTK-NEC/", color = Color(0xFF38BDF8), fontSize = 10.sp, fontFamily = FontFamily.Monospace)
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+              Text("• CLI Clone:", color = UrkundeGold, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+              Text("gh repo clone RFOF-NETWORK/PRAI-MTK-NEC", color = SignalGreen, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
+            }
+          }
+        }
+      }
+    }
+
     // 2. Step 1: Eigene Repositories anlegen und mit Chains verknüpfen
     Card(
       modifier = Modifier.fillMaxWidth(),

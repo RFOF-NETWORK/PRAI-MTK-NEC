@@ -102,11 +102,202 @@ object AuthManager {
   private val _currentUser = MutableStateFlow(RFOF_ADMIN_PROFILE)
   val currentUser: StateFlow<UserProfile> = _currentUser.asStateFlow()
 
+  // Deterministic Execution Mode (Test/Demo vs Main/Real)
+  private val _authExecutionMode = MutableStateFlow(AuthExecutionMode.MAIN_REAL)
+  val authExecutionMode: StateFlow<AuthExecutionMode> = _authExecutionMode.asStateFlow()
+
+  // Parallel Provider Session States (Firebase, GitHub, Google, Microsoft, W3Connect)
+  private val _parallelProviders = MutableStateFlow<Map<AuthProviderType, ParallelProviderState>>(
+    mapOf(
+      AuthProviderType.FIREBASE to ParallelProviderState(
+        provider = AuthProviderType.FIREBASE,
+        isEnabled = true,
+        mode = AuthExecutionMode.MAIN_REAL,
+        accountIdentifier = "gen-lang-client-0256777474 (europe-west2)",
+        activeToken = EntropyDoubleProxyValidator.generateDeterministicToken(
+          AuthProviderType.FIREBASE,
+          "gen-lang-client-0256777474",
+          AuthExecutionMode.MAIN_REAL
+        ),
+        proxy1ClientValidatorStatus = "VALIDATED_INGRESS",
+        proxy2ServerlessValidatorStatus = "BOUND_SERVERLESS_FIRESTORE",
+        lastValidatedTimestamp = System.currentTimeMillis()
+      ),
+      AuthProviderType.GITHUB to ParallelProviderState(
+        provider = AuthProviderType.GITHUB,
+        isEnabled = true,
+        mode = AuthExecutionMode.MAIN_REAL,
+        accountIdentifier = "RFOF-NETWORK",
+        activeToken = EntropyDoubleProxyValidator.generateDeterministicToken(
+          AuthProviderType.GITHUB,
+          "RFOF-NETWORK",
+          AuthExecutionMode.MAIN_REAL
+        ),
+        proxy1ClientValidatorStatus = "VALIDATED_INGRESS",
+        proxy2ServerlessValidatorStatus = "BOUND_SERVERLESS_FIRESTORE",
+        lastValidatedTimestamp = System.currentTimeMillis()
+      ),
+      AuthProviderType.GOOGLE to ParallelProviderState(
+        provider = AuthProviderType.GOOGLE,
+        isEnabled = false,
+        mode = AuthExecutionMode.MAIN_REAL,
+        accountIdentifier = "rfof236286@gmail.com",
+        activeToken = null,
+        proxy1ClientValidatorStatus = "STANDBY",
+        proxy2ServerlessValidatorStatus = "STANDBY"
+      ),
+      AuthProviderType.MICROSOFT to ParallelProviderState(
+        provider = AuthProviderType.MICROSOFT,
+        isEnabled = false,
+        mode = AuthExecutionMode.MAIN_REAL,
+        accountIdentifier = "rfof-network@azure.com",
+        activeToken = null,
+        proxy1ClientValidatorStatus = "STANDBY",
+        proxy2ServerlessValidatorStatus = "STANDBY"
+      ),
+      AuthProviderType.W3CONNECT to ParallelProviderState(
+        provider = AuthProviderType.W3CONNECT,
+        isEnabled = true,
+        mode = AuthExecutionMode.MAIN_REAL,
+        accountIdentifier = "0xRFOF9842A7b2F366c8B01C5D19E77F32e2A8321",
+        activeToken = EntropyDoubleProxyValidator.generateDeterministicToken(
+          AuthProviderType.W3CONNECT,
+          "0xRFOF9842A7b2F366c8B01C5D19E77F32e2A8321",
+          AuthExecutionMode.MAIN_REAL
+        ),
+        proxy1ClientValidatorStatus = "VALIDATED_INGRESS",
+        proxy2ServerlessValidatorStatus = "BOUND_SERVERLESS_FIRESTORE",
+        lastValidatedTimestamp = System.currentTimeMillis()
+      )
+    )
+  )
+  val parallelProviders: StateFlow<Map<AuthProviderType, ParallelProviderState>> = _parallelProviders.asStateFlow()
+
   val isAdmin: Boolean
     get() = _currentUser.value.role == UserRole.ADMIN && _currentUser.value.username == "RFOF-NETWORK"
 
+  fun setExecutionMode(mode: AuthExecutionMode) {
+    _authExecutionMode.value = mode
+    val currentMap = _parallelProviders.value.toMutableMap()
+    currentMap.forEach { (type, state) ->
+      if (state.isEnabled && state.accountIdentifier.isNotBlank()) {
+        val newToken = EntropyDoubleProxyValidator.generateDeterministicToken(type, state.accountIdentifier, mode)
+        currentMap[type] = state.copy(
+          mode = mode,
+          activeToken = newToken,
+          lastValidatedTimestamp = System.currentTimeMillis()
+        )
+      } else {
+        currentMap[type] = state.copy(mode = mode)
+      }
+    }
+    _parallelProviders.value = currentMap
+  }
+
+  suspend fun authenticateProvider(
+    provider: AuthProviderType,
+    identifier: String,
+    mode: AuthExecutionMode = _authExecutionMode.value
+  ): ValidationResult {
+    val result = EntropyDoubleProxyValidator.validateAndBindServerless(provider, identifier, mode)
+    if (result.success && result.token != null) {
+      val currentMap = _parallelProviders.value.toMutableMap()
+      currentMap[provider] = ParallelProviderState(
+        provider = provider,
+        isEnabled = true,
+        mode = mode,
+        accountIdentifier = identifier,
+        activeToken = result.token,
+        proxy1ClientValidatorStatus = "VALIDATED_INGRESS",
+        proxy2ServerlessValidatorStatus = if (result.token.egressServerlessBound) "BOUND_SERVERLESS_FIRESTORE" else "LOCAL_PARITY",
+        lastValidatedTimestamp = System.currentTimeMillis()
+      )
+      _parallelProviders.value = currentMap
+    }
+    return result
+  }
+
+  fun disconnectProvider(provider: AuthProviderType) {
+    val currentMap = _parallelProviders.value.toMutableMap()
+    val existing = currentMap[provider] ?: return
+    currentMap[provider] = existing.copy(
+      isEnabled = false,
+      activeToken = null,
+      proxy1ClientValidatorStatus = "DISCONNECTED",
+      proxy2ServerlessValidatorStatus = "DISCONNECTED",
+      lastValidatedTimestamp = System.currentTimeMillis()
+    )
+    _parallelProviders.value = currentMap
+  }
+
   fun loginAsRfofNetwork() {
     _currentUser.value = RFOF_ADMIN_PROFILE
+    val currentMap = _parallelProviders.value.toMutableMap()
+    currentMap[AuthProviderType.GITHUB] = ParallelProviderState(
+      provider = AuthProviderType.GITHUB,
+      isEnabled = true,
+      mode = _authExecutionMode.value,
+      accountIdentifier = "RFOF-NETWORK (Admin)",
+      activeToken = EntropyDoubleProxyValidator.generateDeterministicToken(
+        AuthProviderType.GITHUB,
+        "RFOF-NETWORK",
+        _authExecutionMode.value
+      ),
+      proxy1ClientValidatorStatus = "VALIDATED_INGRESS",
+      proxy2ServerlessValidatorStatus = "BOUND_SERVERLESS_FIRESTORE",
+      lastValidatedTimestamp = System.currentTimeMillis()
+    )
+    _parallelProviders.value = currentMap
+  }
+
+  fun loginWithFirebase(projectId: String = "gen-lang-client-0256777474") {
+    val currentMap = _parallelProviders.value.toMutableMap()
+    currentMap[AuthProviderType.FIREBASE] = ParallelProviderState(
+      provider = AuthProviderType.FIREBASE,
+      isEnabled = true,
+      mode = _authExecutionMode.value,
+      accountIdentifier = "$projectId (Serverless)",
+      activeToken = EntropyDoubleProxyValidator.generateDeterministicToken(
+        AuthProviderType.FIREBASE,
+        projectId,
+        _authExecutionMode.value
+      ),
+      proxy1ClientValidatorStatus = "VALIDATED_INGRESS",
+      proxy2ServerlessValidatorStatus = "BOUND_SERVERLESS_FIRESTORE",
+      lastValidatedTimestamp = System.currentTimeMillis()
+    )
+    _parallelProviders.value = currentMap
+  }
+
+  fun loginWithMicrosoft(email: String = "rfof.network@azure.microsoft.com", displayName: String = "Microsoft Erfinder") {
+    _currentUser.value = UserProfile(
+      username = if (displayName.contains("@")) displayName.substringBefore("@") else displayName,
+      role = UserRole.USER,
+      userType = UserType.ERFINDER,
+      email = email,
+      authProvider = "Microsoft Azure AD (OAuth 2.0)",
+      walletAddress = "0x51E281F26aD7B547C9028711AA039401732BC0E1",
+      isEscrowAuthorized = false,
+      isMtkHolderAllowed = false,
+      organization = "eGbR (Eingetragene GbR)",
+      unlockedCertificateIds = setOf("NEC-001", "NEC-002")
+    )
+    val currentMap = _parallelProviders.value.toMutableMap()
+    currentMap[AuthProviderType.MICROSOFT] = ParallelProviderState(
+      provider = AuthProviderType.MICROSOFT,
+      isEnabled = true,
+      mode = _authExecutionMode.value,
+      accountIdentifier = email,
+      activeToken = EntropyDoubleProxyValidator.generateDeterministicToken(
+        AuthProviderType.MICROSOFT,
+        email,
+        _authExecutionMode.value
+      ),
+      proxy1ClientValidatorStatus = "VALIDATED_INGRESS",
+      proxy2ServerlessValidatorStatus = "BOUND_SERVERLESS_FIRESTORE",
+      lastValidatedTimestamp = System.currentTimeMillis()
+    )
+    _parallelProviders.value = currentMap
   }
 
   fun loginWithGoogle(email: String = "rfof236286@gmail.com", name: String = "Google Nutzer") {
@@ -122,6 +313,22 @@ object AuthManager {
       organization = "eGbR (Eingetragene GbR)",
       unlockedCertificateIds = setOf("NEC-001", "NEC-003")
     )
+    val currentMap = _parallelProviders.value.toMutableMap()
+    currentMap[AuthProviderType.GOOGLE] = ParallelProviderState(
+      provider = AuthProviderType.GOOGLE,
+      isEnabled = true,
+      mode = _authExecutionMode.value,
+      accountIdentifier = email,
+      activeToken = EntropyDoubleProxyValidator.generateDeterministicToken(
+        AuthProviderType.GOOGLE,
+        email,
+        _authExecutionMode.value
+      ),
+      proxy1ClientValidatorStatus = "VALIDATED_INGRESS",
+      proxy2ServerlessValidatorStatus = "BOUND_SERVERLESS_FIRESTORE",
+      lastValidatedTimestamp = System.currentTimeMillis()
+    )
+    _parallelProviders.value = currentMap
   }
 
   fun loginWithWeb3(address: String, networkName: String = "Ethereum", userType: UserType = UserType.PARTNER) {
@@ -137,6 +344,22 @@ object AuthManager {
       organization = "GbR (BGB-Gesellschaft)",
       unlockedCertificateIds = setOf("NEC-001", "NEC-003", "NEC-005")
     )
+    val currentMap = _parallelProviders.value.toMutableMap()
+    currentMap[AuthProviderType.W3CONNECT] = ParallelProviderState(
+      provider = AuthProviderType.W3CONNECT,
+      isEnabled = true,
+      mode = _authExecutionMode.value,
+      accountIdentifier = address,
+      activeToken = EntropyDoubleProxyValidator.generateDeterministicToken(
+        AuthProviderType.W3CONNECT,
+        address,
+        _authExecutionMode.value
+      ),
+      proxy1ClientValidatorStatus = "VALIDATED_INGRESS",
+      proxy2ServerlessValidatorStatus = "BOUND_SERVERLESS_FIRESTORE",
+      lastValidatedTimestamp = System.currentTimeMillis()
+    )
+    _parallelProviders.value = currentMap
   }
 
   fun updateProfileSettings(
