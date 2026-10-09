@@ -43,13 +43,15 @@ class ExampleRobolectricTest {
 
   @Test
   fun `verify admin role exclusivity and user role segregation`() {
-    com.example.auth.AuthManager.loginAsRfofNetwork()
+    val adminRes = com.example.auth.AuthManager.loginWithCredentials("RFOF-NETWORK", "SatoramyAdmin2026!")
+    assertTrue(adminRes.success)
     assertTrue(com.example.auth.AuthManager.isAdmin)
     assertEquals(com.example.auth.UserRole.ADMIN, com.example.auth.AuthManager.currentUser.value.role)
     assertTrue(com.example.auth.AuthManager.currentUser.value.isMtkHolderAllowed)
 
-    // Regular sign-in must strictly produce USER role
-    com.example.auth.AuthManager.loginWithGoogle("partner@network.org", "Partner Dev")
+    // Regular registration/login must strictly produce USER role
+    val userRes = com.example.auth.AuthManager.registerAccount("partner-dev", "SecureDev2026!", com.example.auth.UserType.PARTNER)
+    assertTrue(userRes.success)
     org.junit.Assert.assertFalse(com.example.auth.AuthManager.isAdmin)
     assertEquals(com.example.auth.UserRole.USER, com.example.auth.AuthManager.currentUser.value.role)
     org.junit.Assert.assertFalse(com.example.auth.AuthManager.currentUser.value.isMtkHolderAllowed)

@@ -686,21 +686,23 @@ fun AuthDialog(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Logout / Gast
-            TextButton(
-              onClick = {
-                AuthManager.logout()
-                WalletRepository.refreshAssetsForCurrentRole()
-                showSuccessMsg = "Abgemeldet. Gast-Modus aktiv."
-                showErrorMsg = null
-              },
-              modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .testTag("auth_logout_button")
-            ) {
-              Icon(Icons.Default.ExitToApp, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
-              Spacer(modifier = Modifier.width(4.dp))
-              Text("Abmelden (Gast-Modus)", color = TextMuted, fontSize = 11.sp)
+            // Logout / Gast (Nur sichtbar, wenn bereits erfolgreich angemeldet)
+            if (currentUser.role != UserRole.GUEST) {
+              TextButton(
+                onClick = {
+                  AuthManager.logout()
+                  WalletRepository.refreshAssetsForCurrentRole()
+                  showSuccessMsg = "Abgemeldet. Gast-Modus aktiv."
+                  showErrorMsg = null
+                },
+                modifier = Modifier
+                  .align(Alignment.CenterHorizontally)
+                  .testTag("auth_logout_button")
+              ) {
+                Icon(Icons.Default.ExitToApp, contentDescription = null, tint = Color(0xFFEF4444), modifier = Modifier.size(14.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("Abmelden (${currentUser.username})", color = Color(0xFFEF4444), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+              }
             }
           }
         }

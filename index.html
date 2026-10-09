@@ -1971,6 +1971,18 @@ PARITÄT:           Android APK v8.0 & Web App 100% SYNCHRON
           phraseText.innerText = isAuthCreator ? "vault alpha omega genesis 2026 rfof sovereign guardian" : "••••••••••••••••••••••••••••••••••••••••••••••••";
         }
       }
+
+      // Logout row visibility in tab 2
+      const logoutRow = document.getElementById('auth-modal-logout-row');
+      const logoutUserSpan = document.getElementById('auth-modal-logout-user');
+      if (logoutRow) {
+        if (currentUser.role !== 'GUEST') {
+          logoutRow.style.display = 'block';
+          if (logoutUserSpan) logoutUserSpan.innerText = currentUser.username;
+        } else {
+          logoutRow.style.display = 'none';
+        }
+      }
     }
 
     function openGlobalSearch() {
@@ -2248,10 +2260,12 @@ PARITÄT:           Android APK v8.0 & Web App 100% SYNCHRON
           <button class="btn btn-outline" style="padding:10px; font-size:12px; display:flex; align-items:center; gap:8px;" onclick="selectQuickIdentity('Firebase-Client')">
             <span>🔥</span> Firebase Cloud Identity verbinden (Passwort-Pflicht)
           </button>
-          <hr style="border:none; border-top:1px solid var(--slate-200); margin:4px 0;">
-          <button class="btn btn-outline" style="padding:8px; font-size:11px; color:#EF4444; border-color:#EF4444;" onclick="logoutUser()">
-            🚪 Abmelden (Gast-Modus)
-          </button>
+          <div id="auth-modal-logout-row" style="display:none;">
+            <hr style="border:none; border-top:1px solid var(--slate-200); margin:4px 0;">
+            <button class="btn btn-outline" style="width:100%; padding:8px; font-size:11px; color:#EF4444; border-color:#EF4444; font-weight:bold;" onclick="logoutUser()">
+              🚪 Abmelden (<span id="auth-modal-logout-user"></span>)
+            </button>
+          </div>
         </div>
       </div>
     </div>

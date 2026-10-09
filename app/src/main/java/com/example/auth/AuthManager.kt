@@ -228,7 +228,11 @@ object AuthManager {
   val parallelProviders: StateFlow<Map<AuthProviderType, ParallelProviderState>> = _parallelProviders.asStateFlow()
 
   val isAdmin: Boolean
-    get() = _currentUser.value.role == UserRole.ADMIN && _currentUser.value.username == "RFOF-NETWORK"
+    get() = _currentUser.value.role == UserRole.ADMIN && (_currentUser.value.username == "RFOF-NETWORK" || _currentUser.value.username == "Satoramy")
+
+  fun isLockedOut(): Boolean {
+    return System.currentTimeMillis() < _lockoutUntilTimestamp
+  }
 
   fun setExecutionMode(mode: AuthExecutionMode) {
     _authExecutionMode.value = mode
@@ -505,6 +509,8 @@ object AuthManager {
 
   fun logout() {
     _currentUser.value = GUEST_PROFILE
+    _failedAttemptsCount = 0
+    _lockoutUntilTimestamp = 0L
   }
 
   fun unlockCertificateForCurrentUser(certId: String) {
