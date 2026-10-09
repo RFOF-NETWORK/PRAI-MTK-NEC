@@ -353,20 +353,11 @@ fun BlockchainExplorerScreen(
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically
           ) {
-            TextButton(onClick = { showAdminAccessRestrictedDialog = false }) {
-              Text("Verstanden")
-            }
-            Spacer(modifier = Modifier.width(6.dp))
             Button(
-              onClick = {
-                AuthManager.loginAsRfofNetwork()
-                selectedPerspective = ExplorerPerspective.ADMIN
-                showAdminAccessRestrictedDialog = false
-                Toast.makeText(context, "Als RFOF-NETWORK Admin angemeldet!", Toast.LENGTH_SHORT).show()
-              },
-              colors = ButtonDefaults.buttonColors(containerColor = UrkundeGoldDark)
+              onClick = { showAdminAccessRestrictedDialog = false },
+              colors = ButtonDefaults.buttonColors(containerColor = BlueprintNavy)
             ) {
-              Text("Als Admin anmelden", fontSize = 11.sp)
+              Text("Schließen (Login über Kopfzeile)", fontSize = 11.sp)
             }
           }
         }

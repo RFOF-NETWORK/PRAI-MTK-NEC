@@ -481,7 +481,7 @@ fun AuthDialog(
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                      text = AuthManager.MASTER_CREATOR_PHRASE,
+                      text = AuthManager.getMasterCreatorPhraseIfAuthorized(currentUser) ?: "••••••••••••••••••••••••••••••••••••••••••••••••",
                       fontFamily = FontFamily.Monospace,
                       fontSize = 9.sp,
                       color = TextSecondary,
@@ -514,8 +514,8 @@ fun AuthDialog(
                         val defaultId = when (providerType) {
                           AuthProviderType.FIREBASE -> "gen-lang-client-0256777474"
                           AuthProviderType.GITHUB -> "RFOF-NETWORK"
-                          AuthProviderType.GOOGLE -> "rfof236286@gmail.com"
-                          AuthProviderType.MICROSOFT -> "rfof-network@azure.com"
+                          AuthProviderType.GOOGLE -> "Google OAuth Client (Privat)"
+                          AuthProviderType.MICROSOFT -> "Microsoft Azure AD Client (Privat)"
                           AuthProviderType.W3CONNECT -> "0xRFOF9842A7b2F366c8B01C5D19E77F32e2A8321"
                         }
                         val res = AuthManager.authenticateProvider(providerType, defaultId, currentMode)
@@ -533,15 +533,7 @@ fun AuthDialog(
                     }
                   },
                   onMakePrimary = {
-                    when (providerType) {
-                      AuthProviderType.GITHUB -> AuthManager.loginAsRfofNetwork()
-                      AuthProviderType.GOOGLE -> AuthManager.loginWithGoogle()
-                      AuthProviderType.W3CONNECT -> AuthManager.loginWithWeb3(state.accountIdentifier.ifBlank { "0xRFOF9842A7b2F366c8B01C5D19E77F32e2A8321" })
-                      AuthProviderType.MICROSOFT -> AuthManager.loginWithMicrosoft()
-                      AuthProviderType.FIREBASE -> AuthManager.loginWithFirebase()
-                    }
-                    WalletRepository.refreshAssetsForCurrentRole()
-                    showSuccessMsg = "${providerType.displayName} als primäre aktive Identität gesetzt."
+                    showSuccessMsg = "${providerType.displayName} ist als Provider aktiviert. Authentifizierung erfolgt über Passwort-Login."
                     showErrorMsg = null
                   }
                 )
@@ -549,19 +541,39 @@ fun AuthDialog(
             }
           }
         } else {
-          // Tab 2: Quick Presets (Including Satoramy!)
+          // Tab 2: Schnell-Auswahl (SICHER: Kein Auto-Login, leitet zur Passworteingabe weiter)
           Column(
             modifier = Modifier
               .weight(1f)
               .fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
           ) {
+            Surface(
+              color = Color(0xFFFEF3C7),
+              shape = RoundedCornerShape(8.dp),
+              border = BorderStroke(1.dp, Color(0xFFFCD34D)),
+              modifier = Modifier.fillMaxWidth()
+            ) {
+              Row(modifier = Modifier.padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Lock, contentDescription = null, tint = Color(0xFF92400E), modifier = Modifier.size(16.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                  text = "Kein Auto-Login: Die Schnellauswahl überträgt die gewünschte Identität in das Anmeldeformular. Die Sitzung wird erst nach korrekter Passworteingabe erzeugt.",
+                  fontSize = 10.sp,
+                  color = Color(0xFF78350F),
+                  fontWeight = FontWeight.Medium
+                )
+              }
+            }
+
             // 1. RFOF-NETWORK GitHub OAuth (Master Admin)
             Button(
               onClick = {
-                AuthManager.loginAsRfofNetwork()
-                WalletRepository.refreshAssetsForCurrentRole()
-                showSuccessMsg = "Erfolgreich als Master-Admin (RFOF-NETWORK) autorisiert!"
+                usernameInput = "RFOF-NETWORK"
+                passwordInput = ""
+                activeTab = 0
+                isRegisterMode = false
+                showSuccessMsg = "Identität 'RFOF-NETWORK' ausgewählt. Bitte Passwort oder Master-Phrasen eingeben."
                 showErrorMsg = null
               },
               modifier = Modifier
@@ -578,9 +590,11 @@ fun AuthDialog(
             // 2. SATORAMY (Dual-Admin / Creator & User)
             Button(
               onClick = {
-                AuthManager.loginAsSatoramy()
-                WalletRepository.refreshAssetsForCurrentRole()
-                showSuccessMsg = "Erfolgreich als Satoramy autorisiert (Dual-Admin & Nutzer)!"
+                usernameInput = "Satoramy"
+                passwordInput = ""
+                activeTab = 0
+                isRegisterMode = false
+                showSuccessMsg = "Identität 'Satoramy' ausgewählt. Bitte Passwort eingeben."
                 showErrorMsg = null
               },
               modifier = Modifier
@@ -597,9 +611,11 @@ fun AuthDialog(
             // 3. Google OAuth (User)
             OutlinedButton(
               onClick = {
-                AuthManager.loginWithGoogle("erfinder.partner@gmail.com", "Google Erfinder-Partner")
-                WalletRepository.refreshAssetsForCurrentRole()
-                showSuccessMsg = "Als Google-Nutzer angemeldet (Rolle: User)"
+                usernameInput = "Google-Erfinder"
+                passwordInput = ""
+                activeTab = 0
+                isRegisterMode = false
+                showSuccessMsg = "Identität 'Google-Erfinder' ausgewählt. Bitte Passwort eingeben."
                 showErrorMsg = null
               },
               modifier = Modifier
@@ -609,15 +625,17 @@ fun AuthDialog(
             ) {
               Icon(Icons.Default.AccountCircle, contentDescription = null, tint = SignalBlue, modifier = Modifier.size(18.dp))
               Spacer(modifier = Modifier.width(8.dp))
-              Text("Mit Google Account anmelden (User)", color = BlueprintNavy, fontSize = 12.sp)
+              Text("Mit Google Account anmelden (Passwort-Pflicht)", color = BlueprintNavy, fontSize = 12.sp)
             }
 
             // 4. Microsoft Azure AD
             OutlinedButton(
               onClick = {
-                AuthManager.loginWithMicrosoft("rfof.network@azure.com", "Microsoft Partner")
-                WalletRepository.refreshAssetsForCurrentRole()
-                showSuccessMsg = "Mit Microsoft Azure AD angemeldet (Rolle: User)"
+                usernameInput = "Microsoft-Partner"
+                passwordInput = ""
+                activeTab = 0
+                isRegisterMode = false
+                showSuccessMsg = "Identität 'Microsoft-Partner' ausgewählt. Bitte Passwort eingeben."
                 showErrorMsg = null
               },
               modifier = Modifier.fillMaxWidth(),
@@ -625,15 +643,17 @@ fun AuthDialog(
             ) {
               Icon(Icons.Default.Window, contentDescription = null, tint = Color(0xFF00A4EF), modifier = Modifier.size(18.dp))
               Spacer(modifier = Modifier.width(8.dp))
-              Text("Mit Microsoft Azure AD anmelden (User)", color = BlueprintNavy, fontSize = 12.sp)
+              Text("Mit Microsoft Azure AD anmelden (Passwort-Pflicht)", color = BlueprintNavy, fontSize = 12.sp)
             }
 
             // 5. W3Connect / Wallet Connect (User)
             OutlinedButton(
               onClick = {
-                AuthManager.loginWithWeb3("0x71C2B04E5F931aC2388C89284De15f458B43a890", "EVM / W3Connect")
-                WalletRepository.refreshAssetsForCurrentRole()
-                showSuccessMsg = "Web3 Wallet verbunden (Rolle: User)"
+                usernameInput = "W3-Connect-User"
+                passwordInput = ""
+                activeTab = 0
+                isRegisterMode = false
+                showSuccessMsg = "Identität 'W3-Connect-User' ausgewählt. Bitte Passwort eingeben."
                 showErrorMsg = null
               },
               modifier = Modifier
@@ -643,15 +663,17 @@ fun AuthDialog(
             ) {
               Icon(Icons.Default.AccountBalanceWallet, contentDescription = null, tint = Color(0xFF627EEA), modifier = Modifier.size(18.dp))
               Spacer(modifier = Modifier.width(8.dp))
-              Text("W3Connect / Wallet verbinden (User)", color = BlueprintNavy, fontSize = 12.sp)
+              Text("W3Connect / Wallet verbinden (Passwort-Pflicht)", color = BlueprintNavy, fontSize = 12.sp)
             }
 
             // 6. Firebase Serverless Identity
             OutlinedButton(
               onClick = {
-                AuthManager.loginWithFirebase()
-                WalletRepository.refreshAssetsForCurrentRole()
-                showSuccessMsg = "Mit Firebase Serverless Identity verbunden"
+                usernameInput = "Firebase-Client"
+                passwordInput = ""
+                activeTab = 0
+                isRegisterMode = false
+                showSuccessMsg = "Identität 'Firebase-Client' ausgewählt. Bitte Passwort eingeben."
                 showErrorMsg = null
               },
               modifier = Modifier.fillMaxWidth(),
@@ -659,7 +681,7 @@ fun AuthDialog(
             ) {
               Icon(Icons.Default.Whatshot, contentDescription = null, tint = Color(0xFFFF9100), modifier = Modifier.size(18.dp))
               Spacer(modifier = Modifier.width(8.dp))
-              Text("Firebase Cloud Identity verbinden", color = BlueprintNavy, fontSize = 12.sp)
+              Text("Firebase Cloud Identity verbinden (Passwort-Pflicht)", color = BlueprintNavy, fontSize = 12.sp)
             }
 
             Spacer(modifier = Modifier.weight(1f))

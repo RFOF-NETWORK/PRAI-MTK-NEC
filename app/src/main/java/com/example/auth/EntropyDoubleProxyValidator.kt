@@ -45,7 +45,7 @@ object EntropyDoubleProxyValidator {
       }
     } else {
       // TEST_DEMO mode allows any testnet/demo identity
-      if (lower == "admin@rfof-network.org" && !lower.contains("test")) {
+      if (lower == "admin-identity" && !lower.contains("test")) {
         // Enforce deterministic sandbox tagging for safety
         Log.d(TAG, "Ingress Test Mode Sandbox Isolation applied for $identifier")
       }

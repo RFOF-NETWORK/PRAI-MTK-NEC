@@ -53,7 +53,7 @@ object AuthManager {
     username = "RFOF-NETWORK",
     role = UserRole.ADMIN,
     userType = UserType.ADMIN,
-    email = "admin@rfof-network.org",
+    email = null, // Strictly private; NEVER exposed publicly
     authProvider = "RFOF-NETWORK (Sovereign OAuth)",
     walletAddress = "0xRFOF9842A7b2F366c8B01C5D19E77F32e2A8321",
     isEscrowAuthorized = true,
@@ -61,9 +61,9 @@ object AuthManager {
     avatarUrl = "https://avatars.githubusercontent.com/u/rfof-network",
     bio = "Urheber, Erfinder & System-Architekt von PRAI / MTK / NEC. Alleinherrschaft über MTK Treasury & Notariats-Escrow.",
     organization = "© (Urheber & Erfinder)",
-    sshPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI_RFOF_MASTER_SOVEREIGN_KEY_2026",
-    gpgKeyId = "0xRFOF2026_MASTER_GPG",
-    personalAccessToken = "rfof_pat_master_99887766554433221100",
+    sshPublicKey = "",
+    gpgKeyId = "",
+    personalAccessToken = "",
     editorTheme = "VS Code High-Contrast Navy",
     unlockedCertificateIds = setOf(
       "NEC-001", "NEC-002", "NEC-003", "NEC-004",
@@ -75,11 +75,11 @@ object AuthManager {
     username = "Erfinder-Entwickler",
     role = UserRole.USER,
     userType = UserType.ERFINDER,
-    email = "developer@rfof-network.org",
-    authProvider = "Google Account (OAuth 2.0)",
+    email = null, // Strictly private
+    authProvider = "OAuth 2.0 Identifier",
     walletAddress = "0x71C2B04E5F931aC2388C89284De15f458B43a890",
     isEscrowAuthorized = false,
-    isMtkHolderAllowed = false, // Users hold BTC, ETH, TON, but NOT raw MTK
+    isMtkHolderAllowed = false,
     avatarUrl = "",
     bio = "Entwickler & Erfinder im dezentralen Wirtschaftsnetzwerk.",
     organization = "eGbR (Eingetragene GbR)",
@@ -104,7 +104,7 @@ object AuthManager {
     username = "Satoramy",
     role = UserRole.ADMIN, // Dual Admin & User
     userType = UserType.ERFINDER,
-    email = "satoramy@rfof-network.org",
+    email = null, // Strictly private
     authProvider = "Satoramy Dual-Creator Auth (eGbR / Admin & User)",
     walletAddress = "0x89A3B04E5F931aC2388C89284De15f458B43a123",
     isEscrowAuthorized = true,
@@ -115,20 +115,45 @@ object AuthManager {
     unlockedCertificateIds = setOf("NEC-001", "NEC-002", "NEC-003", "NEC-004", "NEC-005")
   )
 
-  // Master Secret Phrases for Creator Accounts
-  const val MASTER_CREATOR_PHRASE = "vault alpha omega genesis 2026 rfof sovereign guardian"
+  // Password & Phrase Hashing (SHA-256 + Deterministic Salt)
+  fun hashSecret(input: String): String {
+    val md = java.security.MessageDigest.getInstance("SHA-256")
+    val salt = "PRAI_MTK_NEC_SOVEREIGN_AUTH_SALT_2026_DETERMINISTIC"
+    val bytes = md.digest((input + salt).toByteArray(Charsets.UTF_8))
+    return bytes.joinToString("") { "%02x".format(it) }
+  }
 
-  // Linked manual user password shared between Satoramy & RFOF-NETWORK
-  private var _satoramyManualPassword: String = "SatoramyAdmin2026!"
-  val satoramyManualPassword: String get() = _satoramyManualPassword
+  // Master Secret Phrases Hash for Creator Accounts
+  val MASTER_CREATOR_PHRASE_HASH = hashSecret("vault alpha omega genesis 2026 rfof sovereign guardian")
 
-  // Custom registered user storage: username -> pair of (password, UserProfile)
+  fun getMasterCreatorPhraseIfAuthorized(user: UserProfile): String? {
+    return if (user.role == UserRole.ADMIN || user.username == "Satoramy") {
+      "vault alpha omega genesis 2026 rfof sovereign guardian"
+    } else {
+      null
+    }
+  }
+
+  // Linked manual user password hash shared between Satoramy & RFOF-NETWORK
+  private var _satoramyPasswordHash: String = hashSecret("SatoramyAdmin2026!")
+
+  // Rate Limiting Protection (5 failed attempts -> 30s lockout)
+  private var _failedAttemptsCount: Int = 0
+  private var _lockoutUntilTimestamp: Long = 0L
+
+  fun getRemainingLockoutSeconds(): Long {
+    val remaining = _lockoutUntilTimestamp - System.currentTimeMillis()
+    return if (remaining > 0) (remaining / 1000) + 1 else 0
+  }
+
+  // Custom registered user storage: username -> pair of (passwordHash, UserProfile)
   private val _registeredUsers = mutableMapOf<String, Pair<String, UserProfile>>(
-    "rfof-network" to Pair(_satoramyManualPassword, RFOF_ADMIN_PROFILE),
-    "satoramy" to Pair(_satoramyManualPassword, SATORAMY_PROFILE)
+    "rfof-network" to Pair(_satoramyPasswordHash, RFOF_ADMIN_PROFILE),
+    "satoramy" to Pair(_satoramyPasswordHash, SATORAMY_PROFILE)
   )
 
-  private val _currentUser = MutableStateFlow(RFOF_ADMIN_PROFILE)
+  // Initial state is strictly GUEST_PROFILE - NO AUTO-LOGIN ON APP START
+  private val _currentUser = MutableStateFlow(GUEST_PROFILE)
   val currentUser: StateFlow<UserProfile> = _currentUser.asStateFlow()
 
   // Deterministic Execution Mode (Test/Demo vs Main/Real)
@@ -170,7 +195,7 @@ object AuthManager {
         provider = AuthProviderType.GOOGLE,
         isEnabled = false,
         mode = AuthExecutionMode.MAIN_REAL,
-        accountIdentifier = "rfof236286@gmail.com",
+        accountIdentifier = "Google OAuth 2.0 Client (Privat)",
         activeToken = null,
         proxy1ClientValidatorStatus = "STANDBY",
         proxy2ServerlessValidatorStatus = "STANDBY"
@@ -179,7 +204,7 @@ object AuthManager {
         provider = AuthProviderType.MICROSOFT,
         isEnabled = false,
         mode = AuthExecutionMode.MAIN_REAL,
-        accountIdentifier = "rfof-network@azure.com",
+        accountIdentifier = "Microsoft Azure AD Client (Privat)",
         activeToken = null,
         proxy1ClientValidatorStatus = "STANDBY",
         proxy2ServerlessValidatorStatus = "STANDBY"
@@ -259,7 +284,7 @@ object AuthManager {
     _parallelProviders.value = currentMap
   }
 
-  fun loginAsRfofNetwork() {
+  private fun executeLoginAsRfofNetwork() {
     _currentUser.value = RFOF_ADMIN_PROFILE
     val currentMap = _parallelProviders.value.toMutableMap()
     currentMap[AuthProviderType.GITHUB] = ParallelProviderState(
@@ -279,109 +304,16 @@ object AuthManager {
     _parallelProviders.value = currentMap
   }
 
-  fun loginWithFirebase(projectId: String = "gen-lang-client-0256777474") {
+  fun linkFirebaseProvider(projectId: String = "gen-lang-client-0256777474") {
     val currentMap = _parallelProviders.value.toMutableMap()
     currentMap[AuthProviderType.FIREBASE] = ParallelProviderState(
       provider = AuthProviderType.FIREBASE,
       isEnabled = true,
       mode = _authExecutionMode.value,
-      accountIdentifier = "$projectId (Serverless)",
+      accountIdentifier = "Firebase Serverless (europe-west2)",
       activeToken = EntropyDoubleProxyValidator.generateDeterministicToken(
         AuthProviderType.FIREBASE,
         projectId,
-        _authExecutionMode.value
-      ),
-      proxy1ClientValidatorStatus = "VALIDATED_INGRESS",
-      proxy2ServerlessValidatorStatus = "BOUND_SERVERLESS_FIRESTORE",
-      lastValidatedTimestamp = System.currentTimeMillis()
-    )
-    _parallelProviders.value = currentMap
-  }
-
-  fun loginWithMicrosoft(email: String = "rfof.network@azure.microsoft.com", displayName: String = "Microsoft Erfinder") {
-    _currentUser.value = UserProfile(
-      username = if (displayName.contains("@")) displayName.substringBefore("@") else displayName,
-      role = UserRole.USER,
-      userType = UserType.ERFINDER,
-      email = email,
-      authProvider = "Microsoft Azure AD (OAuth 2.0)",
-      walletAddress = "0x51E281F26aD7B547C9028711AA039401732BC0E1",
-      isEscrowAuthorized = false,
-      isMtkHolderAllowed = false,
-      organization = "eGbR (Eingetragene GbR)",
-      unlockedCertificateIds = setOf("NEC-001", "NEC-002")
-    )
-    val currentMap = _parallelProviders.value.toMutableMap()
-    currentMap[AuthProviderType.MICROSOFT] = ParallelProviderState(
-      provider = AuthProviderType.MICROSOFT,
-      isEnabled = true,
-      mode = _authExecutionMode.value,
-      accountIdentifier = email,
-      activeToken = EntropyDoubleProxyValidator.generateDeterministicToken(
-        AuthProviderType.MICROSOFT,
-        email,
-        _authExecutionMode.value
-      ),
-      proxy1ClientValidatorStatus = "VALIDATED_INGRESS",
-      proxy2ServerlessValidatorStatus = "BOUND_SERVERLESS_FIRESTORE",
-      lastValidatedTimestamp = System.currentTimeMillis()
-    )
-    _parallelProviders.value = currentMap
-  }
-
-  fun loginWithGoogle(email: String = "rfof236286@gmail.com", name: String = "Google Nutzer") {
-    _currentUser.value = UserProfile(
-      username = if (name.contains("@")) name.substringBefore("@") else name,
-      role = UserRole.USER, // All others are strictly USER
-      userType = UserType.ERFINDER,
-      email = email,
-      authProvider = "Google Account (OAuth 2.0)",
-      walletAddress = "0x3Fa2919E5D491EAcC182479B2912DDE34892E1C9",
-      isEscrowAuthorized = false,
-      isMtkHolderAllowed = false,
-      organization = "eGbR (Eingetragene GbR)",
-      unlockedCertificateIds = setOf("NEC-001", "NEC-003")
-    )
-    val currentMap = _parallelProviders.value.toMutableMap()
-    currentMap[AuthProviderType.GOOGLE] = ParallelProviderState(
-      provider = AuthProviderType.GOOGLE,
-      isEnabled = true,
-      mode = _authExecutionMode.value,
-      accountIdentifier = email,
-      activeToken = EntropyDoubleProxyValidator.generateDeterministicToken(
-        AuthProviderType.GOOGLE,
-        email,
-        _authExecutionMode.value
-      ),
-      proxy1ClientValidatorStatus = "VALIDATED_INGRESS",
-      proxy2ServerlessValidatorStatus = "BOUND_SERVERLESS_FIRESTORE",
-      lastValidatedTimestamp = System.currentTimeMillis()
-    )
-    _parallelProviders.value = currentMap
-  }
-
-  fun loginWithWeb3(address: String, networkName: String = "Ethereum", userType: UserType = UserType.PARTNER) {
-    _currentUser.value = UserProfile(
-      username = "W3-" + address.take(6) + "..." + address.takeLast(4),
-      role = UserRole.USER, // All others are strictly USER
-      userType = userType,
-      email = null,
-      authProvider = "W3Connect ($networkName)",
-      walletAddress = address,
-      isEscrowAuthorized = false,
-      isMtkHolderAllowed = false,
-      organization = "GbR (BGB-Gesellschaft)",
-      unlockedCertificateIds = setOf("NEC-001", "NEC-003", "NEC-005")
-    )
-    val currentMap = _parallelProviders.value.toMutableMap()
-    currentMap[AuthProviderType.W3CONNECT] = ParallelProviderState(
-      provider = AuthProviderType.W3CONNECT,
-      isEnabled = true,
-      mode = _authExecutionMode.value,
-      accountIdentifier = address,
-      activeToken = EntropyDoubleProxyValidator.generateDeterministicToken(
-        AuthProviderType.W3CONNECT,
-        address,
         _authExecutionMode.value
       ),
       proxy1ClientValidatorStatus = "VALIDATED_INGRESS",
@@ -410,7 +342,7 @@ object AuthManager {
     )
   }
 
-  fun loginAsSatoramy() {
+  private fun executeLoginAsSatoramy() {
     _currentUser.value = SATORAMY_PROFILE
     val currentMap = _parallelProviders.value.toMutableMap()
     currentMap[AuthProviderType.GITHUB] = ParallelProviderState(
@@ -444,13 +376,15 @@ object AuthManager {
       return ValidationResult(success = false, message = "Das Passwort muss mindestens 4 Zeichen lang sein.")
     }
     val key = cleanUsername.lowercase()
+    val passwordHash = hashSecret(password)
 
     // Satoramy special dual-account creation logic
     if (key == "satoramy" || key == "sartoramy") {
-      _satoramyManualPassword = password
-      _registeredUsers["satoramy"] = Pair(password, SATORAMY_PROFILE)
-      _registeredUsers["rfof-network"] = Pair(password, RFOF_ADMIN_PROFILE)
-      loginAsSatoramy()
+      _satoramyPasswordHash = passwordHash
+      _registeredUsers["satoramy"] = Pair(passwordHash, SATORAMY_PROFILE)
+      _registeredUsers["rfof-network"] = Pair(passwordHash, RFOF_ADMIN_PROFILE)
+      executeLoginAsSatoramy()
+      _failedAttemptsCount = 0
       return ValidationResult(
         success = true,
         message = "Creator-Account 'Satoramy' erfolgreich erstellt! Dual-Admin Status aktiv. Passwort wurde mit RFOF-NETWORK synchronisiert."
@@ -469,7 +403,7 @@ object AuthManager {
       username = cleanUsername,
       role = UserRole.USER,
       userType = userType,
-      email = "$key@rfof-network.org",
+      email = null, // Strictly private; NEVER exposed publicly
       authProvider = "Eigenes System (Passwort / Entropie)",
       walletAddress = "0x" + cleanUsername.hashCode().toUInt().toString(16).padStart(40, 'a').take(42),
       isEscrowAuthorized = false,
@@ -478,8 +412,9 @@ object AuthManager {
       unlockedCertificateIds = setOf("NEC-001")
     )
 
-    _registeredUsers[key] = Pair(password, newProfile)
+    _registeredUsers[key] = Pair(passwordHash, newProfile)
     _currentUser.value = newProfile
+    _failedAttemptsCount = 0
     return ValidationResult(
       success = true,
       message = "Account '$cleanUsername' erfolgreich erstellt und angemeldet!"
@@ -487,36 +422,60 @@ object AuthManager {
   }
 
   fun loginWithCredentials(username: String, passwordOrPhrase: String): ValidationResult {
+    if (getRemainingLockoutSeconds() > 0) {
+      return ValidationResult(
+        success = false,
+        message = "Sicherheits-Lockout aktiv: Zu viele Fehlversuche. Bitte warte ${getRemainingLockoutSeconds()} Sekunden."
+      )
+    }
+
     val cleanUsername = username.trim()
     val cleanSecret = passwordOrPhrase.trim()
+
+    if (cleanSecret.isBlank()) {
+      return ValidationResult(success = false, message = "Passwortprüfung ist Pflicht. Auto-Login ohne Passwort ist untersagt.")
+    }
+
+    val hashedSecret = hashSecret(cleanSecret)
     val key = cleanUsername.lowercase()
 
-    // 1. Check Master Creator Phrase
-    if (cleanSecret.equals(MASTER_CREATOR_PHRASE, ignoreCase = true)) {
+    // 1. Check Master Creator Phrase Hash
+    if (hashedSecret == MASTER_CREATOR_PHRASE_HASH) {
+      _failedAttemptsCount = 0
       if (key == "rfof-network" || cleanUsername.isBlank()) {
-        loginAsRfofNetwork()
+        executeLoginAsRfofNetwork()
         return ValidationResult(success = true, message = "Master-Admin Autorisierung über geheime Phrasen erfolgreich!")
       } else if (key == "satoramy" || key == "sartoramy") {
-        loginAsSatoramy()
+        executeLoginAsSatoramy()
         return ValidationResult(success = true, message = "Satoramy Creator-Autorisierung über geheime Phrasen erfolgreich!")
       }
     }
 
-    // 2. Check Satoramy or RFOF-NETWORK using linked password
+    // 2. Check Satoramy or RFOF-NETWORK using linked password hash
     if (key == "satoramy" || key == "sartoramy") {
-      if (cleanSecret == _satoramyManualPassword || cleanSecret == "SatoramyAdmin2026!" || cleanSecret == "rfof2026") {
-        loginAsSatoramy()
+      if (hashedSecret == _satoramyPasswordHash) {
+        _failedAttemptsCount = 0
+        executeLoginAsSatoramy()
         return ValidationResult(success = true, message = "Erfolgreich als Satoramy angemeldet (Dual-Admin & Nutzer)!")
       } else {
+        _failedAttemptsCount++
+        if (_failedAttemptsCount >= 5) {
+          _lockoutUntilTimestamp = System.currentTimeMillis() + 30_000L
+        }
         return ValidationResult(success = false, message = "Ungültiges Passwort für Satoramy.")
       }
     }
 
     if (key == "rfof-network") {
-      if (cleanSecret == _satoramyManualPassword || cleanSecret == "rfof2026" || cleanSecret == "SatoramyAdmin2026!") {
-        loginAsRfofNetwork()
+      if (hashedSecret == _satoramyPasswordHash) {
+        _failedAttemptsCount = 0
+        executeLoginAsRfofNetwork()
         return ValidationResult(success = true, message = "Erfolgreich als RFOF-NETWORK angemeldet!")
       } else {
+        _failedAttemptsCount++
+        if (_failedAttemptsCount >= 5) {
+          _lockoutUntilTimestamp = System.currentTimeMillis() + 30_000L
+        }
         return ValidationResult(success = false, message = "Ungültiges Passwort oder Phrasen für RFOF-NETWORK.")
       }
     }
@@ -524,15 +483,24 @@ object AuthManager {
     // 3. Registered accounts
     val registered = _registeredUsers[key]
     if (registered != null) {
-      if (registered.first == cleanSecret) {
+      if (registered.first == hashedSecret) {
+        _failedAttemptsCount = 0
         _currentUser.value = registered.second
         return ValidationResult(success = true, message = "Willkommen zurück, ${registered.second.username}!")
       } else {
+        _failedAttemptsCount++
+        if (_failedAttemptsCount >= 5) {
+          _lockoutUntilTimestamp = System.currentTimeMillis() + 30_000L
+        }
         return ValidationResult(success = false, message = "Falsches Passwort für $cleanUsername.")
       }
     }
 
-    return ValidationResult(success = false, message = "Benutzer '$cleanUsername' nicht gefunden. Bitte erstelle einen Account!")
+    _failedAttemptsCount++
+    if (_failedAttemptsCount >= 5) {
+      _lockoutUntilTimestamp = System.currentTimeMillis() + 30_000L
+    }
+    return ValidationResult(success = false, message = "Benutzer '$cleanUsername' nicht gefunden oder Passwort falsch.")
   }
 
   fun logout() {
