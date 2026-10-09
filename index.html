@@ -126,14 +126,64 @@
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      background: var(--gold-bg);
-      color: var(--gold-main);
-      border: 1px solid rgba(241, 196, 15, 0.3);
       padding: 3px 8px;
       border-radius: 12px;
       font-size: 9px;
       font-weight: 800;
       cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .role-badge.admin {
+      background: var(--gold-bg);
+      color: var(--gold-main);
+      border: 1px solid rgba(241, 196, 15, 0.4);
+    }
+
+    .role-badge.user {
+      background: #EFF6FF;
+      color: var(--signal-blue);
+      border: 1px solid #BFDBFE;
+    }
+
+    .role-badge.guest {
+      background: #334155;
+      color: #94A3B8;
+      border: 1px solid #475569;
+    }
+
+    .top-auth-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 10px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      height: 28px;
+    }
+
+    .top-auth-btn.login {
+      background: var(--gold-main);
+      color: var(--navy-main);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .top-auth-btn.login:hover {
+      background: #f59e0b;
+    }
+
+    .top-auth-btn.logout {
+      background: transparent;
+      color: #EF4444;
+      border: 1px solid #EF4444;
+    }
+
+    .top-auth-btn.logout:hover {
+      background: rgba(239, 68, 68, 0.1);
     }
 
     .icon-btn {
@@ -556,26 +606,35 @@
 </head>
 <body>
 
-  <!-- TOP APP BAR -->
+  <!-- TOP APP BAR - EXACT ANDROID PARITY -->
   <header class="top-app-bar">
     <div class="top-bar-left">
       <div class="top-bar-brand">
         <span class="top-bar-title">PRAI / MTK / NEC</span>
         <span class="live-dot"></span>
-        <span class="live-text">LIVE · v8.0</span>
+        <span class="live-text">LIVE</span>
       </div>
-      <span class="top-bar-subtitle">Souveräne Web App & Android App Parität</span>
+      <span class="top-bar-subtitle" id="top-bar-subtitle">Gast-Besucher (Nicht eingeloggt)</span>
     </div>
 
     <div class="top-bar-actions">
-      <div class="role-badge" onclick="switchUserRole()">
-        <span>🛡️</span>
-        <span id="role-text">ADMIN: RFOF</span>
+      <!-- Role Badge Chip -->
+      <div class="role-badge guest" id="top-role-badge" onclick="openAuthModal()" title="Konto & Authentifizierungs-Hub öffnen">
+        <span id="role-badge-icon">👤</span>
+        <span id="role-text">GAST</span>
       </div>
-      <button class="icon-btn" onclick="navigateTo('web-portal')" title="Web & GitHub Dual Portal">🌐</button>
-      <button class="icon-btn" onclick="navigateTo('wallet')" title="Wallet & Trading">🔄</button>
+
+      <!-- DEDICATED LOGIN / LOGOUT BUTTON (Exact parity with APK) -->
+      <button id="top-auth-action-btn" class="top-auth-btn login" onclick="handleTopAuthAction()" title="Anmelden oder Registrieren">
+        <span id="top-auth-btn-icon">🔑</span>
+        <span id="top-auth-btn-label">Login</span>
+      </button>
+
+      <button class="icon-btn" onclick="navigateTo('wallet')" title="Trading & Swap" style="color: var(--gold-main);">🔄</button>
+      <button class="icon-btn" onclick="navigateTo('rapp-center')" title="rApp Center & PlayStore" style="color: var(--gold-main);">🏬</button>
+      <button class="icon-btn" onclick="navigateTo('profile')" title="Profil & Repos">👤</button>
       <button class="icon-btn" onclick="openGlobalSearch()" title="Globale Suche">🔍</button>
-      <button class="icon-btn" onclick="navigateTo('profile')" title="Profil & Repos">⚙️</button>
+      <button class="icon-btn" onclick="navigateTo('system')" title="Health Check" style="color: var(--signal-green);">✅</button>
     </div>
   </header>
 
@@ -1368,14 +1427,504 @@ PARITÄT:           Android APK v8.0 & Web App 100% SYNCHRON
       window.open("https://github.com/RFOF-NETWORK/PRAI-MTK-NEC", "_blank");
     }
 
-    function switchUserRole() {
-      const badge = document.getElementById('role-text');
-      if (badge.innerText.includes('ADMIN')) {
-        badge.innerText = 'NUTZER: PRAI-GUEST';
-        showToast("Rolle gewechselt: Gast-Nutzer");
+    // ==========================================
+    // MULTI-PARALLEL AUTH & SATORAMY DUAL-SYSTEM
+    // ==========================================
+    const MASTER_CREATOR_PHRASE = "vault alpha omega genesis 2026 rfof sovereign guardian";
+    let satoramyManualPassword = localStorage.getItem('satoramy_manual_password') || "SatoramyAdmin2026!";
+    let authExecutionMode = localStorage.getItem('auth_mode') || "MAIN_REAL";
+    let authModalTab = 0;
+    let isRegisterTabActive = false;
+
+    let registeredUsers = JSON.parse(localStorage.getItem('registered_users') || "{}");
+    if (!registeredUsers['rfof-network']) {
+      registeredUsers['rfof-network'] = {
+        username: 'RFOF-NETWORK',
+        role: 'ADMIN',
+        userType: 'ADMIN',
+        authProvider: 'GitHub OAuth / Master-Admin',
+        password: satoramyManualPassword
+      };
+    }
+    if (!registeredUsers['satoramy']) {
+      registeredUsers['satoramy'] = {
+        username: 'Satoramy',
+        role: 'ADMIN',
+        userType: 'ERFINDER',
+        authProvider: 'Satoramy Dual-Creator Auth (eGbR / Admin & User)',
+        password: satoramyManualPassword
+      };
+    }
+
+    let currentUser = JSON.parse(localStorage.getItem('current_user') || "null") || {
+      username: 'Gast-Besucher',
+      role: 'GUEST',
+      userType: 'KUNDE',
+      authProvider: 'Gast'
+    };
+
+    let parallelProviders = {
+      firebase: {
+        name: 'Firebase Firestore',
+        icon: '🔥',
+        protocol: 'gRPC · Serverless Firestore',
+        enabled: true,
+        account: 'gen-lang-client-0256777474 (europe-west2)',
+        token: 'fb_srvless_sec_tok_99182a4729c1',
+        ingress: 'VALIDATED_INGRESS',
+        egress: 'BOUND_SERVERLESS_FIRESTORE'
+      },
+      github: {
+        name: 'GitHub OAuth 2.0',
+        icon: '🐙',
+        protocol: 'OAuth 2.0 / REST API',
+        enabled: true,
+        account: 'RFOF-NETWORK',
+        token: 'gho_rfof_entropy_sec_8841a09c21b',
+        ingress: 'VALIDATED_INGRESS',
+        egress: 'BOUND_SERVERLESS_FIRESTORE'
+      },
+      google: {
+        name: 'Google Identity',
+        icon: '👤',
+        protocol: 'OpenID Connect (OAuth 2.0)',
+        enabled: false,
+        account: 'rfof236286@gmail.com',
+        token: null,
+        ingress: 'STANDBY',
+        egress: 'STANDBY'
+      },
+      microsoft: {
+        name: 'Microsoft Azure AD',
+        icon: '🪟',
+        protocol: 'MSAL / OpenID Connect',
+        enabled: false,
+        account: 'rfof-network@azure.com',
+        token: null,
+        ingress: 'STANDBY',
+        egress: 'STANDBY'
+      },
+      w3connect: {
+        name: 'W3Connect / EVM',
+        icon: '💳',
+        protocol: 'EIP-1193 / Web3 Provider',
+        enabled: true,
+        account: '0xRFOF9842A7b2F366c8B01C5D19E77F32e2A8321',
+        token: 'w3c_evm_sig_0x7b2f366c8b01c5d19e77',
+        ingress: 'VALIDATED_INGRESS',
+        egress: 'BOUND_SERVERLESS_FIRESTORE'
+      }
+    };
+
+    function updateHeaderAuthUI() {
+      const sub = document.getElementById('top-bar-subtitle');
+      const badge = document.getElementById('top-role-badge');
+      const roleText = document.getElementById('role-text');
+      const roleIcon = document.getElementById('role-badge-icon');
+      const authBtn = document.getElementById('top-auth-action-btn');
+      const authBtnLabel = document.getElementById('top-auth-btn-label');
+      const authBtnIcon = document.getElementById('top-auth-btn-icon');
+
+      if (!sub || !badge || !authBtn) return;
+
+      if (currentUser.role === 'GUEST') {
+        sub.innerText = "Gast-Besucher (Nicht eingeloggt)";
+        sub.style.color = "#94A3B8";
+        badge.className = "role-badge guest";
+        if (roleIcon) roleIcon.innerText = "👤";
+        if (roleText) roleText.innerText = "GAST";
+
+        authBtn.className = "top-auth-btn login";
+        if (authBtnIcon) authBtnIcon.innerText = "🔑";
+        if (authBtnLabel) authBtnLabel.innerText = "Login";
+        authBtn.title = "Anmelden oder Registrieren";
       } else {
-        badge.innerText = 'ADMIN: RFOF';
-        showToast("Rolle gewechselt: Admin (RFOF-NETWORK)");
+        if (currentUser.username === 'Satoramy') {
+          sub.innerText = "Nutzer: Satoramy (Dual-Admin)";
+          sub.style.color = "var(--gold-main)";
+          badge.className = "role-badge admin";
+          if (roleIcon) roleIcon.innerText = "🛡️";
+          if (roleText) roleText.innerText = "ADMIN";
+        } else if (currentUser.role === 'ADMIN') {
+          sub.innerText = "Admin: RFOF-NETWORK";
+          sub.style.color = "var(--gold-main)";
+          badge.className = "role-badge admin";
+          if (roleIcon) roleIcon.innerText = "🛡️";
+          if (roleText) roleText.innerText = "ADMIN";
+        } else {
+          sub.innerText = "Nutzer: " + currentUser.username;
+          sub.style.color = "#E2E8F0";
+          badge.className = "role-badge user";
+          if (roleIcon) roleIcon.innerText = "👤";
+          if (roleText) roleText.innerText = "USER";
+        }
+
+        authBtn.className = "top-auth-btn logout";
+        if (authBtnIcon) authBtnIcon.innerText = "🚪";
+        if (authBtnLabel) authBtnLabel.innerText = "Logout";
+        authBtn.title = "Abmelden (" + currentUser.username + ")";
+      }
+    }
+
+    function handleTopAuthAction() {
+      if (currentUser.role === 'GUEST') {
+        openAuthModal();
+      } else {
+        logoutUser();
+      }
+    }
+
+    function switchUserRole() {
+      openAuthModal();
+    }
+
+    function openAuthModal() {
+      renderAuthModal();
+      const modal = document.getElementById('auth-hub-modal');
+      if (modal) modal.classList.add('show');
+    }
+
+    function logoutUser() {
+      currentUser = {
+        username: 'Gast-Besucher',
+        role: 'GUEST',
+        userType: 'KUNDE',
+        authProvider: 'Gast'
+      };
+      localStorage.setItem('current_user', JSON.stringify(currentUser));
+      updateHeaderAuthUI();
+      renderAuthModal();
+      showToast("Erfolgreich abgemeldet (Gast-Modus)");
+    }
+
+    function setExecutionMode(mode) {
+      authExecutionMode = mode;
+      localStorage.setItem('auth_mode', mode);
+      renderAuthModal();
+      showToast(mode === 'MAIN_REAL' ? "Modus: MAIN (REAL) aktiv. Keine Demo-Zulassung." : "Modus: TEST (DEMO) aktiv. Sandbox aktiv.");
+    }
+
+    function switchAuthTab(tabIdx) {
+      authModalTab = tabIdx;
+      for (let i = 0; i < 3; i++) {
+        const btn = document.getElementById('auth-tab-btn-' + i);
+        const content = document.getElementById('auth-tab-content-' + i);
+        if (btn) btn.className = i === tabIdx ? 'btn btn-primary' : 'btn btn-outline';
+        if (content) content.style.display = i === tabIdx ? 'block' : 'none';
+      }
+      if (tabIdx === 1) renderProvidersList();
+    }
+
+    function setRegisterMode(isReg) {
+      isRegisterTabActive = isReg;
+      document.getElementById('auth-sub-login-btn').className = !isReg ? 'btn btn-primary' : 'btn btn-outline';
+      document.getElementById('auth-sub-reg-btn').className = isReg ? 'btn btn-primary' : 'btn btn-outline';
+      document.getElementById('auth-form-login').style.display = !isReg ? 'block' : 'none';
+      document.getElementById('auth-form-register').style.display = isReg ? 'block' : 'none';
+    }
+
+    function checkRegisterUsername(val) {
+      const hint = document.getElementById('auth-reg-hint-box');
+      if (!hint) return;
+      const clean = val.trim().toLowerCase();
+      if (clean === 'satoramy' || clean === 'sartoramy') {
+        hint.innerHTML = `<div style="background:#FEF9C3; border:1px solid var(--gold-main); padding:6px; border-radius:6px; font-size:10px; color:#854D0E; font-weight:bold;">
+          ⭐ Dual-Identity Creator-Account erkannt! Dein manuelles Passwort wird automatisch mit RFOF-NETWORK geteilt. Du erhältst Admin- & Nutzerrechte sowie Phrasen-Zugang!
+        </div>`;
+      } else if (clean === 'rfof-network') {
+        hint.innerHTML = `<div style="background:#FEE2E2; border:1px solid #F87171; padding:6px; border-radius:6px; font-size:10px; color:#991B1B;">
+          ⚠️ Reserviert für Master-Admin. Bitte melde dich an oder wähle einen anderen Namen.
+        </div>`;
+      } else if (registeredUsers[clean]) {
+        hint.innerHTML = `<div style="background:#FEE2E2; border:1px solid #F87171; padding:6px; border-radius:6px; font-size:10px; color:#991B1B;">
+          ⚠️ Benutzername '${val}' ist bereits vergeben!
+        </div>`;
+      } else {
+        hint.innerHTML = "";
+      }
+    }
+
+    function submitCredentialsLogin() {
+      const u = (document.getElementById('auth-login-username').value || "").trim();
+      const p = (document.getElementById('auth-login-password').value || "").trim();
+      if (!u) { showToast("Bitte Benutzernamen eingeben."); return; }
+      const key = u.toLowerCase();
+
+      // Master phrases
+      if (p.toLowerCase() === MASTER_CREATOR_PHRASE) {
+        if (key === 'rfof-network' || !key) {
+          loginAsRfofNetwork();
+          return;
+        } else if (key === 'satoramy' || key === 'sartoramy') {
+          loginAsSatoramy();
+          return;
+        }
+      }
+
+      // Satoramy check
+      if (key === 'satoramy' || key === 'sartoramy') {
+        if (p === satoramyManualPassword || p === "SatoramyAdmin2026!" || p === "rfof2026") {
+          loginAsSatoramy();
+          return;
+        } else {
+          showToast("Falsches Passwort für Satoramy.");
+          return;
+        }
+      }
+
+      // RFOF-NETWORK check (also accepts Satoramy's linked password!)
+      if (key === 'rfof-network') {
+        if (p === satoramyManualPassword || p === "rfof2026" || p === "SatoramyAdmin2026!") {
+          loginAsRfofNetwork();
+          return;
+        } else {
+          showToast("Falsches Passwort oder Phrasen für RFOF-NETWORK.");
+          return;
+        }
+      }
+
+      // Custom registered user
+      if (registeredUsers[key]) {
+        if (registeredUsers[key].password === p) {
+          currentUser = registeredUsers[key];
+          localStorage.setItem('current_user', JSON.stringify(currentUser));
+          updateHeaderAuthUI();
+          closeModal('auth-hub-modal');
+          showToast("Willkommen zurück, " + currentUser.username + "!");
+          return;
+        } else {
+          showToast("Falsches Passwort für " + u);
+          return;
+        }
+      }
+
+      showToast("Benutzer '" + u + "' nicht gefunden. Bitte erstelle einen Account!");
+    }
+
+    function submitRegistration() {
+      const u = (document.getElementById('auth-reg-username').value || "").trim();
+      const p = (document.getElementById('auth-reg-password').value || "").trim();
+      const type = document.getElementById('auth-reg-usertype').value;
+
+      if (!u) { showToast("Bitte Benutzernamen eingeben."); return; }
+      if (p.length < 4) { showToast("Passwort muss mindestens 4 Zeichen lang sein."); return; }
+
+      const key = u.toLowerCase();
+
+      // Special Satoramy creation
+      if (key === 'satoramy' || key === 'sartoramy') {
+        satoramyManualPassword = p;
+        localStorage.setItem('satoramy_manual_password', p);
+        registeredUsers['satoramy'] = {
+          username: 'Satoramy',
+          role: 'ADMIN',
+          userType: 'ERFINDER',
+          authProvider: 'Satoramy Dual-Creator Auth (eGbR / Admin & User)',
+          password: p
+        };
+        registeredUsers['rfof-network'].password = p;
+        localStorage.setItem('registered_users', JSON.stringify(registeredUsers));
+        loginAsSatoramy();
+        showToast("⭐ Creator-Account 'Satoramy' erstellt! Mit RFOF-NETWORK verknüpft.");
+        return;
+      }
+
+      if (key === 'rfof-network') {
+        showToast("Benutzername 'RFOF-NETWORK' ist reserviert.");
+        return;
+      }
+
+      if (registeredUsers[key]) {
+        showToast("Benutzername bereits vergeben!");
+        return;
+      }
+
+      registeredUsers[key] = {
+        username: u,
+        role: 'USER',
+        userType: type,
+        authProvider: 'Eigenes System (Passwort / Entropie)',
+        password: p
+      };
+      localStorage.setItem('registered_users', JSON.stringify(registeredUsers));
+      currentUser = registeredUsers[key];
+      localStorage.setItem('current_user', JSON.stringify(currentUser));
+      updateHeaderAuthUI();
+      closeModal('auth-hub-modal');
+      showToast("Account '" + u + "' erfolgreich erstellt & angemeldet!");
+    }
+
+    function loginAsRfofNetwork() {
+      currentUser = registeredUsers['rfof-network'];
+      localStorage.setItem('current_user', JSON.stringify(currentUser));
+      parallelProviders.github.enabled = true;
+      updateHeaderAuthUI();
+      closeModal('auth-hub-modal');
+      showToast("Als Master-Admin (RFOF-NETWORK) autorisiert!");
+    }
+
+    function loginAsSatoramy() {
+      currentUser = registeredUsers['satoramy'];
+      localStorage.setItem('current_user', JSON.stringify(currentUser));
+      parallelProviders.github.enabled = true;
+      updateHeaderAuthUI();
+      closeModal('auth-hub-modal');
+      showToast("Als Satoramy autorisiert! (Dual-Admin & Nutzer aktiv)");
+    }
+
+    function loginWithGoogleOAuth() {
+      currentUser = {
+        username: 'Google-Erfinder',
+        role: 'USER',
+        userType: 'ERFINDER',
+        authProvider: 'Google Account (rfof236286@gmail.com)'
+      };
+      localStorage.setItem('current_user', JSON.stringify(currentUser));
+      parallelProviders.google.enabled = true;
+      updateHeaderAuthUI();
+      closeModal('auth-hub-modal');
+      showToast("Mit Google Account angemeldet (User)");
+    }
+
+    function loginWithMicrosoftAD() {
+      currentUser = {
+        username: 'Microsoft-Partner',
+        role: 'USER',
+        userType: 'PARTNER',
+        authProvider: 'Microsoft Azure AD (rfof-network@azure.com)'
+      };
+      localStorage.setItem('current_user', JSON.stringify(currentUser));
+      parallelProviders.microsoft.enabled = true;
+      updateHeaderAuthUI();
+      closeModal('auth-hub-modal');
+      showToast("Mit Microsoft Azure AD angemeldet (User)");
+    }
+
+    function loginWithW3Connect() {
+      currentUser = {
+        username: 'W3-0xRFOF...8321',
+        role: 'USER',
+        userType: 'PARTNER',
+        authProvider: 'W3Connect (0xRFOF9842A...)'
+      };
+      localStorage.setItem('current_user', JSON.stringify(currentUser));
+      parallelProviders.w3connect.enabled = true;
+      updateHeaderAuthUI();
+      closeModal('auth-hub-modal');
+      showToast("W3Connect / Wallet verbunden (User)");
+    }
+
+    function loginWithFirebaseCloud() {
+      currentUser = {
+        username: 'Firebase-Client',
+        role: 'USER',
+        userType: 'ERFINDER',
+        authProvider: 'Firebase Cloud (gen-lang-client-0256777474)'
+      };
+      localStorage.setItem('current_user', JSON.stringify(currentUser));
+      parallelProviders.firebase.enabled = true;
+      updateHeaderAuthUI();
+      closeModal('auth-hub-modal');
+      showToast("Mit Firebase Serverless Identity verbunden");
+    }
+
+    function renderProvidersList() {
+      const container = document.getElementById('auth-providers-list');
+      if (!container) return;
+      let html = '';
+      Object.keys(parallelProviders).forEach(key => {
+        const p = parallelProviders[key];
+        const isMain = authExecutionMode === 'MAIN_REAL';
+        html += `
+          <div style="background:#fff; border:1px solid ${p.enabled ? 'var(--navy-border)' : 'var(--slate-200)'}; border-radius:10px; padding:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:20px;">${p.icon}</span>
+                <div>
+                  <strong style="font-size:12px; color:var(--navy-main);">${p.name}</strong>
+                  <div style="font-size:9px; color:var(--text-muted);">${p.protocol}</div>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span style="background:${p.enabled ? 'rgba(16,185,129,0.15)' : 'var(--slate-100)'}; color:${p.enabled ? 'var(--signal-green)' : 'var(--text-muted)'}; padding:2px 6px; border-radius:4px; font-size:9px; font-weight:bold;">
+                  ${p.enabled ? 'AKTIV (ON)' : 'INAKTIV (OFF)'}
+                </span>
+                <input type="checkbox" ${p.enabled ? 'checked' : ''} onchange="toggleProvider('${key}', this.checked)" style="cursor:pointer;">
+              </div>
+            </div>
+            ${p.enabled ? `
+              <div style="background:var(--slate-50); border:1px solid var(--slate-200); border-radius:6px; padding:6px; margin-top:6px; font-size:10px;">
+                <div style="color:var(--navy-main); font-weight:600;">Account: ${p.account}</div>
+                <div class="mono" style="font-size:9px; color:var(--text-muted);">Token (${authExecutionMode}): ${isMain ? (p.token || 'real_sec_bound_91c') : 'demo_sandbox_tok_00a'}</div>
+                <div style="font-size:9px; color:var(--signal-green); font-weight:bold; margin-top:2px;">
+                  ⚡ Double-Proxy: Ingress ✓ | Egress (${isMain ? 'Firestore Cloud' : 'Local Parity'}) ✓
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function toggleProvider(key, enable) {
+      if (parallelProviders[key]) {
+        parallelProviders[key].enabled = enable;
+        renderProvidersList();
+        showToast(parallelProviders[key].name + (enable ? " verbunden (ON)" : " getrennt (OFF)"));
+      }
+    }
+
+    function renderAuthModal() {
+      // Execution mode buttons
+      const btnTest = document.getElementById('mode-btn-test');
+      const btnMain = document.getElementById('mode-btn-main');
+      const desc = document.getElementById('mode-desc-text');
+      if (btnTest && btnMain) {
+        if (authExecutionMode === 'TEST_DEMO') {
+          btnTest.className = 'btn btn-primary';
+          btnMain.className = 'btn btn-outline';
+          if (desc) desc.innerText = "Modus: TEST (DEMO) aktiv. Nur Sandbox-Tokens aktiv. Keine produktiven Änderungen.";
+        } else {
+          btnTest.className = 'btn btn-outline';
+          btnMain.className = 'btn btn-primary';
+          if (desc) desc.innerText = "Modus: MAIN (REAL) aktiv. Keine Demo-Zulassung, echte Serverless-Tokens & Parität.";
+        }
+      }
+
+      // Status box
+      const statusBox = document.getElementById('auth-current-status-box');
+      if (statusBox) {
+        if (currentUser.role === 'GUEST') {
+          statusBox.style.background = "var(--slate-100)";
+          statusBox.style.border = "1px solid var(--slate-200)";
+          statusBox.style.color = "var(--navy-main)";
+          statusBox.innerHTML = `<strong>Aktueller Status:</strong> Gast-Besucher (Nicht eingeloggt). Bitte melde dich an oder erstelle einen Account.`;
+        } else if (currentUser.username === 'Satoramy' || currentUser.username === 'RFOF-NETWORK') {
+          statusBox.style.background = "#FEF3C7";
+          statusBox.style.border = "1px solid var(--gold-main)";
+          statusBox.style.color = "#78350F";
+          statusBox.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong>⭐ Dual-Creator Identität: ${currentUser.username}</strong>
+              <span style="background:var(--gold-main); color:var(--navy-main); padding:2px 6px; border-radius:4px; font-weight:800; font-size:9px;">ADMIN & NUTZER</span>
+            </div>
+            <div style="font-size:10px; margin-top:3px;">RFOF-NETWORK & Satoramy verknüpft · Geteiltes manuelles Passwort · Phrasen-Zugang autark gesichert.</div>
+          `;
+        } else {
+          statusBox.style.background = "#EFF6FF";
+          statusBox.style.border = "1px solid #BFDBFE";
+          statusBox.style.color = "var(--navy-main)";
+          statusBox.innerHTML = `
+            <strong>Angemeldet als:</strong> ${currentUser.username} (${currentUser.authProvider}) · Rolle: ${currentUser.role}
+          `;
+        }
+      }
+
+      // Phrase box visibility
+      const phraseBox = document.getElementById('auth-phrases-box');
+      if (phraseBox) {
+        phraseBox.style.display = (currentUser.role === 'ADMIN' || currentUser.username === 'Satoramy') ? 'block' : 'none';
       }
     }
 
@@ -1509,8 +2058,156 @@ PARITÄT:           Android APK v8.0 & Web App 100% SYNCHRON
       renderCategories('all');
       renderExplorerCerts();
       selectPerspective(0);
+      updateHeaderAuthUI();
     });
   </script>
+
+  <!-- MULTI-PARALLEL AUTH HUB & SATORAMY DUAL-CREATOR MODAL -->
+  <div id="auth-hub-modal" class="modal-backdrop" onclick="if(event.target===this) closeModal('auth-hub-modal')">
+    <div class="modal-sheet" style="max-width: 600px; max-height: 90vh; overflow-y: auto;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="width:36px; height:36px; border-radius:50%; background:var(--navy-main); display:flex; align-items:center; justify-content:center; color:var(--gold-main); font-size:18px;">🛡️</div>
+          <div>
+            <h3 style="font-size:15px; font-weight:800; color:var(--navy-main);">MULTI-PARALLEL AUTH HUB</h3>
+            <p style="font-size:10px; color:var(--text-muted);">Entropy Double Proxy Validator · Serverless Level</p>
+          </div>
+        </div>
+        <button onclick="closeModal('auth-hub-modal')" style="background:none; border:none; font-size:18px; cursor:pointer; color:var(--text-muted);">✕</button>
+      </div>
+
+      <!-- DETERMINISTIC MODE SELECTOR -->
+      <div style="background:var(--slate-50); border:1px solid var(--navy-border); border-radius:10px; padding:10px; margin-bottom:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:10px; font-weight:800; color:var(--navy-main);">DETERMINISTISCHER MODUS:</span>
+          <div style="display:flex; gap:6px;">
+            <button id="mode-btn-test" class="btn" style="padding:4px 8px; font-size:10px; border-radius:6px; font-weight:bold;" onclick="setExecutionMode('TEST_DEMO')">🧪 Test (Demo)</button>
+            <button id="mode-btn-main" class="btn" style="padding:4px 8px; font-size:10px; border-radius:6px; font-weight:bold;" onclick="setExecutionMode('MAIN_REAL')">🛡️ Main (Real)</button>
+          </div>
+        </div>
+        <div id="mode-desc-text" style="font-size:9px; color:var(--text-muted); margin-top:4px;">
+          Modus: MAIN (REAL) aktiv. Keine Demo-Zulassung, echte Serverless-Tokens & Parität.
+        </div>
+      </div>
+
+      <!-- ACTIVE IDENTITY STATUS -->
+      <div id="auth-current-status-box" style="padding:10px; border-radius:8px; margin-bottom:12px; font-size:11px; line-height:1.4;"></div>
+
+      <!-- MODAL TABS -->
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-bottom:12px; border-bottom:1px solid var(--slate-200); padding-bottom:8px;">
+        <button id="auth-tab-btn-0" class="btn btn-primary" style="padding:6px; font-size:10px; font-weight:bold;" onclick="switchAuthTab(0)">🔑 Login / Registrieren</button>
+        <button id="auth-tab-btn-1" class="btn btn-outline" style="padding:6px; font-size:10px; font-weight:bold;" onclick="switchAuthTab(1)">🛡️ 5 Provider</button>
+        <button id="auth-tab-btn-2" class="btn btn-outline" style="padding:6px; font-size:10px; font-weight:bold;" onclick="switchAuthTab(2)">⚡ Schnell-Auswahl</button>
+      </div>
+
+      <!-- TAB 0: LOGIN & REGISTRIEREN -->
+      <div id="auth-tab-content-0">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;">
+          <button id="auth-sub-login-btn" class="btn btn-primary" style="padding:6px; font-size:11px;" onclick="setRegisterMode(false)">Einloggen</button>
+          <button id="auth-sub-reg-btn" class="btn btn-outline" style="padding:6px; font-size:11px;" onclick="setRegisterMode(true)">Neuen Account erstellen</button>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <div id="auth-form-login" style="background:var(--slate-50); border:1px solid var(--slate-200); border-radius:10px; padding:12px;">
+          <h4 style="font-size:12px; font-weight:bold; color:var(--navy-main); margin-bottom:8px;">Anmelden mit Account oder Master-Phrasen</h4>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div>
+              <label style="font-size:10px; color:var(--text-muted); font-weight:bold;">Benutzername / Identität:</label>
+              <input type="text" id="auth-login-username" class="mono" style="width:100%; padding:8px; border:1px solid var(--slate-200); border-radius:6px; font-size:12px;" placeholder="z.B. Satoramy oder RFOF-NETWORK">
+              <div style="display:flex; gap:4px; margin-top:4px;">
+                <button class="btn btn-outline" style="padding:2px 6px; font-size:9px;" onclick="document.getElementById('auth-login-username').value='Satoramy'">Ausfüllen: Satoramy</button>
+                <button class="btn btn-outline" style="padding:2px 6px; font-size:9px;" onclick="document.getElementById('auth-login-username').value='RFOF-NETWORK'">Ausfüllen: RFOF-NETWORK</button>
+              </div>
+            </div>
+            <div>
+              <label style="font-size:10px; color:var(--text-muted); font-weight:bold;">Passwort oder Master-Phrasen:</label>
+              <input type="password" id="auth-login-password" style="width:100%; padding:8px; border:1px solid var(--slate-200); border-radius:6px; font-size:12px;" placeholder="Passwort eingeben">
+            </div>
+            <button class="btn btn-primary" style="padding:10px; font-size:12px; font-weight:bold; margin-top:4px;" onclick="submitCredentialsLogin()">
+              🔑 Anmelden
+            </button>
+          </div>
+
+          <div style="background:#FEF3C7; border:1px solid #FCD34D; border-radius:6px; padding:8px; margin-top:10px; font-size:10px; color:#78350F; line-height:1.4;">
+            <strong>⭐ Dual-Account Verknüpfung (Satoramy & RFOF-NETWORK):</strong><br>
+            Das vom Creator bei Satoramy hinterlegte manuelle Nutzerpasswort gilt auch für RFOF-NETWORK. Satoramy und RFOF-NETWORK haben beide vollen Admin- und Nutzerzugriff sowie Phrasen-Einsicht.
+          </div>
+        </div>
+
+        <!-- REGISTER FORM -->
+        <div id="auth-form-register" style="display:none; background:var(--slate-50); border:1px solid var(--slate-200); border-radius:10px; padding:12px;">
+          <h4 style="font-size:12px; font-weight:bold; color:var(--navy-main); margin-bottom:8px;">Neuen Account registrieren (Eindeutiger Benutzername)</h4>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div>
+              <label style="font-size:10px; color:var(--text-muted); font-weight:bold;">Gewünschter Benutzername:</label>
+              <input type="text" id="auth-reg-username" class="mono" style="width:100%; padding:8px; border:1px solid var(--slate-200); border-radius:6px; font-size:12px;" placeholder="z.B. Satoramy" oninput="checkRegisterUsername(this.value)">
+              <div id="auth-reg-hint-box" style="margin-top:4px;"></div>
+            </div>
+            <div>
+              <label style="font-size:10px; color:var(--text-muted); font-weight:bold;">Manuelles Passwort festlegen (min. 4 Zeichen):</label>
+              <input type="password" id="auth-reg-password" style="width:100%; padding:8px; border:1px solid var(--slate-200); border-radius:6px; font-size:12px;" placeholder="Sicheres Passwort">
+            </div>
+            <div>
+              <label style="font-size:10px; color:var(--text-muted); font-weight:bold;">Rolle / Nutzertyp:</label>
+              <select id="auth-reg-usertype" style="width:100%; padding:8px; border:1px solid var(--slate-200); border-radius:6px; font-size:12px; background:#fff;">
+                <option value="ERFINDER">Erfinder (eGbR - Eingetragene GbR)</option>
+                <option value="PARTNER">Partner (GbR - BGB-Gesellschaft)</option>
+                <option value="KUNDE">Kunde / Anwender</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" style="padding:10px; font-size:12px; font-weight:bold; background:var(--gold-main); color:var(--navy-main); margin-top:4px;" onclick="submitRegistration()">
+              ⭐ Account erstellen & Anmelden
+            </button>
+          </div>
+        </div>
+
+        <!-- MASTER PHRASES DISPLAY FOR CREATOR -->
+        <div id="auth-phrases-box" style="display:none; background:#F8FAFC; border:1px solid var(--slate-200); border-radius:8px; padding:10px; margin-top:10px;">
+          <div style="font-size:10px; font-weight:bold; color:var(--navy-main); display:flex; align-items:center; gap:4px; margin-bottom:4px;">
+            <span>🔑</span> Master-Phrasen Einsicht (Nur Creator: RFOF & Satoramy):
+          </div>
+          <div class="mono" style="font-size:9px; background:#fff; padding:6px; border-radius:4px; color:#475569; word-break:break-all;">
+            vault alpha omega genesis 2026 rfof sovereign guardian
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 1: 5 PARALLELE PROVIDER -->
+      <div id="auth-tab-content-1" style="display:none;">
+        <div style="display:flex; flex-direction:column; gap:8px;" id="auth-providers-list">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- TAB 2: SCHNELL-AUSWAHL -->
+      <div id="auth-tab-content-2" style="display:none;">
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <button class="btn" style="background:var(--navy-main); color:#fff; padding:10px; font-size:12px; font-weight:bold; display:flex; align-items:center; gap:8px;" onclick="loginAsRfofNetwork()">
+            <span>🛡️</span> RFOF-NETWORK (Master-Admin / GitHub OAuth)
+          </button>
+          <button class="btn" style="background:var(--gold-main); color:var(--navy-main); padding:10px; font-size:12px; font-weight:800; display:flex; align-items:center; gap:8px;" onclick="loginAsSatoramy()">
+            <span>⭐</span> Satoramy (Dual-Admin & Nutzer / Creator)
+          </button>
+          <button class="btn btn-outline" style="padding:10px; font-size:12px; display:flex; align-items:center; gap:8px;" onclick="loginWithGoogleOAuth()">
+            <span>👤</span> Mit Google Account anmelden (User)
+          </button>
+          <button class="btn btn-outline" style="padding:10px; font-size:12px; display:flex; align-items:center; gap:8px;" onclick="loginWithMicrosoftAD()">
+            <span>🪟</span> Mit Microsoft Azure AD anmelden (User)
+          </button>
+          <button class="btn btn-outline" style="padding:10px; font-size:12px; display:flex; align-items:center; gap:8px;" onclick="loginWithW3Connect()">
+            <span>💳</span> W3Connect / Wallet verbinden (User)
+          </button>
+          <button class="btn btn-outline" style="padding:10px; font-size:12px; display:flex; align-items:center; gap:8px;" onclick="loginWithFirebaseCloud()">
+            <span>🔥</span> Firebase Cloud Identity verbinden
+          </button>
+          <hr style="border:none; border-top:1px solid var(--slate-200); margin:4px 0;">
+          <button class="btn btn-outline" style="padding:8px; font-size:11px; color:#EF4444; border-color:#EF4444;" onclick="logoutUser()">
+            🚪 Abmelden (Gast-Modus)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- APK APP DOWNLOAD MODAL -->
   <div id="apk-app-modal" class="modal-backdrop" onclick="if(event.target===this) closeModal('apk-app-modal')">

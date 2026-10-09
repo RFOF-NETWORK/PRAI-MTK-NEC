@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import com.example.auth.AuthManager
 import com.example.auth.UserRole
 import com.example.data.RepositoryManager
+import com.example.data.WalletRepository
 import com.example.model.ExecutionMode
 import com.example.ui.components.AuthDialog
 import com.example.ui.components.GlobalSearchDialog
@@ -249,9 +250,9 @@ fun MainAppContent() {
                 )
               }
               Text(
-                text = if (isWebAppMode) "Web App Version · 100% Parität" else if (currentUser.role == UserRole.ADMIN) "Admin: RFOF-NETWORK" else "Nutzer: ${currentUser.username}",
+                text = if (isWebAppMode) "Web App Version · 100% Parität" else if (currentUser.username == "Satoramy") "Nutzer: Satoramy (Dual-Admin)" else if (currentUser.role == UserRole.ADMIN) "Admin: RFOF-NETWORK" else if (currentUser.role == UserRole.GUEST) "Gast-Besucher (Nicht eingeloggt)" else "Nutzer: ${currentUser.username}",
                 style = MaterialTheme.typography.labelSmall,
-                color = if (isWebAppMode) SignalGreen else if (currentUser.role == UserRole.ADMIN) UrkundeGold else Color(0xFF94A3B8),
+                color = if (isWebAppMode) SignalGreen else if (currentUser.role == UserRole.ADMIN || currentUser.username == "Satoramy") UrkundeGold else Color(0xFF94A3B8),
                 maxLines = 1
               )
             }
@@ -264,7 +265,7 @@ fun MainAppContent() {
         actions = {
           // Role & Auth status chip
           Surface(
-            color = if (currentUser.role == UserRole.ADMIN) UrkundeGoldBg else SignalBlueLight,
+            color = if (currentUser.role == UserRole.ADMIN) UrkundeGoldBg else if (currentUser.role == UserRole.GUEST) Color(0xFF334155) else SignalBlueLight,
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier
               .clickable { showAuthDialog = true }
@@ -275,18 +276,58 @@ fun MainAppContent() {
               modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
             ) {
               Icon(
-                imageVector = if (currentUser.role == UserRole.ADMIN) Icons.Default.Shield else Icons.Default.Person,
+                imageVector = if (currentUser.role == UserRole.ADMIN) Icons.Default.Shield else if (currentUser.role == UserRole.GUEST) Icons.Default.PersonOutline else Icons.Default.Person,
                 contentDescription = null,
-                tint = if (currentUser.role == UserRole.ADMIN) UrkundeGoldDark else SignalBlue,
+                tint = if (currentUser.role == UserRole.ADMIN) UrkundeGoldDark else if (currentUser.role == UserRole.GUEST) Color(0xFF94A3B8) else SignalBlue,
                 modifier = Modifier.size(13.dp)
               )
               Spacer(modifier = Modifier.width(3.dp))
               Text(
-                text = if (currentUser.role == UserRole.ADMIN) "ADMIN" else "USER",
-                color = if (currentUser.role == UserRole.ADMIN) UrkundeGoldDark else SignalBlue,
+                text = if (currentUser.role == UserRole.ADMIN) "ADMIN" else if (currentUser.role == UserRole.GUEST) "GAST" else "USER",
+                color = if (currentUser.role == UserRole.ADMIN) UrkundeGoldDark else if (currentUser.role == UserRole.GUEST) Color.White else SignalBlue,
                 fontWeight = FontWeight.Black,
                 fontSize = 9.sp
               )
+            }
+          }
+
+          Spacer(modifier = Modifier.width(4.dp))
+
+          // DEDICATED LOGIN / LOGOUT BUTTON (Crucial UI/UX Parity)
+          if (currentUser.role == UserRole.GUEST) {
+            // Unauthenticated: Show Login / Registrieren button
+            Button(
+              onClick = { showAuthDialog = true },
+              colors = ButtonDefaults.buttonColors(containerColor = UrkundeGold),
+              shape = RoundedCornerShape(8.dp),
+              contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+              modifier = Modifier
+                .height(28.dp)
+                .testTag("top_auth_login_button")
+            ) {
+              Icon(Icons.Default.Login, contentDescription = null, tint = BlueprintNavy, modifier = Modifier.size(13.dp))
+              Spacer(modifier = Modifier.width(3.dp))
+              Text("Login", color = BlueprintNavy, fontWeight = FontWeight.Black, fontSize = 10.sp)
+            }
+          } else {
+            // Authenticated: Show Logout button at the exact same location
+            OutlinedButton(
+              onClick = {
+                AuthManager.logout()
+                WalletRepository.refreshAssetsForCurrentRole()
+                Toast.makeText(context, "Erfolgreich abgemeldet (Gast-Modus)", Toast.LENGTH_SHORT).show()
+              },
+              colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFEF4444)),
+              border = BorderStroke(1.dp, Color(0xFFEF4444)),
+              shape = RoundedCornerShape(8.dp),
+              contentPadding = PaddingValues(horizontal = 7.dp, vertical = 2.dp),
+              modifier = Modifier
+                .height(28.dp)
+                .testTag("top_auth_logout_button")
+            ) {
+              Icon(Icons.Default.ExitToApp, contentDescription = null, tint = Color(0xFFEF4444), modifier = Modifier.size(13.dp))
+              Spacer(modifier = Modifier.width(3.dp))
+              Text("Logout", color = Color(0xFFEF4444), fontWeight = FontWeight.Bold, fontSize = 10.sp)
             }
           }
 
