@@ -38,7 +38,11 @@ fun AuthDialog(
 
   var showSuccessMsg by remember { mutableStateOf<String?>(null) }
   var showErrorMsg by remember { mutableStateOf<String?>(null) }
-  var activeTab by remember { mutableIntStateOf(0) } // 0: Multi-Parallel Providers, 1: Quick Presets
+  var activeTab by remember { mutableIntStateOf(0) } // 0: Login & Registrieren, 1: 5 Parallele Provider, 2: Schnell-Anmeldung
+  var isRegisterMode by remember { mutableStateOf(false) }
+  var usernameInput by remember { mutableStateOf("") }
+  var passwordInput by remember { mutableStateOf("") }
+  var userTypeInput by remember { mutableStateOf(UserType.ERFINDER) }
 
   Dialog(
     onDismissRequest = onDismiss,
@@ -267,12 +271,17 @@ fun AuthDialog(
           Tab(
             selected = activeTab == 0,
             onClick = { activeTab = 0 },
-            text = { Text("5 Parallele Provider", fontSize = 11.sp, fontWeight = FontWeight.Bold) }
+            text = { Text("🔑 Login / Registrieren", fontSize = 10.sp, fontWeight = FontWeight.Bold) }
           )
           Tab(
             selected = activeTab == 1,
             onClick = { activeTab = 1 },
-            text = { Text("Schnell-Anmeldung", fontSize = 11.sp, fontWeight = FontWeight.Bold) }
+            text = { Text("🛡️ 5 Parallel Provider", fontSize = 10.sp, fontWeight = FontWeight.Bold) }
+          )
+          Tab(
+            selected = activeTab == 2,
+            onClick = { activeTab = 2 },
+            text = { Text("⚡ Schnell-Auswahl", fontSize = 10.sp, fontWeight = FontWeight.Bold) }
           )
         }
 
@@ -280,6 +289,212 @@ fun AuthDialog(
 
         // Tab Content
         if (activeTab == 0) {
+          // Tab 0: Credentials Login & Account Creation
+          LazyColumn(
+            modifier = Modifier
+              .weight(1f)
+              .fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+          ) {
+            item {
+              Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+              ) {
+                FilterChip(
+                  selected = !isRegisterMode,
+                  onClick = { isRegisterMode = false },
+                  label = { Text("Einloggen", fontWeight = FontWeight.Bold) },
+                  colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = BlueprintNavy,
+                    selectedLabelColor = Color.White
+                  ),
+                  modifier = Modifier.weight(1f)
+                )
+                FilterChip(
+                  selected = isRegisterMode,
+                  onClick = { isRegisterMode = true },
+                  label = { Text("Neuen Account erstellen", fontWeight = FontWeight.Bold) },
+                  colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = UrkundeGold,
+                    selectedLabelColor = BlueprintNavy
+                  ),
+                  modifier = Modifier.weight(1f)
+                )
+              }
+            }
+
+            if (!isRegisterMode) {
+              // LOGIN MODE
+              item {
+                Card(
+                  colors = CardDefaults.cardColors(containerColor = Slate50),
+                  border = BorderStroke(1.dp, BlueprintBorder),
+                  shape = RoundedCornerShape(10.dp)
+                ) {
+                  Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Anmelden mit Account oder Master-Phrasen", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = BlueprintNavy)
+                    
+                    OutlinedTextField(
+                      value = usernameInput,
+                      onValueChange = { usernameInput = it },
+                      label = { Text("Benutzername (z.B. Satoramy oder RFOF-NETWORK)") },
+                      singleLine = true,
+                      modifier = Modifier.fillMaxWidth()
+                    )
+
+                    OutlinedTextField(
+                      value = passwordInput,
+                      onValueChange = { passwordInput = it },
+                      label = { Text("Passwort oder Master Seed-Phrase") },
+                      singleLine = true,
+                      modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Row(
+                      modifier = Modifier.fillMaxWidth(),
+                      horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                      Button(
+                        onClick = {
+                          val res = AuthManager.loginWithCredentials(usernameInput, passwordInput)
+                          if (res.success) {
+                            WalletRepository.refreshAssetsForCurrentRole()
+                            showSuccessMsg = res.message
+                            showErrorMsg = null
+                          } else {
+                            showErrorMsg = res.message
+                          }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = BlueprintNavy),
+                        modifier = Modifier.weight(1f)
+                      ) {
+                        Text("Anmelden", color = Color.White, fontWeight = FontWeight.Bold)
+                      }
+                    }
+
+                    // Dual Account Explanation
+                    Surface(
+                      color = Color(0xFFFEF3C7),
+                      shape = RoundedCornerShape(6.dp),
+                      modifier = Modifier.fillMaxWidth()
+                    ) {
+                      Column(modifier = Modifier.padding(8.dp)) {
+                        Text(
+                          text = "⭐ Dual-Account Hinweis (Satoramy & RFOF-NETWORK):",
+                          fontWeight = FontWeight.Bold,
+                          fontSize = 10.sp,
+                          color = Color(0xFF92400E)
+                        )
+                        Text(
+                          text = "Der Creator besitzt zwei verbundene Accounts. Das manuelle Passwort von Satoramy öffnet auch RFOF-NETWORK. Satoramy und RFOF-NETWORK haben beide vollen Admin-Zugriff und Phrasen-Einsicht.",
+                          fontSize = 9.sp,
+                          color = Color(0xFF78350F)
+                        )
+                      }
+                    }
+                  }
+                }
+              }
+            } else {
+              // REGISTER MODE
+              item {
+                Card(
+                  colors = CardDefaults.cardColors(containerColor = Slate50),
+                  border = BorderStroke(1.dp, BlueprintBorder),
+                  shape = RoundedCornerShape(10.dp)
+                ) {
+                  Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Neuen Account registrieren (Eindeutiger Name)", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = BlueprintNavy)
+                    
+                    OutlinedTextField(
+                      value = usernameInput,
+                      onValueChange = { usernameInput = it },
+                      label = { Text("Gewünschter Benutzername (z.B. Satoramy)") },
+                      singleLine = true,
+                      modifier = Modifier.fillMaxWidth()
+                    )
+
+                    if (usernameInput.trim().equals("satoramy", ignoreCase = true) || usernameInput.trim().equals("sartoramy", ignoreCase = true)) {
+                      Surface(
+                        color = Color(0xFFFEF9C3),
+                        shape = RoundedCornerShape(6.dp),
+                        border = BorderStroke(1.dp, UrkundeGold),
+                        modifier = Modifier.fillMaxWidth()
+                      ) {
+                        Row(modifier = Modifier.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                          Icon(Icons.Default.Star, contentDescription = null, tint = UrkundeGoldDark, modifier = Modifier.size(16.dp))
+                          Spacer(modifier = Modifier.width(6.dp))
+                          Text(
+                            text = "Dual-Identity Creator-Account erkannt! Wird automatisch mit RFOF-NETWORK verknüpft (Admin & Nutzer, geteiltes Passwort, Phrasen-Zugang).",
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = UrkundeGoldDark
+                          )
+                        }
+                      }
+                    }
+
+                    OutlinedTextField(
+                      value = passwordInput,
+                      onValueChange = { passwordInput = it },
+                      label = { Text("Passwort festlegen (min. 4 Zeichen)") },
+                      singleLine = true,
+                      modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Button(
+                      onClick = {
+                        val res = AuthManager.registerAccount(usernameInput, passwordInput, userTypeInput)
+                        if (res.success) {
+                          WalletRepository.refreshAssetsForCurrentRole()
+                          showSuccessMsg = res.message
+                          showErrorMsg = null
+                        } else {
+                          showErrorMsg = res.message
+                        }
+                      },
+                      colors = ButtonDefaults.buttonColors(containerColor = UrkundeGold),
+                      modifier = Modifier.fillMaxWidth()
+                    ) {
+                      Text("Account erstellen & Einloggen", color = BlueprintNavy, fontWeight = FontWeight.Black)
+                    }
+                  }
+                }
+              }
+            }
+
+            // Master Phrases Info Box for Creator
+            if (currentUser.role == UserRole.ADMIN || currentUser.username == "Satoramy") {
+              item {
+                Surface(
+                  color = Slate100,
+                  shape = RoundedCornerShape(8.dp),
+                  border = BorderStroke(1.dp, BlueprintBorder),
+                  modifier = Modifier.fillMaxWidth()
+                ) {
+                  Column(modifier = Modifier.padding(10.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                      Icon(Icons.Default.Key, contentDescription = null, tint = UrkundeGoldDark, modifier = Modifier.size(14.dp))
+                      Spacer(modifier = Modifier.width(4.dp))
+                      Text("Master-Phrasen Einsicht (Nur Creator: RFOF & Satoramy):", fontWeight = FontWeight.Bold, fontSize = 10.sp, color = BlueprintNavy)
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                      text = AuthManager.MASTER_CREATOR_PHRASE,
+                      fontFamily = FontFamily.Monospace,
+                      fontSize = 9.sp,
+                      color = TextSecondary,
+                      modifier = Modifier
+                        .background(Color.White, RoundedCornerShape(4.dp))
+                        .padding(6.dp)
+                    )
+                  }
+                }
+              }
+            }
+          }
+        } else if (activeTab == 1) {
           // 5 Parallel Providers List
           LazyColumn(
             modifier = Modifier
@@ -334,19 +549,19 @@ fun AuthDialog(
             }
           }
         } else {
-          // Tab 1: Quick Presets (Legacy preserved)
+          // Tab 2: Quick Presets (Including Satoramy!)
           Column(
             modifier = Modifier
               .weight(1f)
               .fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
           ) {
-            // 1. RFOF-NETWORK GitHub OAuth (Admin)
+            // 1. RFOF-NETWORK GitHub OAuth (Master Admin)
             Button(
               onClick = {
                 AuthManager.loginAsRfofNetwork()
                 WalletRepository.refreshAssetsForCurrentRole()
-                showSuccessMsg = "Erfolgreich als Admin (RFOF-NETWORK) autorisiert!"
+                showSuccessMsg = "Erfolgreich als Master-Admin (RFOF-NETWORK) autorisiert!"
                 showErrorMsg = null
               },
               modifier = Modifier
@@ -357,10 +572,29 @@ fun AuthDialog(
             ) {
               Icon(Icons.Default.Security, contentDescription = null, tint = UrkundeGold, modifier = Modifier.size(18.dp))
               Spacer(modifier = Modifier.width(8.dp))
-              Text("RFOF-NETWORK (GitHub Auth / Admin)", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+              Text("RFOF-NETWORK (Master-Admin / GitHub OAuth)", fontWeight = FontWeight.Bold, fontSize = 12.sp)
             }
 
-            // 2. Google OAuth (User)
+            // 2. SATORAMY (Dual-Admin / Creator & User)
+            Button(
+              onClick = {
+                AuthManager.loginAsSatoramy()
+                WalletRepository.refreshAssetsForCurrentRole()
+                showSuccessMsg = "Erfolgreich als Satoramy autorisiert (Dual-Admin & Nutzer)!"
+                showErrorMsg = null
+              },
+              modifier = Modifier
+                .fillMaxWidth()
+                .testTag("auth_satoramy_quick_button"),
+              colors = ButtonDefaults.buttonColors(containerColor = UrkundeGold),
+              shape = RoundedCornerShape(8.dp)
+            ) {
+              Icon(Icons.Default.Star, contentDescription = null, tint = BlueprintNavy, modifier = Modifier.size(18.dp))
+              Spacer(modifier = Modifier.width(8.dp))
+              Text("Satoramy (Dual-Admin & Nutzer / Creator)", color = BlueprintNavy, fontWeight = FontWeight.Black, fontSize = 12.sp)
+            }
+
+            // 3. Google OAuth (User)
             OutlinedButton(
               onClick = {
                 AuthManager.loginWithGoogle("erfinder.partner@gmail.com", "Google Erfinder-Partner")
@@ -378,7 +612,7 @@ fun AuthDialog(
               Text("Mit Google Account anmelden (User)", color = BlueprintNavy, fontSize = 12.sp)
             }
 
-            // 3. Microsoft Azure AD
+            // 4. Microsoft Azure AD
             OutlinedButton(
               onClick = {
                 AuthManager.loginWithMicrosoft("rfof.network@azure.com", "Microsoft Partner")
@@ -394,7 +628,7 @@ fun AuthDialog(
               Text("Mit Microsoft Azure AD anmelden (User)", color = BlueprintNavy, fontSize = 12.sp)
             }
 
-            // 4. W3Connect / Wallet Connect (User)
+            // 5. W3Connect / Wallet Connect (User)
             OutlinedButton(
               onClick = {
                 AuthManager.loginWithWeb3("0x71C2B04E5F931aC2388C89284De15f458B43a890", "EVM / W3Connect")
@@ -412,7 +646,7 @@ fun AuthDialog(
               Text("W3Connect / Wallet verbinden (User)", color = BlueprintNavy, fontSize = 12.sp)
             }
 
-            // 5. Firebase Serverless Identity
+            // 6. Firebase Serverless Identity
             OutlinedButton(
               onClick = {
                 AuthManager.loginWithFirebase()
@@ -442,6 +676,8 @@ fun AuthDialog(
                 .align(Alignment.CenterHorizontally)
                 .testTag("auth_logout_button")
             ) {
+              Icon(Icons.Default.ExitToApp, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
+              Spacer(modifier = Modifier.width(4.dp))
               Text("Abmelden (Gast-Modus)", color = TextMuted, fontSize = 11.sp)
             }
           }

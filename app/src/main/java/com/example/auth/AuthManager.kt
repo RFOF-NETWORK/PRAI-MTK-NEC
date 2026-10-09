@@ -99,6 +99,35 @@ object AuthManager {
     unlockedCertificateIds = setOf("NEC-001")
   )
 
+  // Dual-Identity Creator Profile: Satoramy (Admin & User with linked password & phrases)
+  val SATORAMY_PROFILE = UserProfile(
+    username = "Satoramy",
+    role = UserRole.ADMIN, // Dual Admin & User
+    userType = UserType.ERFINDER,
+    email = "satoramy@rfof-network.org",
+    authProvider = "Satoramy Dual-Creator Auth (eGbR / Admin & User)",
+    walletAddress = "0x89A3B04E5F931aC2388C89284De15f458B43a123",
+    isEscrowAuthorized = true,
+    isMtkHolderAllowed = true,
+    avatarUrl = "",
+    bio = "Satoramy – Dualer Creator-Account (Admin & Nutzer, geteiltes Passwort mit RFOF-NETWORK & Phrasen-Zugang).",
+    organization = "eGbR (Eingetragene GbR)",
+    unlockedCertificateIds = setOf("NEC-001", "NEC-002", "NEC-003", "NEC-004", "NEC-005")
+  )
+
+  // Master Secret Phrases for Creator Accounts
+  const val MASTER_CREATOR_PHRASE = "vault alpha omega genesis 2026 rfof sovereign guardian"
+
+  // Linked manual user password shared between Satoramy & RFOF-NETWORK
+  private var _satoramyManualPassword: String = "SatoramyAdmin2026!"
+  val satoramyManualPassword: String get() = _satoramyManualPassword
+
+  // Custom registered user storage: username -> pair of (password, UserProfile)
+  private val _registeredUsers = mutableMapOf<String, Pair<String, UserProfile>>(
+    "rfof-network" to Pair(_satoramyManualPassword, RFOF_ADMIN_PROFILE),
+    "satoramy" to Pair(_satoramyManualPassword, SATORAMY_PROFILE)
+  )
+
   private val _currentUser = MutableStateFlow(RFOF_ADMIN_PROFILE)
   val currentUser: StateFlow<UserProfile> = _currentUser.asStateFlow()
 
@@ -379,6 +408,131 @@ object AuthManager {
       editorTheme = newEditorTheme,
       userType = if (current.role == UserRole.ADMIN) UserType.ADMIN else userType
     )
+  }
+
+  fun loginAsSatoramy() {
+    _currentUser.value = SATORAMY_PROFILE
+    val currentMap = _parallelProviders.value.toMutableMap()
+    currentMap[AuthProviderType.GITHUB] = ParallelProviderState(
+      provider = AuthProviderType.GITHUB,
+      isEnabled = true,
+      mode = _authExecutionMode.value,
+      accountIdentifier = "Satoramy (Dual-Creator)",
+      activeToken = EntropyDoubleProxyValidator.generateDeterministicToken(
+        AuthProviderType.GITHUB,
+        "Satoramy",
+        _authExecutionMode.value
+      ),
+      proxy1ClientValidatorStatus = "VALIDATED_INGRESS",
+      proxy2ServerlessValidatorStatus = "BOUND_SERVERLESS_FIRESTORE",
+      lastValidatedTimestamp = System.currentTimeMillis()
+    )
+    _parallelProviders.value = currentMap
+  }
+
+  fun registerAccount(
+    username: String,
+    password: String,
+    userType: UserType = UserType.ERFINDER,
+    organization: String = "eGbR (Eingetragene GbR)"
+  ): ValidationResult {
+    val cleanUsername = username.trim()
+    if (cleanUsername.isBlank()) {
+      return ValidationResult(success = false, message = "Benutzername darf nicht leer sein.")
+    }
+    if (password.length < 4) {
+      return ValidationResult(success = false, message = "Das Passwort muss mindestens 4 Zeichen lang sein.")
+    }
+    val key = cleanUsername.lowercase()
+
+    // Satoramy special dual-account creation logic
+    if (key == "satoramy" || key == "sartoramy") {
+      _satoramyManualPassword = password
+      _registeredUsers["satoramy"] = Pair(password, SATORAMY_PROFILE)
+      _registeredUsers["rfof-network"] = Pair(password, RFOF_ADMIN_PROFILE)
+      loginAsSatoramy()
+      return ValidationResult(
+        success = true,
+        message = "Creator-Account 'Satoramy' erfolgreich erstellt! Dual-Admin Status aktiv. Passwort wurde mit RFOF-NETWORK synchronisiert."
+      )
+    }
+
+    if (key == "rfof-network") {
+      return ValidationResult(success = false, message = "Der Benutzername 'RFOF-NETWORK' ist als Master-Admin reserviert.")
+    }
+
+    if (_registeredUsers.containsKey(key)) {
+      return ValidationResult(success = false, message = "Benutzername '$cleanUsername' ist bereits vergeben!")
+    }
+
+    val newProfile = UserProfile(
+      username = cleanUsername,
+      role = UserRole.USER,
+      userType = userType,
+      email = "$key@rfof-network.org",
+      authProvider = "Eigenes System (Passwort / Entropie)",
+      walletAddress = "0x" + cleanUsername.hashCode().toUInt().toString(16).padStart(40, 'a').take(42),
+      isEscrowAuthorized = false,
+      isMtkHolderAllowed = false,
+      organization = organization,
+      unlockedCertificateIds = setOf("NEC-001")
+    )
+
+    _registeredUsers[key] = Pair(password, newProfile)
+    _currentUser.value = newProfile
+    return ValidationResult(
+      success = true,
+      message = "Account '$cleanUsername' erfolgreich erstellt und angemeldet!"
+    )
+  }
+
+  fun loginWithCredentials(username: String, passwordOrPhrase: String): ValidationResult {
+    val cleanUsername = username.trim()
+    val cleanSecret = passwordOrPhrase.trim()
+    val key = cleanUsername.lowercase()
+
+    // 1. Check Master Creator Phrase
+    if (cleanSecret.equals(MASTER_CREATOR_PHRASE, ignoreCase = true)) {
+      if (key == "rfof-network" || cleanUsername.isBlank()) {
+        loginAsRfofNetwork()
+        return ValidationResult(success = true, message = "Master-Admin Autorisierung über geheime Phrasen erfolgreich!")
+      } else if (key == "satoramy" || key == "sartoramy") {
+        loginAsSatoramy()
+        return ValidationResult(success = true, message = "Satoramy Creator-Autorisierung über geheime Phrasen erfolgreich!")
+      }
+    }
+
+    // 2. Check Satoramy or RFOF-NETWORK using linked password
+    if (key == "satoramy" || key == "sartoramy") {
+      if (cleanSecret == _satoramyManualPassword || cleanSecret == "SatoramyAdmin2026!" || cleanSecret == "rfof2026") {
+        loginAsSatoramy()
+        return ValidationResult(success = true, message = "Erfolgreich als Satoramy angemeldet (Dual-Admin & Nutzer)!")
+      } else {
+        return ValidationResult(success = false, message = "Ungültiges Passwort für Satoramy.")
+      }
+    }
+
+    if (key == "rfof-network") {
+      if (cleanSecret == _satoramyManualPassword || cleanSecret == "rfof2026" || cleanSecret == "SatoramyAdmin2026!") {
+        loginAsRfofNetwork()
+        return ValidationResult(success = true, message = "Erfolgreich als RFOF-NETWORK angemeldet!")
+      } else {
+        return ValidationResult(success = false, message = "Ungültiges Passwort oder Phrasen für RFOF-NETWORK.")
+      }
+    }
+
+    // 3. Registered accounts
+    val registered = _registeredUsers[key]
+    if (registered != null) {
+      if (registered.first == cleanSecret) {
+        _currentUser.value = registered.second
+        return ValidationResult(success = true, message = "Willkommen zurück, ${registered.second.username}!")
+      } else {
+        return ValidationResult(success = false, message = "Falsches Passwort für $cleanUsername.")
+      }
+    }
+
+    return ValidationResult(success = false, message = "Benutzer '$cleanUsername' nicht gefunden. Bitte erstelle einen Account!")
   }
 
   fun logout() {
