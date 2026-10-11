@@ -165,56 +165,68 @@ fun WalletScreen(
         Spacer(modifier = Modifier.height(14.dp))
 
         // Quick Action Buttons (Deposit, Withdraw, Swap, Explorer)
+        // Quick Action Buttons & Top Subnav Mesh (Send, Receive, Swap, Explorer, Treasury Admin)
         Row(
-          modifier = Modifier.fillMaxWidth(),
+          modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState()),
           horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
           Button(
             onClick = {
               activeChainForAction = CryptoChain.ETH
-              showDepositDialog = true
+              showWithdrawDialog = true
             },
-            modifier = Modifier
-              .weight(1f)
-              .testTag("wallet_deposit_button"),
+            modifier = Modifier.testTag("wallet_send_button"),
             colors = ButtonDefaults.buttonColors(containerColor = SignalBlue),
             shape = RoundedCornerShape(8.dp),
-            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
+            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
           ) {
-            Icon(Icons.Default.ArrowDownward, contentDescription = null, modifier = Modifier.size(16.dp))
+            Icon(Icons.Default.ArrowUpward, contentDescription = null, modifier = Modifier.size(16.dp))
             Spacer(modifier = Modifier.width(4.dp))
-            Text("Einzahlen", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            Text("↗️ Versenden", fontSize = 11.sp, fontWeight = FontWeight.Bold)
           }
 
           Button(
             onClick = {
               activeChainForAction = CryptoChain.ETH
-              showWithdrawDialog = true
+              showDepositDialog = true
             },
-            modifier = Modifier
-              .weight(1f)
-              .testTag("wallet_withdraw_button"),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF334155)),
+            modifier = Modifier.testTag("wallet_receive_button"),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0D9488)),
             shape = RoundedCornerShape(8.dp),
-            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
+            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
           ) {
-            Icon(Icons.Default.ArrowUpward, contentDescription = null, modifier = Modifier.size(16.dp))
+            Icon(Icons.Default.ArrowDownward, contentDescription = null, modifier = Modifier.size(16.dp))
             Spacer(modifier = Modifier.width(4.dp))
-            Text("Auszahlen", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            Text("↙️ Empfangen", fontSize = 11.sp, fontWeight = FontWeight.Bold)
           }
 
           Button(
             onClick = { showSwapDialog = true },
-            modifier = Modifier
-              .weight(1f)
-              .testTag("wallet_swap_button"),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF475569)),
+            modifier = Modifier.testTag("wallet_swap_button"),
+            colors = ButtonDefaults.buttonColors(containerColor = UrkundeGold),
             shape = RoundedCornerShape(8.dp),
-            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
+            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
           ) {
-            Icon(Icons.Default.SwapHoriz, contentDescription = null, modifier = Modifier.size(16.dp))
+            Icon(Icons.Default.SwapHoriz, contentDescription = null, tint = BlueprintNavy, modifier = Modifier.size(16.dp))
             Spacer(modifier = Modifier.width(4.dp))
-            Text("Tauschen", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            Text("⚡ DEX Swap", color = BlueprintNavy, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+          }
+
+          // Sovereign Treasury & Supply Button (Strictly for Admin & Creator)
+          if (currentUser.role == UserRole.ADMIN || currentUser.username == "Satoramy") {
+            Button(
+              onClick = { selectedTab = 1 }, // Navigates to Escrow & Treasury tab
+              modifier = Modifier.testTag("wallet_admin_treasury_button"),
+              colors = ButtonDefaults.buttonColors(containerColor = UrkundeGoldDark),
+              shape = RoundedCornerShape(8.dp),
+              contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
+            ) {
+              Icon(Icons.Default.Shield, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+              Spacer(modifier = Modifier.width(4.dp))
+              Text("🏛️ Sovereign Supply (Admin)", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Black)
+            }
           }
 
           IconButton(

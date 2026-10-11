@@ -566,46 +566,50 @@ fun AuthDialog(
               }
             }
 
-            // 1. RFOF-NETWORK GitHub OAuth (Master Admin)
-            Button(
-              onClick = {
-                usernameInput = "RFOF-NETWORK"
-                passwordInput = ""
-                activeTab = 0
-                isRegisterMode = false
-                showSuccessMsg = "Identität 'RFOF-NETWORK' ausgewählt. Bitte Passwort oder Master-Phrasen eingeben."
-                showErrorMsg = null
-              },
-              modifier = Modifier
-                .fillMaxWidth()
-                .testTag("auth_rfof_network_button"),
-              colors = ButtonDefaults.buttonColors(containerColor = BlueprintNavy),
-              shape = RoundedCornerShape(8.dp)
-            ) {
-              Icon(Icons.Default.Security, contentDescription = null, tint = UrkundeGold, modifier = Modifier.size(18.dp))
-              Spacer(modifier = Modifier.width(8.dp))
-              Text("RFOF-NETWORK (Master-Admin / GitHub OAuth)", fontWeight = FontWeight.Bold, fontSize = 12.sp)
-            }
+            // 1 & 2: RFOF-NETWORK & SATORAMY - ONLY VISIBLE AFTER ADMIN LOGIN
+            val isCurrentAdmin = (currentUser.role == UserRole.ADMIN || currentUser.username == "Satoramy" || AuthManager.isAdmin) && currentUser.role != UserRole.GUEST
+            if (isCurrentAdmin) {
+              // 1. RFOF-NETWORK GitHub OAuth (Master Admin)
+              Button(
+                onClick = {
+                  usernameInput = "RFOF-NETWORK"
+                  passwordInput = ""
+                  activeTab = 0
+                  isRegisterMode = false
+                  showSuccessMsg = "Identität 'RFOF-NETWORK' ausgewählt. Bitte Passwort oder Master-Phrasen eingeben."
+                  showErrorMsg = null
+                },
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .testTag("auth_rfof_network_button"),
+                colors = ButtonDefaults.buttonColors(containerColor = BlueprintNavy),
+                shape = RoundedCornerShape(8.dp)
+              ) {
+                Icon(Icons.Default.Security, contentDescription = null, tint = UrkundeGold, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("RFOF-NETWORK (Master-Admin / GitHub OAuth)", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+              }
 
-            // 2. SATORAMY (Dual-Admin / Creator & User)
-            Button(
-              onClick = {
-                usernameInput = "Satoramy"
-                passwordInput = ""
-                activeTab = 0
-                isRegisterMode = false
-                showSuccessMsg = "Identität 'Satoramy' ausgewählt. Bitte Passwort eingeben."
-                showErrorMsg = null
-              },
-              modifier = Modifier
-                .fillMaxWidth()
-                .testTag("auth_satoramy_quick_button"),
-              colors = ButtonDefaults.buttonColors(containerColor = UrkundeGold),
-              shape = RoundedCornerShape(8.dp)
-            ) {
-              Icon(Icons.Default.Star, contentDescription = null, tint = BlueprintNavy, modifier = Modifier.size(18.dp))
-              Spacer(modifier = Modifier.width(8.dp))
-              Text("Satoramy (Dual-Admin & Nutzer / Creator)", color = BlueprintNavy, fontWeight = FontWeight.Black, fontSize = 12.sp)
+              // 2. SATORAMY (Dual-Admin / Creator & User)
+              Button(
+                onClick = {
+                  usernameInput = "Satoramy"
+                  passwordInput = ""
+                  activeTab = 0
+                  isRegisterMode = false
+                  showSuccessMsg = "Identität 'Satoramy' ausgewählt. Bitte Passwort eingeben."
+                  showErrorMsg = null
+                },
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .testTag("auth_satoramy_quick_button"),
+                colors = ButtonDefaults.buttonColors(containerColor = UrkundeGold),
+                shape = RoundedCornerShape(8.dp)
+              ) {
+                Icon(Icons.Default.Star, contentDescription = null, tint = BlueprintNavy, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Satoramy (Dual-Admin & Nutzer / Creator)", color = BlueprintNavy, fontWeight = FontWeight.Black, fontSize = 12.sp)
+              }
             }
 
             // 3. Google OAuth (User)

@@ -58,6 +58,57 @@ fun CategoriesScreen(
     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp),
     verticalArrangement = Arrangement.spacedBy(10.dp)
   ) {
+    // TOP BUTTONGEFLECHT / SUB-NAV MESH (Parität mit Web-App)
+    item {
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .horizontalScroll(rememberScrollState())
+          .padding(bottom = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+      ) {
+        Surface(
+          color = SignalBlue,
+          shape = RoundedCornerShape(20.dp),
+          modifier = Modifier.clickable { searchQuery = "" }
+        ) {
+          Text("📁 Alle 28", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+        }
+        Surface(
+          color = Color.White,
+          shape = RoundedCornerShape(20.dp),
+          border = BorderStroke(1.dp, Slate200),
+          modifier = Modifier.clickable { searchQuery = "Kybernetik" }
+        ) {
+          Text("Layer 1: Physisch (#1-#7)", color = BlueprintNavy, fontSize = 11.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+        }
+        Surface(
+          color = Color.White,
+          shape = RoundedCornerShape(20.dp),
+          border = BorderStroke(1.dp, Slate200),
+          modifier = Modifier.clickable { searchQuery = "Treuhand" }
+        ) {
+          Text("Layer 2: Digital (#8-#14)", color = BlueprintNavy, fontSize = 11.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+        }
+        Surface(
+          color = Color.White,
+          shape = RoundedCornerShape(20.dp),
+          border = BorderStroke(1.dp, Slate200),
+          modifier = Modifier.clickable { searchQuery = "XJustiz" }
+        ) {
+          Text("Layer 3: Recht (#15-#21)", color = BlueprintNavy, fontSize = 11.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+        }
+        Surface(
+          color = Color.White,
+          shape = RoundedCornerShape(20.dp),
+          border = BorderStroke(1.dp, Slate200),
+          modifier = Modifier.clickable { searchQuery = "Wohnzentren" }
+        ) {
+          Text("Layer 4: Bewusstsein (#22-#28)", color = BlueprintNavy, fontSize = 11.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+        }
+      }
+    }
+
     // 1. Header Title
     item {
       Column {

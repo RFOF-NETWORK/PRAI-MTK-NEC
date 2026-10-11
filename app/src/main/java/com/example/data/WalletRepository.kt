@@ -72,15 +72,16 @@ object WalletRepository {
     val tonInfo = liveMarket["TON"]
     val mtkInfo = liveMarket["MTK"]
 
+    // Preserve dynamically updated balances (e.g. from deposits/withdrawals/swaps)
+    val currentBalances = _assets.value.associate { it.chain to it.balance }
     val list = mutableListOf<CryptoAsset>()
 
     // MTK: ONLY the Admin (RFOF-NETWORK) holds native sovereign MTK.
-    // Users hold BTC, ETH, TON and certificates so that the model remains paragraphically correct.
     if (isAdmin) {
       list.add(
         CryptoAsset(
           chain = CryptoChain.MTK,
-          balance = 1_250_000.0,
+          balance = currentBalances[CryptoChain.MTK] ?: 1_250_000.0,
           usdRate = mtkInfo?.priceUsd ?: 4.25,
           address = derived["MTK"] ?: "0xMTK_ADMIN",
           change24h = mtkInfo?.change24hPercent ?: +5.8,
@@ -93,7 +94,7 @@ object WalletRepository {
     list.add(
       CryptoAsset(
         chain = CryptoChain.BTC,
-        balance = if (isAdmin) 12.85 else 0.65,
+        balance = currentBalances[CryptoChain.BTC] ?: (if (isAdmin) 12.85 else 0.65),
         usdRate = btcInfo?.priceUsd ?: 64_200.0,
         address = derived["BTC"] ?: "bc1q_demo",
         change24h = btcInfo?.change24hPercent ?: +1.4
@@ -104,7 +105,7 @@ object WalletRepository {
     list.add(
       CryptoAsset(
         chain = CryptoChain.ETH,
-        balance = if (isAdmin) 84.2 else 4.15,
+        balance = currentBalances[CryptoChain.ETH] ?: (if (isAdmin) 84.2 else 4.15),
         usdRate = ethInfo?.priceUsd ?: 3_480.0,
         address = derived["ETH"] ?: "0x_demo",
         change24h = ethInfo?.change24hPercent ?: -0.8
@@ -115,7 +116,7 @@ object WalletRepository {
     list.add(
       CryptoAsset(
         chain = CryptoChain.TON,
-        balance = if (isAdmin) 15_800.0 else 940.0,
+        balance = currentBalances[CryptoChain.TON] ?: (if (isAdmin) 15_800.0 else 940.0),
         usdRate = tonInfo?.priceUsd ?: 5.60,
         address = derived["TON"] ?: "EQD_demo",
         change24h = tonInfo?.change24hPercent ?: +8.2
@@ -126,7 +127,7 @@ object WalletRepository {
     list.add(
       CryptoAsset(
         chain = CryptoChain.ZON,
-        balance = if (isAdmin) 50_000.0 else 1_250.0,
+        balance = currentBalances[CryptoChain.ZON] ?: (if (isAdmin) 50_000.0 else 1_250.0),
         usdRate = 1.48,
         address = derived["ETH"]?.replace("0x", "0xZON_") ?: "0xZON_UNIVERSAL",
         change24h = +14.8,

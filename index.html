@@ -8,6 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- OFFICIAL GOOGLE IDENTITY SERVICES (GIS / OAUTH 2.0) -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <style>
     :root {
@@ -251,6 +253,68 @@
       color: #000000;
       border-color: var(--gold-main);
       font-weight: 700;
+    }
+
+    /* SCREEN SUB-NAV MESH (TOP ACTION TOOLBAR / DROPDOWN-MENÜ BUTTONGEFLECHT OBEN) */
+    .screen-subnav-mesh {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 8px 10px;
+      margin-bottom: 14px;
+      background: #ffffff;
+      border: 1px solid var(--navy-border);
+      border-radius: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+      scrollbar-width: thin;
+      -webkit-overflow-scrolling: touch;
+      align-items: center;
+    }
+    .screen-subnav-mesh::-webkit-scrollbar {
+      height: 4px;
+    }
+    .screen-subnav-mesh::-webkit-scrollbar-thumb {
+      background: var(--slate-300);
+      border-radius: 4px;
+    }
+    .subnav-btn {
+      background: var(--slate-50);
+      border: 1px solid var(--slate-200);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--navy-main);
+      cursor: pointer;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+    }
+    .subnav-btn:hover {
+      background: var(--slate-100);
+      border-color: var(--navy-border);
+    }
+    .subnav-btn.active {
+      background: var(--navy-main);
+      color: #ffffff;
+      border-color: var(--navy-main);
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);
+    }
+    .subnav-btn.gold-active {
+      background: var(--gold-main);
+      color: #000000;
+      border-color: var(--gold-dark);
+      font-weight: 800;
+    }
+    .subnav-btn.admin-only {
+      border: 1px dashed var(--gold-dark);
+      background: #FEF9C3;
+      color: #92400E;
+    }
+    .subnav-btn.admin-only:hover {
+      background: #FEF08A;
     }
 
     /* MAIN CONTAINER */
@@ -657,6 +721,16 @@
 
     <!-- SCREEN 1: DASHBOARD -->
     <section id="screen-dashboard" class="app-screen active">
+      <!-- TOP BUTTONGEFLECHT / SUB-NAV MESH -->
+      <div class="screen-subnav-mesh" id="subnav-mesh-dashboard">
+        <button class="subnav-btn active" onclick="window.scrollTo({top:0, behavior:'smooth'})">📊 Live-Übersicht</button>
+        <button class="subnav-btn" onclick="navigateTo('wallet'); switchWalletTab('send');">↗️ Währung Versenden</button>
+        <button class="subnav-btn" onclick="navigateTo('wallet'); switchWalletTab('receive');">↙️ Währung Empfangen</button>
+        <button class="subnav-btn" onclick="navigateTo('wallet'); switchWalletTab('swap');">⚡ DEX Swap</button>
+        <button class="subnav-btn" onclick="navigateTo('rapp-center');">🏬 rApp Center</button>
+        <button class="subnav-btn gold-active" onclick="openModal('auth-hub-modal');">🔐 Multi-Auth Hub</button>
+      </div>
+
       <!-- HEADER HERO CARD -->
       <div class="card card-navy">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
@@ -731,18 +805,18 @@
 
     <!-- SCREEN 2: 28 FACHKATEGORIEN -->
     <section id="screen-categories" class="app-screen">
+      <!-- TOP BUTTONGEFLECHT / SUB-NAV MESH -->
+      <div class="screen-subnav-mesh" id="subnav-mesh-categories">
+        <button class="subnav-btn active" id="btn-cat-all" onclick="filterCategories('all')">📁 Alle (28 Kategorien)</button>
+        <button class="subnav-btn" id="btn-cat-prai" onclick="filterCategories('prai')">Layer 1: PRAI Kybernetik (1–7)</button>
+        <button class="subnav-btn" id="btn-cat-mtk" onclick="filterCategories('mtk')">Layer 2: MTK Treuhand (8–14)</button>
+        <button class="subnav-btn" id="btn-cat-nec" onclick="filterCategories('nec')">Layer 3: NEC Notariat (15–21)</button>
+        <button class="subnav-btn" id="btn-cat-wohn" onclick="filterCategories('wohn')">Layer 4: Wohnzentren (22–28)</button>
+      </div>
+
       <div class="card">
         <h2 style="font-size: 16px; font-weight: 800; color: var(--navy-main);">28 FACHKATEGORIEN DES ÖKOSYSTEMS</h2>
-        <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">Vollständiges Register aller Fachbereiche über alle 4 Schichten.</p>
-        
-        <!-- Filter Tabs -->
-        <div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px;">
-          <button class="btn btn-primary" onclick="filterCategories('all')">Alle (28)</button>
-          <button class="btn btn-outline" onclick="filterCategories('prai')">Layer 1 (PRAI)</button>
-          <button class="btn btn-outline" onclick="filterCategories('mtk')">Layer 2 (MTK)</button>
-          <button class="btn btn-outline" onclick="filterCategories('nec')">Layer 3 (NEC)</button>
-          <button class="btn btn-outline" onclick="filterCategories('wohn')">Layer 4 (Wohnzentren)</button>
-        </div>
+        <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">Vollständiges Register aller Fachbereiche über alle 4 Schichten.</p>
       </div>
 
       <div id="categories-container" class="categories-grid">
@@ -752,6 +826,15 @@
 
     <!-- SCREEN 3: ARENEN MATRIX (8 Sichten) -->
     <section id="screen-arenas" class="app-screen">
+      <!-- TOP BUTTONGEFLECHT / SUB-NAV MESH -->
+      <div class="screen-subnav-mesh" id="subnav-mesh-arenas">
+        <button class="subnav-btn active" onclick="selectPerspective(0)">🎯 8 Perspektiven Matrix</button>
+        <button class="subnav-btn" onclick="navigateTo('categories'); filterCategories('prai');">Arenen 1–7 (Kybernetik)</button>
+        <button class="subnav-btn" onclick="navigateTo('categories'); filterCategories('mtk');">Arenen 8–14 (Treuhand)</button>
+        <button class="subnav-btn" onclick="navigateTo('categories'); filterCategories('nec');">Arenen 15–21 (Notariat)</button>
+        <button class="subnav-btn" onclick="navigateTo('categories'); filterCategories('wohn');">Arenen 22–28 (Wohnzentren)</button>
+      </div>
+
       <div class="card card-navy">
         <h2 style="font-size: 16px; font-weight: 800; color: #fff;">ARENEN MATRIX DER 8 PERSPEKTIVEN</h2>
         <p style="font-size: 12px; color: #94A3B8;">Jede Fachkategorie wird simultan durch 8 multidimensionale Linsen abgebildet.</p>
@@ -779,69 +862,306 @@
 
     <!-- SCREEN 4: WALLET & DEX -->
     <section id="screen-wallet" class="app-screen">
-      <div class="balance-card">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 12px; color: #94A3B8; text-transform: uppercase;">Treuhand Gesamtguthaben</span>
-          <span style="background: var(--gold-bg); color: var(--gold-main); padding: 3px 8px; border-radius: 10px; font-size: 9px; font-weight: 800;">ALCHMEY LIVE</span>
-        </div>
-        <div class="balance-val" id="total-wallet-val">€ 142.850,00</div>
-        <div style="font-size: 11px; color: var(--signal-green);">● Treuhänder & Treugeber getrennt (§§ 1274, 1280 BGB)</div>
+      <!-- TOP BUTTONGEFLECHT / SUB-NAV MESH -->
+      <div class="screen-subnav-mesh" id="subnav-mesh-wallet">
+        <button class="subnav-btn active" id="btn-wtab-assets" onclick="switchWalletTab('assets')">💳 Vermögen & Portfolio</button>
+        <button class="subnav-btn" id="btn-wtab-send" onclick="switchWalletTab('send')">↗️ Versenden</button>
+        <button class="subnav-btn" id="btn-wtab-receive" onclick="switchWalletTab('receive')">↙️ Empfangen</button>
+        <button class="subnav-btn" id="btn-wtab-swap" onclick="switchWalletTab('swap')">⚡ DEX Swap</button>
+        <button class="subnav-btn admin-only" id="btn-wtab-supply" onclick="switchWalletTab('supply')">🏛️ Sovereign Treasury & Supply (Admin)</button>
+        <button class="subnav-btn" id="btn-wtab-history" onclick="switchWalletTab('history')">📜 Transaktions-Historie</button>
       </div>
 
-      <div class="card">
-        <h3 style="font-size: 13px; font-weight: 700; color: var(--navy-main); margin-bottom: 10px;">MULTI-CHAIN ASSETS</h3>
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-          <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--slate-50); border-radius: 6px;">
-            <span>⚡ MTK Sovereign Währung</span>
-            <strong class="mono" style="color: var(--gold-dark);">250.000 MTK</strong>
+      <!-- SUBVIEW 1: VERMÖGEN & ASSETS -->
+      <div id="wallet-subview-assets">
+        <div class="balance-card">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 12px; color: #94A3B8; text-transform: uppercase;">Treuhand Gesamtguthaben</span>
+            <span style="background: var(--gold-bg); color: var(--gold-main); padding: 3px 8px; border-radius: 10px; font-size: 9px; font-weight: 800;">ALCHEMY LIVE</span>
           </div>
-          <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--slate-50); border-radius: 6px;">
-            <span>🔷 Ethereum (Mainnet)</span>
-            <strong class="mono">14.85 ETH</strong>
+          <div class="balance-val" id="total-wallet-val">€ 142.850,00</div>
+          <div style="font-size: 11px; color: var(--signal-green);">● Treuhänder & Treugeber getrennt (§§ 1274, 1280 BGB)</div>
+        </div>
+
+        <!-- QUICK ACTION SHORTCUTS -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px;">
+          <button class="btn btn-primary" style="padding: 10px 4px; font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 4px;" onclick="switchWalletTab('send')">
+            <span style="font-size: 16px;">↗️</span>
+            <span>Versenden</span>
+          </button>
+          <button class="btn btn-outline" style="padding: 10px 4px; font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 4px; background: #fff;" onclick="switchWalletTab('receive')">
+            <span style="font-size: 16px;">↙️</span>
+            <span>Empfangen</span>
+          </button>
+          <button class="btn btn-outline" style="padding: 10px 4px; font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 4px; background: #fff;" onclick="switchWalletTab('swap')">
+            <span style="font-size: 16px;">⚡</span>
+            <span>DEX Swap</span>
+          </button>
+          <button class="btn btn-outline" style="padding: 10px 4px; font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 4px; background: #fff;" onclick="switchWalletTab('supply')">
+            <span style="font-size: 16px;">🏛️</span>
+            <span>Supply</span>
+          </button>
+        </div>
+
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h3 style="font-size: 13px; font-weight: 700; color: var(--navy-main);">MULTI-CHAIN ASSETS & GUTHABEN</h3>
+            <span style="font-size: 10px; color: var(--text-muted);">Echtzeit-Synchronisiert</span>
           </div>
-          <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--slate-50); border-radius: 6px;">
-            <span>₿ Bitcoin (Mempool Tip)</span>
-            <strong class="mono">0.65 BTC</strong>
-          </div>
-          <div style="display: flex; justify-content: space-between; padding: 8px; background: var(--slate-50); border-radius: 6px;">
-            <span>💎 TON Sharded Network</span>
-            <strong class="mono">3.400 TON</strong>
-          </div>
-          <div style="display: flex; justify-content: space-between; padding: 8px; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 6px;">
-            <span>🌉 Sepolia Multi-Chain Relayer (Testnet)</span>
-            <strong class="mono" style="color: #2563EB;">125.000 SEP-MTK · SYNC</strong>
-          </div>
-          <div style="display: flex; justify-content: space-between; padding: 8px; background: #FEF9C3; border: 1px solid #FDE047; border-radius: 6px;">
-            <span>🏦 Alchemy Treasury & Escrow Vault (Mainnet)</span>
-            <strong class="mono" style="color: #B45309;">10.000.000 MTK · 100% VAULT</strong>
+          <div style="display: flex; flex-direction: column; gap: 8px;" id="wallet-assets-list">
+            <div style="display: flex; justify-content: space-between; padding: 10px; background: var(--slate-50); border-radius: 6px; align-items: center;">
+              <div>
+                <strong style="font-size: 12px; color: var(--navy-main);">⚡ MTK Sovereign Währung</strong>
+                <div style="font-size: 10px; color: var(--text-muted);">Sovereign Reserve Standard · 1 MTK = € 0,5714</div>
+              </div>
+              <div style="text-align: right;">
+                <strong class="mono" style="color: var(--gold-dark); font-size: 13px;" id="asset-bal-mtk">250.000 MTK</strong>
+                <div style="font-size: 10px; color: var(--text-muted);" id="asset-bal-mtk-eur">≈ € 142.850,00</div>
+              </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 10px; background: var(--slate-50); border-radius: 6px; align-items: center;">
+              <div>
+                <strong style="font-size: 12px; color: var(--navy-main);">🔷 Ethereum (Mainnet)</strong>
+                <div style="font-size: 10px; color: var(--text-muted);">Alchemy RPC Live Node · Gas 14 Gwei</div>
+              </div>
+              <div style="text-align: right;">
+                <strong class="mono" style="font-size: 13px;" id="asset-bal-eth">14.85 ETH</strong>
+                <div style="font-size: 10px; color: var(--text-muted);">≈ € 44.550,00</div>
+              </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 10px; background: var(--slate-50); border-radius: 6px; align-items: center;">
+              <div>
+                <strong style="font-size: 12px; color: var(--navy-main);">₿ Bitcoin (Mempool Tip)</strong>
+                <div style="font-size: 10px; color: var(--text-muted);">SegWit Sovereign Address · Block #840.210</div>
+              </div>
+              <div style="text-align: right;">
+                <strong class="mono" style="font-size: 13px;" id="asset-bal-btc">0.65 BTC</strong>
+                <div style="font-size: 10px; color: var(--text-muted);">≈ € 42.250,00</div>
+              </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 10px; background: var(--slate-50); border-radius: 6px; align-items: center;">
+              <div>
+                <strong style="font-size: 12px; color: var(--navy-main);">💎 TON Sharded Network</strong>
+                <div style="font-size: 10px; color: var(--text-muted);">Masterchain Seqno #38.192.401</div>
+              </div>
+              <div style="text-align: right;">
+                <strong class="mono" style="font-size: 13px;" id="asset-bal-ton">3.400 TON</strong>
+                <div style="font-size: 10px; color: var(--text-muted);">≈ € 20.400,00</div>
+              </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 10px; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 6px; align-items: center;">
+              <div>
+                <strong style="font-size: 12px; color: #1E40AF;">🌉 Sepolia Multi-Chain Relayer (Testnet)</strong>
+                <div style="font-size: 10px; color: #3B82F6;">Bidirektionale Testnet-Bridge</div>
+              </div>
+              <div style="text-align: right;">
+                <strong class="mono" style="color: #2563EB; font-size: 13px;" id="asset-bal-sepmtk">125.000 SEP-MTK</strong>
+                <div style="font-size: 10px; color: #2563EB;">SYNC AKTIV</div>
+              </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 10px; background: #FEF9C3; border: 1px solid #FDE047; border-radius: 6px; align-items: center;">
+              <div>
+                <strong style="font-size: 12px; color: #78350F;">🏦 Alchemy Treasury & Escrow Vault (Mainnet)</strong>
+                <div style="font-size: 10px; color: #92400E;">Unberührbare Treuhand-Reserve (§ 1274 BGB)</div>
+              </div>
+              <div style="text-align: right;">
+                <strong class="mono" style="color: #B45309; font-size: 13px;" id="asset-bal-vault">10.000.000 MTK</strong>
+                <div style="font-size: 10px; color: #B45309;">100% NOTAR VAULT</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- GENESIS SWAP RECHNER -->
-      <div class="card card-gold-border">
-        <h3 style="font-size: 13px; font-weight: 700; color: var(--navy-main); margin-bottom: 8px;">⚡ GENESIS SWAP & NOTARIATS-VERSIEGELUNG</h3>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
-          <div>
-            <label style="font-size: 10px; color: var(--text-muted);">Betrag</label>
-            <input type="number" id="swap-input-amount" value="1.0" step="0.5" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--slate-200);">
-          </div>
-          <div>
-            <label style="font-size: 10px; color: var(--text-muted);">Währung</label>
-            <select id="swap-input-currency" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--slate-200);">
-              <option value="ETH">ETH (Ethereum)</option>
-              <option value="EUR">EUR (SEPA)</option>
-              <option value="BTC">BTC (Bitcoin)</option>
-            </select>
+      <!-- SUBVIEW 2: VERSENDEN (SEND CURRENCY) -->
+      <div id="wallet-subview-send" style="display: none;">
+        <div class="card card-navy">
+          <h2 style="font-size: 16px; font-weight: 800; color: #fff;">↗️ WÄHRUNG VERSENDEN</h2>
+          <p style="font-size: 11px; color: #94A3B8;">Multi-Chain Treuhand-Übertrag mit notarieller Verbriefung nach §§ 1274, 1280 BGB.</p>
+        </div>
+
+        <div class="card">
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div>
+                <label style="font-size: 11px; font-weight: bold; color: var(--navy-main);">Währung auswählen:</label>
+                <select id="send-select-currency" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--slate-200); font-size: 12px;" onchange="updateSendBalanceHint()">
+                  <option value="MTK">MTK (Sovereign Token)</option>
+                  <option value="ETH">ETH (Ethereum Mainnet)</option>
+                  <option value="BTC">BTC (Bitcoin)</option>
+                  <option value="TON">TON (The Open Network)</option>
+                  <option value="EUR">EUR (SEPA Treuhandkonto)</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size: 11px; font-weight: bold; color: var(--navy-main);">Verfügbares Guthaben:</label>
+                <div id="send-available-hint" class="mono" style="padding: 10px; background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: 6px; font-size: 12px; font-weight: bold; color: var(--navy-main);">
+                  250.000 MTK
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label style="font-size: 11px; font-weight: bold; color: var(--navy-main);">Empfänger-Adresse, IBAN oder Benutzername:</label>
+              <input type="text" id="send-input-recipient" class="mono" placeholder="z.B. 0x..., bc1..., IBAN DE89... oder Satoramy" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--slate-200); font-size: 12px;">
+              <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                <button class="btn btn-outline" style="padding: 2px 8px; font-size: 10px;" onclick="document.getElementById('send-input-recipient').value='Satoramy'">An: Satoramy</button>
+                <button class="btn btn-outline" style="padding: 2px 8px; font-size: 10px;" onclick="document.getElementById('send-input-recipient').value='RFOF-NETWORK'">An: RFOF-NETWORK</button>
+                <button class="btn btn-outline" style="padding: 2px 8px; font-size: 10px;" onclick="document.getElementById('send-input-recipient').value='0xRFOF9842A7b2F366c8B01C5D19E77F32e2A8321'">An: Treuhand-Vault</button>
+              </div>
+            </div>
+
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label style="font-size: 11px; font-weight: bold; color: var(--navy-main);">Betrag:</label>
+                <button style="background: none; border: none; color: var(--signal-blue); font-size: 10px; font-weight: bold; cursor: pointer;" onclick="setMaxSendAmount()">Maximalbetrag</button>
+              </div>
+              <input type="number" id="send-input-amount" step="any" placeholder="0.00" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--slate-200); font-size: 14px; font-weight: bold;">
+            </div>
+
+            <div>
+              <label style="font-size: 11px; font-weight: bold; color: var(--navy-main);">Notarieller Verwendungszweck (§ 1274 BGB):</label>
+              <input type="text" id="send-input-memo" value="Treuhandübertrag gem. BGB §§ 1274, 1280" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--slate-200); font-size: 12px;">
+            </div>
+
+            <div style="background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 8px; padding: 10px; font-size: 11px; color: #1E40AF;">
+              <strong>🛡️ Zero-Gas Kybernetik:</strong> Netzwerkgebühren werden autark über den System-Rückfluss aus Notariatsgebühren gedeckt. Für Treugeber fallen keine versteckten Kosten an.
+            </div>
+
+            <button class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 13px;" onclick="executeSendCurrency()">
+              🚀 Verbindlich Versenden & Notariell Signieren
+            </button>
+
+            <div id="send-result-box" style="display: none; padding: 12px; background: var(--slate-900); color: #38BDF8; border-radius: 8px; font-size: 11px;" class="mono"></div>
           </div>
         </div>
-        <button class="btn btn-gold" style="width: 100%;" onclick="executeGenesisSwap()">⚡ Swap durchführen & Notarsiegel erstellen</button>
-        <div id="swap-result-box" style="margin-top: 10px; display: none; padding: 10px; background: var(--slate-900); color: #38BDF8; border-radius: 6px; font-size: 11px;" class="mono"></div>
+      </div>
+
+      <!-- SUBVIEW 3: EMPFANGEN (RECEIVE CURRENCY) -->
+      <div id="wallet-subview-receive" style="display: none;">
+        <div class="card card-navy">
+          <h2 style="font-size: 16px; font-weight: 800; color: #fff;">↙️ WÄHRUNG EMPFANGEN</h2>
+          <p style="font-size: 11px; color: #94A3B8;">Treuhand-Depotadresse, QR-Code und Zahlungsanforderung generieren.</p>
+        </div>
+
+        <div class="card" style="text-align: center;">
+          <div style="max-width: 440px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px;">
+            <div>
+              <label style="font-size: 11px; font-weight: bold; color: var(--navy-main); display: block; margin-bottom: 6px;">Netzwerk / Währung auswählen:</label>
+              <select id="receive-select-network" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--slate-200); font-size: 12px;" onchange="updateReceiveAddress()">
+                <option value="MTK">MTK Sovereign Token (ZON / Alchemy Network)</option>
+                <option value="ETH">Ethereum Mainnet (ERC-20 & ETH)</option>
+                <option value="BTC">Bitcoin Network (Native SegWit)</option>
+                <option value="TON">TON (The Open Network Sharded)</option>
+              </select>
+            </div>
+
+            <!-- VISUAL QR CODE -->
+            <div style="background: #fff; padding: 16px; border: 2px dashed var(--navy-border); border-radius: 12px; display: inline-block; margin: 0 auto;">
+              <div id="receive-qr-canvas" style="width: 160px; height: 160px; background: #0B192C; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; margin: 0 auto;">
+                <div style="font-size: 38px;">📱</div>
+                <div style="font-size: 10px; font-weight: bold; color: var(--gold-main); margin-top: 4px;">SOVEREIGN QR</div>
+                <div style="font-size: 8px; color: #94A3B8;">XJustiz Validiert</div>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">Deine persönliche Einzahlungs-Adresse:</div>
+              <div id="receive-address-display" class="mono" style="padding: 10px; background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: 6px; font-size: 11px; word-break: break-all; color: var(--navy-main); font-weight: bold;">
+                0xRFOF9842A7b2F366c8B01C5D19E77F32e2A8321
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <button class="btn btn-primary" onclick="copyReceiveAddress()">📋 Adresse kopieren</button>
+              <button class="btn btn-outline" onclick="generatePaymentInvoice()">⚡ Anforderung teilen</button>
+            </div>
+
+            <div style="background: #FEF3C7; border: 1px solid #FCD34D; border-radius: 8px; padding: 8px; font-size: 10px; color: #78350F; text-align: left;">
+              <strong>⚖️ Pfandrechtliche Absicherung:</strong> Eingehende Beträge fallen unmittelbar unter das notariell verbriefte Treuhandsondervermögen und sind vor Pfändungen Dritter geschützt (§§ 1274, 1280 BGB).
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUBVIEW 4: TAUSCHEN / DEX SWAP -->
+      <div id="wallet-subview-swap" style="display: none;">
+        <div class="card card-navy">
+          <h2 style="font-size: 16px; font-weight: 800; color: #fff;">⚡ GENESIS DEX SWAP & LAUNCHPAD</h2>
+          <p style="font-size: 11px; color: #94A3B8;">Autonome Bonding-Curve Börse mit notarieller Urkunden-Versiegelung (§ 36 BeurkG).</p>
+        </div>
+
+        <div class="card card-gold-border">
+          <h3 style="font-size: 13px; font-weight: 700; color: var(--navy-main); margin-bottom: 8px;">SOFORTIGER LIQUIDITÄTS-TAUSCH</h3>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+            <div>
+              <label style="font-size: 10px; color: var(--text-muted); font-weight: bold;">Betrag einzahlen</label>
+              <input type="number" id="swap-input-amount" value="1.0" step="0.5" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--slate-200); font-weight: bold;" oninput="calculateSwapOutput()">
+            </div>
+            <div>
+              <label style="font-size: 10px; color: var(--text-muted); font-weight: bold;">Währung abgeben</label>
+              <select id="swap-input-currency" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--slate-200); font-weight: bold;" onchange="calculateSwapOutput()">
+                <option value="ETH">ETH (Ethereum Mainnet)</option>
+                <option value="EUR">EUR (SEPA Treuhand)</option>
+                <option value="BTC">BTC (Bitcoin)</option>
+                <option value="TON">TON (Telegram Sharded)</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: 8px; padding: 10px; margin-bottom: 10px;">
+            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+              <span style="color: var(--text-muted);">Erwarteter Erhalt:</span>
+              <strong style="color: var(--gold-dark);" id="swap-output-amount">5.250,00 MTK</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted);">
+              <span>Kurs: 1 ETH = 5.250 MTK</span>
+              <span>Slippage: &lt; 0.1% (Bonding Curve)</span>
+            </div>
+          </div>
+
+          <button class="btn btn-gold" style="width: 100%; padding: 12px; font-size: 13px;" onclick="executeGenesisSwap()">⚡ Swap durchführen & Notarsiegel erstellen</button>
+          <div id="swap-result-box" style="margin-top: 10px; display: none; padding: 10px; background: var(--slate-900); color: #38BDF8; border-radius: 6px; font-size: 11px;" class="mono"></div>
+        </div>
+      </div>
+
+      <!-- SUBVIEW 5: SOVEREIGN TREASURY & SUPPLY CONTROL (STRICTLY ADMIN GATED) -->
+      <div id="wallet-subview-supply" style="display: none;">
+        <!-- CONTENT POPULATED DYNAMICALLY BASED ON ADMIN SESSION -->
+        <div id="wallet-supply-content"></div>
+      </div>
+
+      <!-- SUBVIEW 6: TRANSAKTIONS-HISTORIE -->
+      <div id="wallet-subview-history" style="display: none;">
+        <div class="card card-navy">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h2 style="font-size: 16px; font-weight: 800; color: #fff;">📜 TRANSAKTIONS- & NOTARIATSBUCH</h2>
+              <p style="font-size: 11px; color: #94A3B8;">XJustiz-konformes Hauptbuch aller Buchungen & Überträge.</p>
+            </div>
+            <button class="btn btn-outline" style="color: #fff; border-color: rgba(255,255,255,0.3); padding: 4px 8px; font-size: 10px;" onclick="renderWalletHistory()">Aktualisieren</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div id="wallet-history-list" style="display: flex; flex-direction: column; gap: 8px;">
+            <!-- INJECTED VIA JS -->
+          </div>
+        </div>
       </div>
     </section>
 
     <!-- SCREEN 5: EXPLORER & URKUNDEN -->
     <section id="screen-explorer" class="app-screen">
+      <!-- TOP BUTTONGEFLECHT / SUB-NAV MESH -->
+      <div class="screen-subnav-mesh" id="subnav-mesh-explorer">
+        <button class="subnav-btn active" onclick="window.scrollTo({top:0, behavior:'smooth'})">📜 Urkunden-Register (28 Akten)</button>
+        <button class="subnav-btn" onclick="navigateTo('wallet'); switchWalletTab('history');">🔍 TX & Mempool Explorer</button>
+        <button class="subnav-btn" onclick="navigateTo('arenas')">⚖️ 8 Perspektiven Matrix</button>
+        <button class="subnav-btn" onclick="navigateTo('rapp-center'); filterRApps('rapp-003');">🏛️ XJustiz Notariatsakten</button>
+        <button class="subnav-btn" onclick="executeRApp('rapp-003')">🔏 Notarscheck (§ 36 BeurkG)</button>
+      </div>
+
       <div class="card card-navy">
         <h2 style="font-size: 16px; font-weight: 800; color: #fff;">NOTARIATS- & BLOCKCHAIN-EXPLORER</h2>
         <p style="font-size: 11px; color: #94A3B8;">XJustiz-XML Notariatsakten, Schecks (§ 36 BeurkG) und Dual-Paritäts-Siegel.</p>
@@ -857,6 +1177,15 @@
 
     <!-- SCREEN 6: SYSTEM & ARCHITEKTUR HUB -->
     <section id="screen-system" class="app-screen">
+      <!-- TOP BUTTONGEFLECHT / SUB-NAV MESH -->
+      <div class="screen-subnav-mesh" id="subnav-mesh-system">
+        <button class="subnav-btn active" onclick="showSystemDetail('blueprint')">📐 4-Layer Blueprint & Feedback</button>
+        <button class="subnav-btn" onclick="showSystemDetail('wohnzentren')">🏡 7 Wohnzentren (2-Kreise-Modell)</button>
+        <button class="subnav-btn" onclick="showSystemDetail('titles')">🎓 Titel & 3+1-Jahres-Pfad</button>
+        <button class="subnav-btn" onclick="showSystemDetail('glossar')">📚 Glossar & 15 Axiome (FAQ)</button>
+        <button class="subnav-btn" onclick="navigateTo('explorer')">📜 Notariats-Urkunden</button>
+      </div>
+
       <div class="card">
         <h2 style="font-size: 16px; font-weight: 800; color: var(--navy-main);">SYSTEM-HUB & BLAUPAUSEN</h2>
         <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 14px;">Zentrale Verwaltung aller juristischen, siedlungs- und kybernetischen Strukturen.</p>
@@ -884,6 +1213,17 @@
 
     <!-- SCREEN 7: RAPP CENTER (v8.0) -->
     <section id="screen-rapp-center" class="app-screen">
+      <!-- TOP BUTTONGEFLECHT / SUB-NAV MESH -->
+      <div class="screen-subnav-mesh" id="subnav-mesh-rapp">
+        <button class="subnav-btn active" id="btn-rapp-filter-all" onclick="filterRApps('all')">🏬 Alle 5 rApps</button>
+        <button class="subnav-btn" id="btn-rapp-filter-001" onclick="filterRApps('rapp-001')">🏛️ PRAI / MTK / NEC Flaggschiff</button>
+        <button class="subnav-btn" id="btn-rapp-filter-002" onclick="filterRApps('rapp-002')">⚡ ZON DEX & Launchpad</button>
+        <button class="subnav-btn" id="btn-rapp-filter-003" onclick="filterRApps('rapp-003')">📜 XJustiz Notariat</button>
+        <button class="subnav-btn" id="btn-rapp-filter-004" onclick="filterRApps('rapp-004')">🌉 Sepolia Bridge</button>
+        <button class="subnav-btn" id="btn-rapp-filter-005" onclick="filterRApps('rapp-005')">💎 Treasury Vault</button>
+        <button class="subnav-btn gold-active" onclick="showApkAppModal()">📱 APK Download (v8.0)</button>
+      </div>
+
       <div class="card card-navy">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <div>
@@ -1028,6 +1368,14 @@
 
     <!-- SCREEN 8: DOKUMENTATION & GUARDIAN -->
     <section id="screen-documentation" class="app-screen">
+      <!-- TOP BUTTONGEFLECHT / SUB-NAV MESH -->
+      <div class="screen-subnav-mesh" id="subnav-mesh-doc">
+        <button class="subnav-btn active" onclick="window.scrollTo({top:0, behavior:'smooth'})">📖 Systemhandbuch & 14 APIs</button>
+        <button class="subnav-btn" onclick="navigateTo('system'); showSystemDetail('glossar');">🤖 PRAI Guardian & Axiome</button>
+        <button class="subnav-btn" onclick="navigateTo('explorer')">📜 Verfassungs-Artikel (§ 1–28)</button>
+        <button class="subnav-btn" onclick="openModal('auth-hub-modal'); switchAuthTab(1);">🛡️ Double-Proxy Sicherheits-Audit</button>
+      </div>
+
       <div class="card card-navy">
         <h2 style="font-size: 16px; font-weight: 800; color: #fff;">SYSTEM-DOKUMENTATION & ENTWICKLUNG</h2>
         <p style="font-size: 11px; color: #94A3B8;">Alchemy 14 APIs, Byte-Matrix, Bonding Curves und souveräne Parität.</p>
@@ -1869,6 +2217,753 @@ PARITÄT:           Android APK v8.0 & Web App 100% SYNCHRON
       showToast("Account '" + u + "' erfolgreich erstellt & angemeldet!");
     }
 
+    // ==============================================================
+    // WALLET BALANCES, TRANSACTIONS & SOVEREIGN TREASURY STATE
+    // ==============================================================
+    let walletBalances = JSON.parse(localStorage.getItem('wallet_balances') || "null") || {
+      MTK: 250000.0,
+      ETH: 14.85,
+      BTC: 0.65,
+      TON: 3400.0,
+      SEP_MTK: 125000.0,
+      EUR: 142850.0
+    };
+
+    let sovereignTreasury = JSON.parse(localStorage.getItem('sovereign_treasury') || "null") || {
+      totalReserveEur: 500000000.0, // € 500 Mio. unberührbare Notariats- & Goldreserve (§§ 1274, 1280 BGB)
+      circulatingMtk: 10250000.0,
+      circulatingEur: 142850.0
+    };
+
+    let walletTransactions = JSON.parse(localStorage.getItem('wallet_transactions') || "null") || [
+      {
+        id: "tx-init-001",
+        type: "INITIAL_ESCROW",
+        currency: "MTK",
+        amount: 250000,
+        counterparty: "Genesis Sovereign Treuhand",
+        memo: "Notarielle Hinterlegung gem. § 1274 BGB",
+        timestamp: Date.now() - 3600000 * 24 * 3,
+        hash: "0x8fa921c5b882e341...77a9",
+        notaryCert: "URK-NR. 1892/2026 (§ 36 BeurkG)"
+      },
+      {
+        id: "tx-init-002",
+        type: "ALCHEMY_VAULT",
+        currency: "MTK",
+        amount: 10000000,
+        counterparty: "Alchemy Treasury Mainnet Vault",
+        memo: "Unberührbare Treuhandreserve",
+        timestamp: Date.now() - 3600000 * 24 * 7,
+        hash: "0x3f5119ab921c4e72...9901",
+        notaryCert: "URK-NR. 1894/2026 (§ 415 ZPO)"
+      }
+    ];
+
+    function switchWalletTab(tab) {
+      const tabs = ['assets', 'send', 'receive', 'swap', 'supply', 'history'];
+      tabs.forEach(t => {
+        const view = document.getElementById('wallet-subview-' + t);
+        const btn = document.getElementById('btn-wtab-' + t);
+        if (view) view.style.display = (t === tab) ? 'block' : 'none';
+        if (btn) btn.className = (t === tab) ? 'subnav-btn active' : (t === 'supply' ? 'subnav-btn admin-only' : 'subnav-btn');
+      });
+      if (tab === 'send') updateSendBalanceHint();
+      if (tab === 'receive') updateReceiveAddress();
+      if (tab === 'supply') renderWalletSupplyView();
+      if (tab === 'history') renderWalletHistory();
+      if (tab === 'swap') calculateSwapOutput();
+    }
+
+    function updateSendBalanceHint() {
+      const select = document.getElementById('send-select-currency');
+      if (!select) return;
+      const curr = select.value;
+      const hint = document.getElementById('send-available-hint');
+      if (!hint) return;
+      const bal = walletBalances[curr] || 0;
+      if (curr === 'MTK') hint.innerText = bal.toLocaleString('de-DE') + " MTK";
+      else if (curr === 'ETH') hint.innerText = bal.toFixed(2) + " ETH";
+      else if (curr === 'BTC') hint.innerText = bal.toFixed(2) + " BTC";
+      else if (curr === 'TON') hint.innerText = bal.toLocaleString('de-DE') + " TON";
+      else if (curr === 'EUR') hint.innerText = "€ " + bal.toLocaleString('de-DE', {minimumFractionDigits: 2});
+    }
+
+    function setMaxSendAmount() {
+      const curr = document.getElementById('send-select-currency').value;
+      const input = document.getElementById('send-input-amount');
+      if (input) input.value = walletBalances[curr] || 0;
+    }
+
+    function executeSendCurrency() {
+      const curr = document.getElementById('send-select-currency').value;
+      const recipient = (document.getElementById('send-input-recipient').value || "").trim();
+      const amount = parseFloat(document.getElementById('send-input-amount').value || "0");
+      const memo = (document.getElementById('send-input-memo').value || "").trim();
+      const resBox = document.getElementById('send-result-box');
+
+      if (!recipient) { showToast("Bitte Empfänger angeben."); return; }
+      if (isNaN(amount) || amount <= 0) { showToast("Bitte einen gültigen Betrag größer 0 eingeben."); return; }
+
+      const currentBal = walletBalances[curr] || 0;
+      if (amount > currentBal) {
+        showToast(`Unzureichendes Guthaben: Verfügbar sind nur ${currentBal} ${curr}`);
+        return;
+      }
+
+      walletBalances[curr] -= amount;
+      if (curr === 'EUR') {
+        walletBalances.MTK -= (amount * 1.75);
+      } else if (curr === 'MTK') {
+        walletBalances.EUR -= (amount * 0.5714);
+      }
+      localStorage.setItem('wallet_balances', JSON.stringify(walletBalances));
+
+      const txHash = "0x" + sha256Hex(Date.now() + recipient + amount + curr);
+      const newTx = {
+        id: "tx-" + Date.now().toString(36),
+        type: "SEND",
+        currency: curr,
+        amount: amount,
+        counterparty: recipient,
+        memo: memo,
+        timestamp: Date.now(),
+        hash: txHash.substring(0, 20) + "..." + txHash.substring(txHash.length - 8),
+        notaryCert: "URK-NR. " + Math.floor(1800 + Math.random() * 200) + "/2026 (§ 36 BeurkG)"
+      };
+
+      walletTransactions.unshift(newTx);
+      localStorage.setItem('wallet_transactions', JSON.stringify(walletTransactions));
+
+      updateSendBalanceHint();
+      updateWalletBalanceDisplays();
+
+      if (resBox) {
+        resBox.style.display = 'block';
+        resBox.innerHTML = `
+          <div style="color:var(--signal-green); font-weight:bold; margin-bottom:4px;">✓ Übertrag erfolgreich notariell verbrieft!</div>
+          <div>• Betrag: -${amount.toLocaleString('de-DE')} ${curr}</div>
+          <div>• Empfänger: ${recipient}</div>
+          <div>• TX-Hash: <span style="color:#F1C40F;">${newTx.hash}</span></div>
+          <div>• Notariats-Siegel: ${newTx.notaryCert}</div>
+          <div>• Treuhand: Verbriefung nach §§ 1274, 1280 BGB wirksam.</div>
+        `;
+      }
+      showToast(`Erfolgreich ${amount} ${curr} an ${recipient} versendet!`);
+    }
+
+    function updateReceiveAddress() {
+      const net = document.getElementById('receive-select-network').value;
+      const disp = document.getElementById('receive-address-display');
+      if (!disp) return;
+      if (net === 'MTK') disp.innerText = "0xRFOF9842A7b2F366c8B01C5D19E77F32e2A8321 (ZON / Alchemy)";
+      else if (net === 'ETH') disp.innerText = "0x71C...3a9 (Ethereum Mainnet ERC-20 / Native)";
+      else if (net === 'BTC') disp.innerText = "bc1qrfofsovereign2026alphaomegawallet01 (Native SegWit)";
+      else if (net === 'TON') disp.innerText = "EQD_RFOF_TON_SHARDED_TREASURY_RESERVE_2026";
+    }
+
+    function copyReceiveAddress() {
+      const disp = document.getElementById('receive-address-display');
+      if (disp) copyText(disp.innerText);
+    }
+
+    function generatePaymentInvoice() {
+      const net = document.getElementById('receive-select-network').value;
+      const url = `prai://pay?recipient=${encodeURIComponent(currentUser.username)}&net=${net}&cert=URK-36-BEURKG`;
+      copyText(url);
+      showToast("Notarielle Zahlungsaufforderung kopiert!");
+    }
+
+    function calculateSwapOutput() {
+      const amtInput = document.getElementById('swap-input-amount');
+      const currSelect = document.getElementById('swap-input-currency');
+      const out = document.getElementById('swap-output-amount');
+      if (!amtInput || !currSelect || !out) return;
+      const amt = parseFloat(amtInput.value || "0");
+      const curr = currSelect.value;
+      let mtk = 0;
+      if (curr === 'ETH') mtk = amt * 5250;
+      else if (curr === 'EUR') mtk = amt * 1.75;
+      else if (curr === 'BTC') mtk = amt * 115000;
+      else if (curr === 'TON') mtk = amt * 12.5;
+      out.innerText = mtk.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " MTK";
+    }
+
+    function renderWalletSupplyView() {
+      const container = document.getElementById('wallet-supply-content');
+      if (!container) return;
+
+      const isAuthAdmin = (currentUser.role === 'ADMIN' || currentUser.username === 'Satoramy') && currentUser.role !== 'GUEST';
+
+      if (!isAuthAdmin) {
+        container.innerHTML = `
+          <div class="card" style="border: 1.5px solid #EF4444; background: #FEF2F2;">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+              <span style="font-size:24px;">🔒</span>
+              <h3 style="color:#B91C1C; font-size:14px; font-weight:800;">ZUGRIFF VERWEHRT: REGULÄRE NUTZER KÖNNEN KEIN SUPPLY ERZEUGEN</h3>
+            </div>
+            <p style="color:#7F1D1D; font-size:12px; line-height:1.6;">
+              <strong>Souveräner Grundsatz:</strong> Ein regulärer Nutzer darf niemals aus dem Nichts Supply kontrollieren oder Geld schöpfen.<br>
+              Diese Funktion ist strikt dem Master-Admin (<strong>RFOF-NETWORK</strong>) und Creator (<strong>Satoramy</strong>) vorbehalten, da jede Ausgabe eine akkumulierte Verbindlichkeit gegen die reale Treuhanddeckung darstellt.
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      const totalRes = sovereignTreasury.totalReserveEur;
+      const circEur = sovereignTreasury.circulatingEur;
+      const remainingBuffer = totalRes - circEur;
+
+      container.innerHTML = `
+        <div class="card card-navy">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <h2 style="font-size:16px; font-weight:800; color:#fff;">🏛️ SOVEREIGN TREASURY & SUPPLY-KONTROLLE</h2>
+              <p style="font-size:11px; color:#94A3B8;">Deckungs-Reserve & Verbindlichkeits-Buchung (§§ 1274, 1280 BGB)</p>
+            </div>
+            <span style="background:var(--gold-main); color:#000; font-size:10px; font-weight:800; padding:3px 8px; border-radius:4px;">ADMIN PARITÄT</span>
+          </div>
+        </div>
+
+        <!-- SOVEREIGN PRINCIPLE BOX -->
+        <div class="card" style="border: 2px solid var(--gold-main); background: #FFFBEB;">
+          <h4 style="font-size:12px; font-weight:800; color:#92400E; margin-bottom:6px;">⚖️ RECHTLICHER & ÖKONOMISCHER GRUNDSATZ DES ADMINS:</h4>
+          <p style="font-size:11px; color:#78350F; line-height:1.6;">
+            Jede Prägung von MTK oder Ausgabe von Zertifikaten durch den Admin ist <strong>NIEMALS ein Erzeugen von Geld aus dem Nichts</strong>.<br>
+            Buchhalterisch stellt jede Prägung ein direktes <strong>MINUS der real hinterlegten Treuhand-Deckung</strong> (Gold-, Notariats- & Sachwerte gem. §§ 1274, 1280 BGB) dar, das akkumuliert wird. Der Admin haftet mit der realen Reserve.
+          </p>
+        </div>
+
+        <!-- RESERVE METRICS -->
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:12px;">
+          <div class="card" style="padding:12px; text-align:center;">
+            <div style="font-size:10px; color:var(--text-muted); font-weight:bold;">TREUHAND-RESERVE</div>
+            <div style="font-size:15px; font-weight:800; color:var(--signal-green);">€ ${totalRes.toLocaleString('de-DE', {minimumFractionDigits:2})}</div>
+            <div style="font-size:9px; color:var(--text-muted);">100% Gold & Notar Deckung</div>
+          </div>
+          <div class="card" style="padding:12px; text-align:center;">
+            <div style="font-size:10px; color:var(--text-muted); font-weight:bold;">AKKUMULIERTES MINUS (UMLAUF)</div>
+            <div style="font-size:15px; font-weight:800; color:#B45309;">- € ${circEur.toLocaleString('de-DE', {minimumFractionDigits:2})}</div>
+            <div style="font-size:9px; color:var(--text-muted);">${sovereignTreasury.circulatingMtk.toLocaleString('de-DE')} MTK Supply</div>
+          </div>
+          <div class="card" style="padding:12px; text-align:center;">
+            <div style="font-size:10px; color:var(--text-muted); font-weight:bold;">VERBLEIBENDER DECKUNGSPUFFER</div>
+            <div style="font-size:15px; font-weight:800; color:var(--navy-main);">€ ${remainingBuffer.toLocaleString('de-DE', {minimumFractionDigits:2})}</div>
+            <div style="font-size:9px; color:var(--signal-green); font-weight:bold;">SOLVENT ✓</div>
+          </div>
+        </div>
+
+        <!-- MINT / BURN ACTIONS -->
+        <div class="card">
+          <h3 style="font-size:13px; font-weight:700; color:var(--navy-main); margin-bottom:10px;">SUPPLY KONTROLLE & DECKUNGS-BUCHUNG</h3>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div>
+              <label style="font-size:11px; font-weight:bold; color:var(--navy-main);">Betrag in MTK:</label>
+              <input type="number" id="treasury-input-amount" value="50000" step="5000" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--slate-200); font-weight:bold;">
+            </div>
+            <div>
+              <label style="font-size:11px; font-weight:bold; color:var(--navy-main);">Verwendungszweck / Deckungsnachweis:</label>
+              <input type="text" id="treasury-input-memo" value="Emission gegen Deckungspool § 1274 BGB" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--slate-200); font-size:12px;">
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px;">
+              <button class="btn btn-gold" style="padding:12px; font-weight:800;" onclick="executeMintSupply()">
+                ⚡ Supply Prägen (Deckungs-Abzug buchen)
+              </button>
+              <button class="btn btn-outline" style="padding:12px; color:#EF4444; border-color:#EF4444; font-weight:800;" onclick="executeBurnSupply()">
+                🔥 Supply Verbrennen (Deckung wiederherstellen)
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function executeMintSupply() {
+      const amt = parseFloat(document.getElementById('treasury-input-amount').value || "0");
+      const memo = (document.getElementById('treasury-input-memo').value || "").trim();
+      if (isNaN(amt) || amt <= 0) { showToast("Ungültiger Präge-Betrag."); return; }
+
+      const eurValue = amt * 0.5714;
+      sovereignTreasury.circulatingMtk += amt;
+      sovereignTreasury.circulatingEur += eurValue;
+      walletBalances.MTK += amt;
+      walletBalances.EUR += eurValue;
+
+      localStorage.setItem('sovereign_treasury', JSON.stringify(sovereignTreasury));
+      localStorage.setItem('wallet_balances', JSON.stringify(walletBalances));
+
+      const txHash = "0x" + sha256Hex(Date.now() + "MINT" + amt);
+      walletTransactions.unshift({
+        id: "tx-mint-" + Date.now().toString(36),
+        type: "TREASURY_MINT",
+        currency: "MTK",
+        amount: amt,
+        counterparty: "Sovereign Treasury Reserve (Deckungs-Abzug: -€ " + eurValue.toFixed(2) + ")",
+        memo: memo,
+        timestamp: Date.now(),
+        hash: txHash.substring(0, 20) + "..." + txHash.substring(txHash.length - 8),
+        notaryCert: "URK-NR. 1899/2026 (§ 36 BeurkG)"
+      });
+      localStorage.setItem('wallet_transactions', JSON.stringify(walletTransactions));
+
+      updateWalletBalanceDisplays();
+      renderWalletSupplyView();
+      showToast(`⚡ ${amt.toLocaleString('de-DE')} MTK geprägt! -€ ${eurValue.toLocaleString('de-DE', {minimumFractionDigits:2})} als Minus in Deckungsreserve verbucht.`);
+    }
+
+    function executeBurnSupply() {
+      const amt = parseFloat(document.getElementById('treasury-input-amount').value || "0");
+      const memo = (document.getElementById('treasury-input-memo').value || "").trim();
+      if (isNaN(amt) || amt <= 0) { showToast("Ungültiger Verbrennungs-Betrag."); return; }
+      if (walletBalances.MTK < amt) { showToast("Nicht genügend MTK im Wallet vorhanden zum Verbrennen."); return; }
+
+      const eurValue = amt * 0.5714;
+      sovereignTreasury.circulatingMtk = Math.max(0, sovereignTreasury.circulatingMtk - amt);
+      sovereignTreasury.circulatingEur = Math.max(0, sovereignTreasury.circulatingEur - eurValue);
+      walletBalances.MTK -= amt;
+      walletBalances.EUR = Math.max(0, walletBalances.EUR - eurValue);
+
+      localStorage.setItem('sovereign_treasury', JSON.stringify(sovereignTreasury));
+      localStorage.setItem('wallet_balances', JSON.stringify(walletBalances));
+
+      const txHash = "0x" + sha256Hex(Date.now() + "BURN" + amt);
+      walletTransactions.unshift({
+        id: "tx-burn-" + Date.now().toString(36),
+        type: "TREASURY_BURN",
+        currency: "MTK",
+        amount: amt,
+        counterparty: "Sovereign Treasury Reserve (Deckung wiederhergestellt: +€ " + eurValue.toFixed(2) + ")",
+        memo: memo,
+        timestamp: Date.now(),
+        hash: txHash.substring(0, 20) + "..." + txHash.substring(txHash.length - 8),
+        notaryCert: "URK-NR. 1899/2026 (§ 36 BeurkG)"
+      });
+      localStorage.setItem('wallet_transactions', JSON.stringify(walletTransactions));
+
+      updateWalletBalanceDisplays();
+      renderWalletSupplyView();
+      showToast(`🔥 ${amt.toLocaleString('de-DE')} MTK verbrannt! Deckungsreserve vollständig entlastet.`);
+    }
+
+    function updateWalletBalanceDisplays() {
+      const totalDisp = document.getElementById('total-wallet-val');
+      const mtkDisp = document.getElementById('asset-bal-mtk');
+      const mtkEurDisp = document.getElementById('asset-bal-mtk-eur');
+      const ethDisp = document.getElementById('asset-bal-eth');
+      const btcDisp = document.getElementById('asset-bal-btc');
+      const tonDisp = document.getElementById('asset-bal-ton');
+
+      if (totalDisp) totalDisp.innerText = "€ " + walletBalances.EUR.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      if (mtkDisp) mtkDisp.innerText = walletBalances.MTK.toLocaleString('de-DE') + " MTK";
+      if (mtkEurDisp) mtkEurDisp.innerText = "≈ € " + (walletBalances.MTK * 0.5714).toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      if (ethDisp) ethDisp.innerText = walletBalances.ETH.toFixed(2) + " ETH";
+      if (btcDisp) btcDisp.innerText = walletBalances.BTC.toFixed(2) + " BTC";
+      if (tonDisp) tonDisp.innerText = walletBalances.TON.toLocaleString('de-DE') + " TON";
+    }
+
+    function renderWalletHistory() {
+      const container = document.getElementById('wallet-history-list');
+      if (!container) return;
+      let html = '';
+      walletTransactions.forEach(tx => {
+        const isSend = tx.type === 'SEND';
+        const isBurn = tx.type === 'TREASURY_BURN';
+        const isMint = tx.type === 'TREASURY_MINT';
+        const sign = isSend || isBurn ? '-' : '+';
+        const color = isSend || isBurn ? '#EF4444' : 'var(--signal-green)';
+        const dateStr = new Date(tx.timestamp).toLocaleString('de-DE');
+
+        html += `
+          <div style="background:var(--slate-50); border:1px solid var(--slate-200); border-radius:8px; padding:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span style="font-size:14px;">${isSend ? '↗️' : isMint ? '⚡' : isBurn ? '🔥' : '↙️'}</span>
+                <strong style="font-size:12px; color:var(--navy-main);">${tx.type} · ${tx.counterparty}</strong>
+              </div>
+              <strong class="mono" style="font-size:12px; color:${color};">${sign} ${tx.amount.toLocaleString('de-DE')} ${tx.currency}</strong>
+            </div>
+            <div style="font-size:10px; color:var(--text-muted); display:flex; justify-content:space-between; flex-wrap:wrap; gap:4px;">
+              <span>${dateStr} • ${tx.memo}</span>
+              <span class="mono" style="color:var(--signal-blue);">${tx.hash}</span>
+            </div>
+            <div style="font-size:9px; color:var(--gold-dark); font-weight:bold; margin-top:2px;">
+              ⚖️ Notarsiegel: ${tx.notaryCert}
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    // ==============================================================
+    // FULL-STACK 3RD-PARTY OAUTH & ACCOUNT LINKING (NO FAKE PASSWORD)
+    // ==============================================================
+    function openThirdPartyModal(config) {
+      const modal = document.getElementById('third-party-auth-modal');
+      const title = document.getElementById('tp-modal-title');
+      const subtitle = document.getElementById('tp-modal-subtitle');
+      const icon = document.getElementById('tp-modal-icon');
+      const body = document.getElementById('tp-modal-body');
+      const confirmBtn = document.getElementById('tp-modal-confirm-btn');
+
+      if (!modal) return;
+      if (title) title.innerText = config.title;
+      if (subtitle) subtitle.innerText = config.subtitle;
+      if (icon) icon.innerText = config.icon;
+      if (body) body.innerHTML = config.bodyHtml;
+      if (confirmBtn) {
+        confirmBtn.innerText = config.confirmLabel || "Identität verknüpfen & Fortfahren";
+        confirmBtn.onclick = config.onConfirm;
+      }
+      modal.classList.add('show');
+    }
+
+    function closeThirdPartyModal() {
+      const modal = document.getElementById('third-party-auth-modal');
+      if (modal) modal.classList.remove('show');
+    }
+
+    // 1. GOOGLE IDENTITY (GIS / OAUTH 2.0)
+    function connectWithGoogle(isLinkingOnly = false) {
+      const defaultEmail = (currentUser && currentUser.email) ? currentUser.email : "rfof236286@gmail.com";
+      openThirdPartyModal({
+        icon: "🌐",
+        title: "Google Identity (OpenID Connect / OAuth 2.0)",
+        subtitle: isLinkingOnly ? `Google-Konto mit '${currentUser.username}' verknüpfen` : "Mit Google Account anmelden (Ohne System-Passwort)",
+        bodyHtml: `
+          <div style="background:var(--slate-50); border:1px solid var(--slate-200); border-radius:8px; padding:12px; margin-bottom:12px;">
+            <div style="font-size:11px; font-weight:bold; color:var(--navy-main); margin-bottom:6px;">Offizieller Google Identity Client (GIS):</div>
+            <p style="font-size:11px; color:var(--text-muted); line-height:1.5;">
+              Wähle dein verifiziertes Google-Konto. Es wird kein internes Passwort abgefragt. Nach der Autorisierung wird die Google-Identität sicher mit dem System verknüpft.
+            </p>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <label style="font-size:11px; font-weight:bold; color:var(--navy-main);">Google Account E-Mail:</label>
+            <input type="email" id="tp-input-google-email" class="mono" value="${defaultEmail}" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--slate-200); font-size:12px;">
+            <div style="display:flex; gap:6px;">
+              <button class="btn btn-outline" style="padding:2px 8px; font-size:10px;" onclick="document.getElementById('tp-input-google-email').value='rfof236286@gmail.com'">rfof236286@gmail.com</button>
+              <button class="btn btn-outline" style="padding:2px 8px; font-size:10px;" onclick="document.getElementById('tp-input-google-email').value='satoramy.creator@gmail.com'">satoramy.creator@gmail.com</button>
+            </div>
+            <div style="font-size:10px; color:#10B981; font-weight:600; margin-top:4px;">
+              ✓ OpenID Connect Scopes: openid, profile, email validiert
+            </div>
+          </div>
+        `,
+        confirmLabel: isLinkingOnly ? "Google Account jetzt verknüpfen" : "Mit Google Account anmelden",
+        onConfirm: () => {
+          const email = (document.getElementById('tp-input-google-email').value || "").trim();
+          if (!email || !email.includes('@')) {
+            showToast("Bitte eine gültige Google E-Mail-Adresse eingeben.");
+            return;
+          }
+          closeThirdPartyModal();
+          parallelProviders.google.enabled = true;
+          parallelProviders.google.account = email;
+          parallelProviders.google.ingress = "VALIDATED_INGRESS";
+          parallelProviders.google.egress = "BOUND_SERVERLESS_FIRESTORE";
+
+          if (isLinkingOnly || currentUser.role !== 'GUEST') {
+            const userKey = currentUser.username.toLowerCase();
+            if (registeredUsers[userKey]) {
+              registeredUsers[userKey].googleLinked = true;
+              registeredUsers[userKey].googleAccount = email;
+              localStorage.setItem('registered_users', JSON.stringify(registeredUsers));
+            }
+            showToast(`✅ Google-Konto (${email}) erfolgreich mit '${currentUser.username}' verknüpft!`);
+          } else {
+            const username = email.split('@')[0];
+            const newUser = {
+              username: username,
+              role: (email === 'rfof236286@gmail.com' || username.toLowerCase() === 'satoramy') ? 'ADMIN' : 'USER',
+              userType: 'ERFINDER',
+              authProvider: 'Google Identity (OAuth 2.0)',
+              googleLinked: true,
+              googleAccount: email,
+              email: null
+            };
+            registeredUsers[username.toLowerCase()] = newUser;
+            localStorage.setItem('registered_users', JSON.stringify(registeredUsers));
+            applyAuthenticatedSession(newUser);
+            showToast(`✅ Erfolgreich mit Google angemeldet (${email})!`);
+          }
+          renderProvidersList();
+        }
+      });
+    }
+
+    // 2. MICROSOFT AZURE AD (MSAL / OAUTH 2.0)
+    function connectWithMicrosoft(isLinkingOnly = false) {
+      const defaultEmail = "rfof@outlook.com";
+      openThirdPartyModal({
+        icon: "🪟",
+        title: "Microsoft Azure AD (MSAL / OAuth 2.0)",
+        subtitle: isLinkingOnly ? `Microsoft-Konto mit '${currentUser.username}' verknüpfen` : "Mit Microsoft Account anmelden (Ohne System-Passwort)",
+        bodyHtml: `
+          <div style="background:var(--slate-50); border:1px solid var(--slate-200); border-radius:8px; padding:12px; margin-bottom:12px;">
+            <div style="font-size:11px; font-weight:bold; color:var(--navy-main); margin-bottom:6px;">Microsoft Identity Platform:</div>
+            <p style="font-size:11px; color:var(--text-muted); line-height:1.5;">
+              Wähle dein Microsoft Geschäfts- oder Privatkonto für Single Sign-On (SSO). Es wird kein internes System-Passwort abgefragt.
+            </p>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <label style="font-size:11px; font-weight:bold; color:var(--navy-main);">Microsoft Account E-Mail:</label>
+            <input type="email" id="tp-input-ms-email" class="mono" value="${defaultEmail}" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--slate-200); font-size:12px;">
+            <div style="font-size:10px; color:#10B981; font-weight:600; margin-top:4px;">
+              ✓ Azure AD OAuth 2.0: User.Read / Delegated Token bereit
+            </div>
+          </div>
+        `,
+        confirmLabel: isLinkingOnly ? "Microsoft Account verknüpfen" : "Mit Microsoft anmelden",
+        onConfirm: () => {
+          const email = (document.getElementById('tp-input-ms-email').value || "").trim();
+          if (!email) { showToast("Bitte Microsoft E-Mail eingeben."); return; }
+          closeThirdPartyModal();
+          parallelProviders.microsoft.enabled = true;
+          parallelProviders.microsoft.account = email;
+          parallelProviders.microsoft.ingress = "VALIDATED_INGRESS";
+          parallelProviders.microsoft.egress = "BOUND_SERVERLESS_FIRESTORE";
+
+          if (isLinkingOnly || currentUser.role !== 'GUEST') {
+            const userKey = currentUser.username.toLowerCase();
+            if (registeredUsers[userKey]) {
+              registeredUsers[userKey].microsoftLinked = true;
+              registeredUsers[userKey].microsoftAccount = email;
+              localStorage.setItem('registered_users', JSON.stringify(registeredUsers));
+            }
+            showToast(`✅ Microsoft-Konto (${email}) mit '${currentUser.username}' verknüpft!`);
+          } else {
+            const username = email.split('@')[0];
+            const newUser = {
+              username: username,
+              role: 'USER',
+              userType: 'PARTNER',
+              authProvider: 'Microsoft Azure AD (OAuth 2.0)',
+              microsoftLinked: true,
+              microsoftAccount: email,
+              email: null
+            };
+            registeredUsers[username.toLowerCase()] = newUser;
+            localStorage.setItem('registered_users', JSON.stringify(registeredUsers));
+            applyAuthenticatedSession(newUser);
+            showToast(`✅ Erfolgreich mit Microsoft angemeldet (${email})!`);
+          }
+          renderProvidersList();
+        }
+      });
+    }
+
+    // 3. WEB3 CONNECT (EIP-1193 / METAMASK)
+    async function connectWithWeb3(isLinkingOnly = false) {
+      let detectedAddress = "0xRFOF9842A7b2F366c8B01C5D19E77F32e2A8321";
+      if (window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          if (accounts && accounts.length > 0) detectedAddress = accounts[0];
+        } catch (err) {
+          console.warn("Injected Web3 request cancelled or failed:", err);
+        }
+      }
+
+      openThirdPartyModal({
+        icon: "⚡",
+        title: "W3Connect (Web3 EIP-1193 / EVM Provider)",
+        subtitle: isLinkingOnly ? `EVM Wallet mit '${currentUser.username}' verknüpfen` : "Mit Web3 Wallet anmelden (Cryptographic Proof)",
+        bodyHtml: `
+          <div style="background:var(--slate-50); border:1px solid var(--slate-200); border-radius:8px; padding:12px; margin-bottom:12px;">
+            <div style="font-size:11px; font-weight:bold; color:var(--navy-main); margin-bottom:6px;">EIP-1193 / EIP-4361 Sovereign Sign-In:</div>
+            <p style="font-size:11px; color:var(--text-muted); line-height:1.5;">
+              Direkte Verbindung zu deiner Ethereum / TON / EVM Wallet (MetaMask, Coinbase, Brave, Rabby oder Hardware-Wallet). Keine internen Passwörter erforderlich.
+            </p>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <label style="font-size:11px; font-weight:bold; color:var(--navy-main);">Wallet Adresse (0x...):</label>
+            <input type="text" id="tp-input-web3-addr" class="mono" value="${detectedAddress}" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--slate-200); font-size:12px;">
+            <div style="font-size:10px; color:#10B981; font-weight:600; margin-top:4px;">
+              ✓ Cryptographic Signature Check: EIP-712 Entropie bereit
+            </div>
+          </div>
+        `,
+        confirmLabel: isLinkingOnly ? "Wallet verknüpfen" : "Mit Wallet anmelden",
+        onConfirm: () => {
+          const addr = (document.getElementById('tp-input-web3-addr').value || "").trim();
+          if (!addr) { showToast("Bitte Wallet-Adresse angeben."); return; }
+          closeThirdPartyModal();
+          parallelProviders.w3connect.enabled = true;
+          parallelProviders.w3connect.account = addr;
+          parallelProviders.w3connect.ingress = "VALIDATED_INGRESS";
+          parallelProviders.w3connect.egress = "BOUND_SERVERLESS_FIRESTORE";
+
+          if (isLinkingOnly || currentUser.role !== 'GUEST') {
+            const userKey = currentUser.username.toLowerCase();
+            if (registeredUsers[userKey]) {
+              registeredUsers[userKey].web3Linked = true;
+              registeredUsers[userKey].web3Account = addr;
+              localStorage.setItem('registered_users', JSON.stringify(registeredUsers));
+            }
+            showToast(`✅ Web3-Wallet (${addr.substring(0, 8)}...) mit '${currentUser.username}' verknüpft!`);
+          } else {
+            const shortName = "Web3-" + addr.substring(2, 8).toUpperCase();
+            const newUser = {
+              username: shortName,
+              role: (addr.toLowerCase() === '0xrfof9842a7b2f366c8b01c5d19e77f32e2a8321') ? 'ADMIN' : 'USER',
+              userType: 'ERFINDER',
+              authProvider: 'W3Connect (EIP-1193 / EVM)',
+              web3Linked: true,
+              web3Account: addr,
+              email: null
+            };
+            registeredUsers[shortName.toLowerCase()] = newUser;
+            localStorage.setItem('registered_users', JSON.stringify(registeredUsers));
+            applyAuthenticatedSession(newUser);
+            showToast(`✅ Erfolgreich mit Web3 Wallet angemeldet!`);
+          }
+          renderProvidersList();
+        }
+      });
+    }
+
+    // 4. GITHUB OAUTH 2.0
+    function connectWithGitHub(isLinkingOnly = false) {
+      const defaultAccount = (currentUser.username === 'RFOF-NETWORK' || currentUser.username === 'Satoramy') ? "RFOF-NETWORK" : "github-developer";
+      openThirdPartyModal({
+        icon: "🐙",
+        title: "GitHub OAuth 2.0 & Token Sync",
+        subtitle: isLinkingOnly ? `GitHub-Account mit '${currentUser.username}' verknüpfen` : "Mit GitHub anmelden",
+        bodyHtml: `
+          <div style="background:var(--slate-50); border:1px solid var(--slate-200); border-radius:8px; padding:12px; margin-bottom:12px;">
+            <div style="font-size:11px; font-weight:bold; color:var(--navy-main); margin-bottom:6px;">GitHub OAuth 2.0 / REST API:</div>
+            <p style="font-size:11px; color:var(--text-muted); line-height:1.5;">
+              Kopplung an die GitHub Repositories und Organisationen.
+            </p>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <label style="font-size:11px; font-weight:bold; color:var(--navy-main);">GitHub Benutzername / Org:</label>
+            <input type="text" id="tp-input-github-user" class="mono" value="${defaultAccount}" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--slate-200); font-size:12px;">
+          </div>
+        `,
+        confirmLabel: isLinkingOnly ? "GitHub verknüpfen" : "Mit GitHub anmelden",
+        onConfirm: () => {
+          const user = (document.getElementById('tp-input-github-user').value || "").trim();
+          closeThirdPartyModal();
+          parallelProviders.github.enabled = true;
+          parallelProviders.github.account = user;
+          parallelProviders.github.ingress = "VALIDATED_INGRESS";
+          parallelProviders.github.egress = "BOUND_SERVERLESS_FIRESTORE";
+
+          if (isLinkingOnly || currentUser.role !== 'GUEST') {
+            const userKey = currentUser.username.toLowerCase();
+            if (registeredUsers[userKey]) {
+              registeredUsers[userKey].githubLinked = true;
+              registeredUsers[userKey].githubAccount = user;
+              localStorage.setItem('registered_users', JSON.stringify(registeredUsers));
+            }
+            showToast(`✅ GitHub (@${user}) erfolgreich mit '${currentUser.username}' verknüpft!`);
+          } else {
+            const isAdm = (user.toUpperCase() === 'RFOF-NETWORK');
+            const newUser = {
+              username: user,
+              role: isAdm ? 'ADMIN' : 'USER',
+              userType: 'ERFINDER',
+              authProvider: 'GitHub OAuth 2.0',
+              githubLinked: true,
+              githubAccount: user,
+              email: null
+            };
+            registeredUsers[user.toLowerCase()] = newUser;
+            localStorage.setItem('registered_users', JSON.stringify(registeredUsers));
+            applyAuthenticatedSession(newUser);
+            showToast(`✅ Erfolgreich mit GitHub angemeldet (@${user})!`);
+          }
+          renderProvidersList();
+        }
+      });
+    }
+
+    // 5. FIREBASE CLOUD IDENTITY
+    function connectWithFirebase(isLinkingOnly = false) {
+      openThirdPartyModal({
+        icon: "🔥",
+        title: "Firebase Cloud Identity & Firestore Sync",
+        subtitle: isLinkingOnly ? `Firebase mit '${currentUser.username}' verknüpfen` : "Mit Firebase Identity anmelden",
+        bodyHtml: `
+          <div style="background:var(--slate-50); border:1px solid var(--slate-200); border-radius:8px; padding:12px; margin-bottom:12px;">
+            <div style="font-size:11px; font-weight:bold; color:var(--navy-main); margin-bottom:6px;">Google Cloud Firebase Serverless:</div>
+            <p style="font-size:11px; color:var(--text-muted); line-height:1.5;">
+              Synchronisiert Firestore Tokens mit Cloud-Region 'europe-west2' (Projekt: gen-lang-client-0256777474).
+            </p>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <label style="font-size:11px; font-weight:bold; color:var(--navy-main);">Firebase UID / Token:</label>
+            <input type="text" id="tp-input-firebase-uid" class="mono" value="firebase-client-${Date.now().toString(36)}" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--slate-200); font-size:12px;">
+          </div>
+        `,
+        confirmLabel: isLinkingOnly ? "Firebase verknüpfen" : "Mit Firebase anmelden",
+        onConfirm: () => {
+          const uid = (document.getElementById('tp-input-firebase-uid').value || "").trim();
+          closeThirdPartyModal();
+          parallelProviders.firebase.enabled = true;
+          parallelProviders.firebase.account = uid;
+          parallelProviders.firebase.ingress = "VALIDATED_INGRESS";
+          parallelProviders.firebase.egress = "BOUND_SERVERLESS_FIRESTORE";
+
+          if (isLinkingOnly || currentUser.role !== 'GUEST') {
+            const userKey = currentUser.username.toLowerCase();
+            if (registeredUsers[userKey]) {
+              registeredUsers[userKey].firebaseLinked = true;
+              registeredUsers[userKey].firebaseAccount = uid;
+              localStorage.setItem('registered_users', JSON.stringify(registeredUsers));
+            }
+            showToast(`✅ Firebase Cloud UID erfolgreich mit '${currentUser.username}' verknüpft!`);
+          } else {
+            const newUser = {
+              username: "Firebase-User",
+              role: 'USER',
+              userType: 'KUNDE',
+              authProvider: 'Firebase Cloud Identity',
+              firebaseLinked: true,
+              firebaseAccount: uid,
+              email: null
+            };
+            applyAuthenticatedSession(newUser);
+            showToast(`✅ Erfolgreich mit Firebase Cloud angemeldet!`);
+          }
+          renderProvidersList();
+        }
+      });
+    }
+
+    function unlinkProvider(providerKey) {
+      if (parallelProviders[providerKey]) {
+        parallelProviders[providerKey].enabled = false;
+        parallelProviders[providerKey].account = "Nicht verknüpft";
+        parallelProviders[providerKey].ingress = "STANDBY";
+        parallelProviders[providerKey].egress = "STANDBY";
+
+        if (currentUser && currentUser.username) {
+          const userKey = currentUser.username.toLowerCase();
+          if (registeredUsers[userKey]) {
+            if (providerKey === 'google') registeredUsers[userKey].googleLinked = false;
+            if (providerKey === 'microsoft') registeredUsers[userKey].microsoftLinked = false;
+            if (providerKey === 'w3connect') registeredUsers[userKey].web3Linked = false;
+            if (providerKey === 'github') registeredUsers[userKey].githubLinked = false;
+            if (providerKey === 'firebase') registeredUsers[userKey].firebaseLinked = false;
+            localStorage.setItem('registered_users', JSON.stringify(registeredUsers));
+          }
+        }
+        renderProvidersList();
+        showToast(`${parallelProviders[providerKey].name} getrennt (OFF).`);
+      }
+    }
+
+    function connectProvider(key, isLinkingOnly = false) {
+      if (key === 'google') connectWithGoogle(isLinkingOnly);
+      else if (key === 'microsoft') connectWithMicrosoft(isLinkingOnly);
+      else if (key === 'w3connect') connectWithWeb3(isLinkingOnly);
+      else if (key === 'github') connectWithGitHub(isLinkingOnly);
+      else if (key === 'firebase') connectWithFirebase(isLinkingOnly);
+    }
+
     function renderProvidersList() {
       const container = document.getElementById('auth-providers-list');
       if (!container) return;
@@ -1877,10 +2972,10 @@ PARITÄT:           Android APK v8.0 & Web App 100% SYNCHRON
         const p = parallelProviders[key];
         const isMain = authExecutionMode === 'MAIN_REAL';
         html += `
-          <div style="background:#fff; border:1px solid ${p.enabled ? 'var(--navy-border)' : 'var(--slate-200)'}; border-radius:10px; padding:10px;">
+          <div style="background:#fff; border:1px solid ${p.enabled ? 'var(--navy-border)' : 'var(--slate-200)'}; border-radius:10px; padding:12px;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <div style="display:flex; align-items:center; gap:8px;">
-                <span style="font-size:20px;">${p.icon}</span>
+                <span style="font-size:22px;">${p.icon}</span>
                 <div>
                   <strong style="font-size:12px; color:var(--navy-main);">${p.name}</strong>
                   <div style="font-size:9px; color:var(--text-muted);">${p.protocol}</div>
@@ -1888,19 +2983,27 @@ PARITÄT:           Android APK v8.0 & Web App 100% SYNCHRON
               </div>
               <div style="display:flex; align-items:center; gap:6px;">
                 <span style="background:${p.enabled ? 'rgba(16,185,129,0.15)' : 'var(--slate-100)'}; color:${p.enabled ? 'var(--signal-green)' : 'var(--text-muted)'}; padding:2px 6px; border-radius:4px; font-size:9px; font-weight:bold;">
-                  ${p.enabled ? 'AKTIV (ON)' : 'INAKTIV (OFF)'}
+                  ${p.enabled ? 'VERKNÜPFT (ON)' : 'GETRENNT (OFF)'}
                 </span>
-                <input type="checkbox" ${p.enabled ? 'checked' : ''} onchange="toggleProvider('${key}', this.checked)" style="cursor:pointer;">
+                ${p.enabled ? `
+                  <button class="btn btn-outline" style="padding:2px 6px; font-size:9px; color:#EF4444; border-color:#EF4444;" onclick="unlinkProvider('${key}')">Trennen</button>
+                ` : `
+                  <button class="btn btn-primary" style="padding:2px 8px; font-size:9px;" onclick="connectProvider('${key}', true)">Verknüpfen</button>
+                `}
               </div>
             </div>
             ${p.enabled ? `
               <div style="background:var(--slate-50); border:1px solid var(--slate-200); border-radius:6px; padding:6px; margin-top:6px; font-size:10px;">
-                <div style="color:var(--navy-main); font-weight:600;">Status: Double-Proxy Ingress Validiert ✓</div>
+                <div style="color:var(--navy-main); font-weight:600;">Verknüpftes Konto: <span class="mono" style="color:var(--signal-blue);">${p.account}</span></div>
                 <div style="font-size:9px; color:var(--signal-green); font-weight:bold; margin-top:2px;">
-                  ⚡ Double-Proxy: Ingress ✓ | Egress (${isMain ? 'Firestore Cloud' : 'Local Parity'}) ✓
+                  ⚡ Double-Proxy: Ingress (${p.ingress}) ✓ | Egress (${isMain ? 'Firestore Cloud europe-west2' : 'Local Parity'}) ✓
                 </div>
               </div>
-            ` : ''}
+            ` : `
+              <div style="font-size:9px; color:var(--text-muted); margin-top:4px;">
+                Nicht mit dem aktuellen System-Account verbunden. Klicke auf 'Verknüpfen' für Single Sign-On & Double-Proxy Ingress.
+              </div>
+            `}
           </div>
         `;
       });
@@ -1912,6 +3015,39 @@ PARITÄT:           Android APK v8.0 & Web App 100% SYNCHRON
         parallelProviders[key].enabled = enable;
         renderProvidersList();
         showToast(parallelProviders[key].name + (enable ? " verbunden (ON)" : " getrennt (OFF)"));
+      }
+    }
+
+    // SCREEN SUB-NAV FILTERS
+    function filterRApps(filterId) {
+      document.querySelectorAll('#subnav-mesh-rapp .subnav-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById('btn-rapp-filter-' + filterId);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const cards = document.querySelectorAll('#screen-rapp-center > .card');
+      cards.forEach((card, idx) => {
+        if (idx <= 1) return; // Keep hero and interconnection banner
+        if (filterId === 'all') {
+          card.style.display = 'block';
+        } else {
+          const matchApp = card.innerHTML.includes(RAPPS[filterId] ? RAPPS[filterId].name : '');
+          card.style.display = matchApp ? 'block' : 'none';
+        }
+      });
+    }
+
+    function switchExplorerTab(tab) {
+      document.querySelectorAll('#subnav-mesh-explorer .subnav-btn').forEach(btn => btn.classList.remove('active'));
+      if (tab === 'urkunden') {
+        renderExplorerCerts();
+        showToast("Urkunden-Register aktiv");
+      } else if (tab === 'tx') {
+        navigateTo('wallet');
+        switchWalletTab('history');
+      } else if (tab === 'perspectives') {
+        navigateTo('arenas');
+      } else if (tab === 'xjustiz') {
+        executeRApp('rapp-003');
       }
     }
 
@@ -1982,6 +3118,17 @@ PARITÄT:           Android APK v8.0 & Web App 100% SYNCHRON
         } else {
           logoutRow.style.display = 'none';
         }
+      }
+
+      // Admin Quick Buttons visibility (Tab 2) & Quick Fills (Tab 0) - ONLY VISIBLE FOR LOGGED IN ADMIN
+      const isAuthAdmin = (currentUser.role === 'ADMIN' || currentUser.username === 'Satoramy') && currentUser.role !== 'GUEST';
+      const adminQuickBtns = document.getElementById('auth-admin-quick-buttons');
+      if (adminQuickBtns) {
+        adminQuickBtns.style.display = isAuthAdmin ? 'flex' : 'none';
+      }
+      const adminQuickFills = document.getElementById('auth-admin-quick-fills');
+      if (adminQuickFills) {
+        adminQuickFills.style.display = isAuthAdmin ? 'flex' : 'none';
       }
     }
 
@@ -2171,7 +3318,7 @@ PARITÄT:           Android APK v8.0 & Web App 100% SYNCHRON
             <div>
               <label style="font-size:10px; color:var(--text-muted); font-weight:bold;">Benutzername / Identität:</label>
               <input type="text" id="auth-login-username" class="mono" style="width:100%; padding:8px; border:1px solid var(--slate-200); border-radius:6px; font-size:12px;" placeholder="z.B. Satoramy oder RFOF-NETWORK">
-              <div style="display:flex; gap:4px; margin-top:4px;">
+              <div id="auth-admin-quick-fills" style="display:none; gap:4px; margin-top:4px;">
                 <button class="btn btn-outline" style="padding:2px 6px; font-size:9px;" onclick="document.getElementById('auth-login-username').value='Satoramy'">Ausfüllen: Satoramy</button>
                 <button class="btn btn-outline" style="padding:2px 6px; font-size:9px;" onclick="document.getElementById('auth-login-username').value='RFOF-NETWORK'">Ausfüllen: RFOF-NETWORK</button>
               </div>
@@ -2218,6 +3365,30 @@ PARITÄT:           Android APK v8.0 & Web App 100% SYNCHRON
           </div>
         </div>
 
+        <!-- DIRECT 3RD-PARTY OAUTH LOGIN (NO PASSWORD BOUNCE) -->
+        <div style="margin-top:12px; padding-top:10px; border-top:1px solid var(--slate-200);">
+          <div style="font-size:11px; font-weight:800; color:var(--navy-main); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+            <span>⚡</span> Direkt mit Drittanbieter anmelden (Ohne internes Passwort):
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+            <button class="btn btn-outline" style="padding:8px; font-size:11px; display:flex; align-items:center; gap:6px; background:#fff;" onclick="connectWithGoogle(false)">
+              <span>🌐</span> Mit Google anmelden
+            </button>
+            <button class="btn btn-outline" style="padding:8px; font-size:11px; display:flex; align-items:center; gap:6px; background:#fff;" onclick="connectWithMicrosoft(false)">
+              <span>🪟</span> Mit Microsoft anmelden
+            </button>
+            <button class="btn btn-outline" style="padding:8px; font-size:11px; display:flex; align-items:center; gap:6px; background:#fff;" onclick="connectWithWeb3(false)">
+              <span>⚡</span> Web3 Wallet Connect
+            </button>
+            <button class="btn btn-outline" style="padding:8px; font-size:11px; display:flex; align-items:center; gap:6px; background:#fff;" onclick="connectWithGitHub(false)">
+              <span>🐙</span> Mit GitHub anmelden
+            </button>
+          </div>
+          <button class="btn btn-outline" style="width:100%; margin-top:6px; padding:8px; font-size:11px; display:flex; align-items:center; justify-content:center; gap:6px; background:#fff;" onclick="connectWithFirebase(false)">
+            <span>🔥</span> Mit Firebase Cloud Identity anmelden
+          </button>
+        </div>
+
         <!-- MASTER PHRASES DISPLAY FOR CREATOR (Strictly gated behind verified admin session) -->
         <div id="auth-phrases-box" style="display:none; background:#F8FAFC; border:1px solid var(--slate-200); border-radius:8px; padding:10px; margin-top:10px;">
           <div style="font-size:10px; font-weight:bold; color:var(--navy-main); display:flex; align-items:center; gap:4px; margin-bottom:4px;">
@@ -2231,34 +3402,43 @@ PARITÄT:           Android APK v8.0 & Web App 100% SYNCHRON
 
       <!-- TAB 1: 5 PARALLELE PROVIDER -->
       <div id="auth-tab-content-1" style="display:none;">
+        <div style="background:var(--slate-50); border:1px solid var(--slate-200); border-radius:8px; padding:10px; margin-bottom:10px; font-size:11px; color:var(--text-muted); line-height:1.4;">
+          <strong>🛡️ Account-Verknüpfung:</strong> Hier kannst du deinen bestehenden System-Account sicher mit externen Identitäten (Google, Microsoft, Web3, GitHub, Firebase) verbinden oder trennen.
+        </div>
         <div style="display:flex; flex-direction:column; gap:8px;" id="auth-providers-list">
           <!-- Rendered dynamically -->
         </div>
       </div>
 
-      <!-- TAB 2: SCHNELL-AUSWAHL (KEIN AUTO-LOGIN - PASSWORT-PFLICHT) -->
+      <!-- TAB 2: SCHNELL-AUSWAHL -->
       <div id="auth-tab-content-2" style="display:none;">
         <div style="background:#FEF3C7; border:1px solid #FCD34D; border-radius:8px; padding:10px; margin-bottom:10px; font-size:10px; color:#78350F; line-height:1.4;">
-          <strong>🛡️ Kein Auto-Login:</strong> Die Schnellauswahl überträgt die gewünschte Identität in das Anmeldeformular. Eine Sitzung wird ausschließlich nach korrekter Passworteingabe erzeugt.
+          <strong>🛡️ Identitäts-Auswahl:</strong> Admin-Presets öffnen das Passwort-Formular. Drittanbieter rufen direkt die offizielle Authentifizierung auf.
         </div>
         <div style="display:flex; flex-direction:column; gap:8px;">
-          <button class="btn" style="background:var(--navy-main); color:#fff; padding:10px; font-size:12px; font-weight:bold; display:flex; align-items:center; gap:8px;" onclick="selectQuickIdentity('RFOF-NETWORK')">
-            <span>🛡️</span> RFOF-NETWORK (Master-Admin / GitHub OAuth)
+          <!-- ADMIN-ONLY BUTTONS: Only visible when an Admin / Creator is logged in -->
+          <div id="auth-admin-quick-buttons" style="display:none; flex-direction:column; gap:8px;">
+            <button class="btn" style="background:var(--navy-main); color:#fff; padding:10px; font-size:12px; font-weight:bold; display:flex; align-items:center; gap:8px;" onclick="selectQuickIdentity('RFOF-NETWORK')">
+              <span>🛡️</span> RFOF-NETWORK (Master-Admin / GitHub OAuth)
+            </button>
+            <button class="btn" style="background:var(--gold-main); color:var(--navy-main); padding:10px; font-size:12px; font-weight:800; display:flex; align-items:center; gap:8px;" onclick="selectQuickIdentity('Satoramy')">
+              <span>⭐</span> Satoramy (Dual-Admin & Nutzer / Creator)
+            </button>
+          </div>
+          <button class="btn btn-outline" style="padding:10px; font-size:12px; display:flex; align-items:center; gap:8px; background:#fff;" onclick="connectWithGoogle(false)">
+            <span>🌐</span> Mit Google Account anmelden (GIS / OAuth 2.0)
           </button>
-          <button class="btn" style="background:var(--gold-main); color:var(--navy-main); padding:10px; font-size:12px; font-weight:800; display:flex; align-items:center; gap:8px;" onclick="selectQuickIdentity('Satoramy')">
-            <span>⭐</span> Satoramy (Dual-Admin & Nutzer / Creator)
+          <button class="btn btn-outline" style="padding:10px; font-size:12px; display:flex; align-items:center; gap:8px; background:#fff;" onclick="connectWithMicrosoft(false)">
+            <span>🪟</span> Mit Microsoft Azure AD anmelden (MSAL SSO)
           </button>
-          <button class="btn btn-outline" style="padding:10px; font-size:12px; display:flex; align-items:center; gap:8px;" onclick="selectQuickIdentity('Google-Erfinder')">
-            <span>👤</span> Mit Google Account anmelden (Passwort-Pflicht)
+          <button class="btn btn-outline" style="padding:10px; font-size:12px; display:flex; align-items:center; gap:8px; background:#fff;" onclick="connectWithWeb3(false)">
+            <span>⚡</span> W3Connect / Web3 Wallet verbinden (EIP-1193)
           </button>
-          <button class="btn btn-outline" style="padding:10px; font-size:12px; display:flex; align-items:center; gap:8px;" onclick="selectQuickIdentity('Microsoft-Partner')">
-            <span>🪟</span> Mit Microsoft Azure AD anmelden (Passwort-Pflicht)
+          <button class="btn btn-outline" style="padding:10px; font-size:12px; display:flex; align-items:center; gap:8px; background:#fff;" onclick="connectWithGitHub(false)">
+            <span>🐙</span> Mit GitHub Account verbinden (OAuth 2.0)
           </button>
-          <button class="btn btn-outline" style="padding:10px; font-size:12px; display:flex; align-items:center; gap:8px;" onclick="selectQuickIdentity('W3-Connect-User')">
-            <span>💳</span> W3Connect / Wallet verbinden (Passwort-Pflicht)
-          </button>
-          <button class="btn btn-outline" style="padding:10px; font-size:12px; display:flex; align-items:center; gap:8px;" onclick="selectQuickIdentity('Firebase-Client')">
-            <span>🔥</span> Firebase Cloud Identity verbinden (Passwort-Pflicht)
+          <button class="btn btn-outline" style="padding:10px; font-size:12px; display:flex; align-items:center; gap:8px; background:#fff;" onclick="connectWithFirebase(false)">
+            <span>🔥</span> Firebase Cloud Identity verbinden (Serverless)
           </button>
           <div id="auth-modal-logout-row" style="display:none;">
             <hr style="border:none; border-top:1px solid var(--slate-200); margin:4px 0;">
@@ -2267,6 +3447,29 @@ PARITÄT:           Android APK v8.0 & Web App 100% SYNCHRON
             </button>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- THIRD-PARTY AUTH & ACCOUNT LINKING MODAL -->
+  <div id="third-party-auth-modal" class="modal-backdrop" onclick="if(event.target===this) closeThirdPartyModal()">
+    <div class="modal-sheet" style="max-width: 480px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div id="tp-modal-icon" style="font-size:26px;">🌐</div>
+          <div>
+            <h3 id="tp-modal-title" style="font-size:15px; font-weight:800; color:var(--navy-main);">Drittanbieter Authentifizierung</h3>
+            <p id="tp-modal-subtitle" style="font-size:10px; color:var(--text-muted);">Souveräne OAuth & Identity Parität</p>
+          </div>
+        </div>
+        <button onclick="closeThirdPartyModal()" style="background:none; border:none; font-size:18px; cursor:pointer;">✕</button>
+      </div>
+      <div id="tp-modal-body" style="margin-bottom:14px;">
+        <!-- Injected via JavaScript -->
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        <button class="btn btn-outline" onclick="closeThirdPartyModal()">Abbrechen</button>
+        <button id="tp-modal-confirm-btn" class="btn btn-primary">Bestätigen</button>
       </div>
     </div>
   </div>

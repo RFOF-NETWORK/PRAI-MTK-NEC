@@ -96,6 +96,59 @@ fun RAppCenterScreen(
       contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp),
       verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+      // TOP BUTTONGEFLECHT / SUB-NAV MESH (Parität mit Web-App)
+      item {
+        Row(
+          modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(bottom = 6.dp),
+          horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+          Surface(
+            color = SignalBlue,
+            shape = RoundedCornerShape(20.dp),
+            modifier = Modifier.clickable { searchQuery = ""; selectedChannel = null }
+          ) {
+            Text("🏪 Alle rApps", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+          }
+          Surface(
+            color = Color.White,
+            shape = RoundedCornerShape(20.dp),
+            border = BorderStroke(1.dp, Slate200),
+            modifier = Modifier.clickable { searchQuery = "PRAI"; selectedChannel = null }
+          ) {
+            Text("Primär: PRAI/MTK/NEC", color = BlueprintNavy, fontSize = 11.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+          }
+          Surface(
+            color = Color.White,
+            shape = RoundedCornerShape(20.dp),
+            border = BorderStroke(1.dp, Slate200),
+            modifier = Modifier.clickable { searchQuery = "DEX"; selectedChannel = null }
+          ) {
+            Text("DEX & Treuhand", color = BlueprintNavy, fontSize = 11.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+          }
+          Surface(
+            color = Color.White,
+            shape = RoundedCornerShape(20.dp),
+            border = BorderStroke(1.dp, Slate200),
+            modifier = Modifier.clickable { searchQuery = "Relayer"; selectedChannel = null }
+          ) {
+            Text("Relayer & Orakel", color = BlueprintNavy, fontSize = 11.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+          }
+          Surface(
+            color = Color.White,
+            shape = RoundedCornerShape(20.dp),
+            border = BorderStroke(1.dp, UrkundeGold),
+            modifier = Modifier.clickable {
+              Toast.makeText(context, "Öffne Release-Download im Web-Portal...", Toast.LENGTH_SHORT).show()
+            }
+          ) {
+            Text("📥 APK Release Download", color = UrkundeGoldDark, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+          }
+        }
+      }
+
       // 1. Hero Banner
       item {
         Card(

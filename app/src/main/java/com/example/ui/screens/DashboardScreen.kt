@@ -4,8 +4,10 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -55,6 +57,57 @@ fun DashboardScreen(
       .padding(horizontal = 16.dp),
     contentPadding = PaddingValues(top = 16.dp, bottom = 32.dp)
   ) {
+    // TOP BUTTONGEFLECHT / SUB-NAV MESH (Parität mit Web-App)
+    item {
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .horizontalScroll(rememberScrollState())
+          .padding(bottom = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+      ) {
+        Surface(
+          color = SignalBlue,
+          shape = RoundedCornerShape(20.dp),
+          modifier = Modifier.clickable { /* Active live view */ }
+        ) {
+          Text("📊 Live-Übersicht", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+        }
+        Surface(
+          color = Color.White,
+          shape = RoundedCornerShape(20.dp),
+          border = BorderStroke(1.dp, Slate200),
+          modifier = Modifier.clickable { onNavigateToWallet() }
+        ) {
+          Text("↗️ Währung Versenden", color = BlueprintNavy, fontSize = 11.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+        }
+        Surface(
+          color = Color.White,
+          shape = RoundedCornerShape(20.dp),
+          border = BorderStroke(1.dp, Slate200),
+          modifier = Modifier.clickable { onNavigateToWallet() }
+        ) {
+          Text("↙️ Währung Empfangen", color = BlueprintNavy, fontSize = 11.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+        }
+        Surface(
+          color = Color.White,
+          shape = RoundedCornerShape(20.dp),
+          border = BorderStroke(1.dp, Slate200),
+          modifier = Modifier.clickable { onOpenTrading() }
+        ) {
+          Text("⚡ DEX Swap", color = BlueprintNavy, fontSize = 11.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+        }
+        Surface(
+          color = Color.White,
+          shape = RoundedCornerShape(20.dp),
+          border = BorderStroke(1.dp, Slate200),
+          modifier = Modifier.clickable { onNavigateToRAppCenter() }
+        ) {
+          Text("🏬 rApp Center", color = BlueprintNavy, fontSize = 11.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+        }
+      }
+    }
+
     // Header Banner
     item {
       Card(

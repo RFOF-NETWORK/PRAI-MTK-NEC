@@ -215,6 +215,49 @@ fun DocumentationScreen(
       .testTag("documentation_screen"),
     contentPadding = PaddingValues(bottom = 70.dp)
   ) {
+    // TOP BUTTONGEFLECHT / SUB-NAV MESH (Parität mit Web-App)
+    item {
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .horizontalScroll(rememberScrollState())
+          .padding(horizontal = 14.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+      ) {
+        Surface(
+          color = SignalBlue,
+          shape = RoundedCornerShape(20.dp),
+          modifier = Modifier.clickable { selectedTab = 0 }
+        ) {
+          Text("📖 Systemhandbuch & 14 APIs", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+        }
+        Surface(
+          color = Color.White,
+          shape = RoundedCornerShape(20.dp),
+          border = BorderStroke(1.dp, Slate200),
+          modifier = Modifier.clickable { selectedTab = 1 }
+        ) {
+          Text("🤖 PRAI Guardian & Axiome", color = BlueprintNavy, fontSize = 11.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+        }
+        Surface(
+          color = Color.White,
+          shape = RoundedCornerShape(20.dp),
+          border = BorderStroke(1.dp, Slate200),
+          modifier = Modifier.clickable { selectedTab = 2 }
+        ) {
+          Text("📜 Verfassungs-Artikel (§ 1-28)", color = BlueprintNavy, fontSize = 11.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+        }
+        Surface(
+          color = Color.White,
+          shape = RoundedCornerShape(20.dp),
+          border = BorderStroke(1.dp, Slate200),
+          modifier = Modifier.clickable { selectedTab = 3 }
+        ) {
+          Text("🛡️ Double-Proxy Sicherheits-Audit", color = BlueprintNavy, fontSize = 11.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+        }
+      }
+    }
+
     // 1. Cyberpunk Pixel Welcome Banner
     item {
       CyberpunkPixelWelcomeBanner()

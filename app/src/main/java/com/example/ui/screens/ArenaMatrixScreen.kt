@@ -60,7 +60,64 @@ fun ArenaMatrixScreen(
       .fillMaxSize()
       .padding(horizontal = 16.dp)
   ) {
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(10.dp))
+
+    // TOP BUTTONGEFLECHT / SUB-NAV MESH (Parität mit Web-App)
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .horizontalScroll(rememberScrollState())
+        .padding(bottom = 8.dp),
+      horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+      Surface(
+        color = SignalBlue,
+        shape = RoundedCornerShape(20.dp),
+        modifier = Modifier.clickable { selectedTab = 0; selectedLevel = null }
+      ) {
+        Text("🎯 Matrix-Übersicht", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+      }
+      Surface(
+        color = Color.White,
+        shape = RoundedCornerShape(20.dp),
+        border = BorderStroke(1.dp, Slate200),
+        modifier = Modifier.clickable { selectedTab = 0; selectedLevel = ArenaLevel.PERSONAL }
+      ) {
+        Text("Arenen 1-7 (Personal)", color = BlueprintNavy, fontSize = 11.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+      }
+      Surface(
+        color = Color.White,
+        shape = RoundedCornerShape(20.dp),
+        border = BorderStroke(1.dp, Slate200),
+        modifier = Modifier.clickable { selectedTab = 0; selectedLevel = ArenaLevel.COMMUNITY }
+      ) {
+        Text("Arenen 8-14 (Community)", color = BlueprintNavy, fontSize = 11.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+      }
+      Surface(
+        color = Color.White,
+        shape = RoundedCornerShape(20.dp),
+        border = BorderStroke(1.dp, Slate200),
+        modifier = Modifier.clickable { selectedTab = 0; selectedLevel = ArenaLevel.FEDERAL }
+      ) {
+        Text("Arenen 15-21 (Federal)", color = BlueprintNavy, fontSize = 11.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+      }
+      Surface(
+        color = Color.White,
+        shape = RoundedCornerShape(20.dp),
+        border = BorderStroke(1.dp, Slate200),
+        modifier = Modifier.clickable { selectedTab = 0; selectedLevel = ArenaLevel.GLOBAL }
+      ) {
+        Text("Arenen 22-28 (Global)", color = BlueprintNavy, fontSize = 11.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+      }
+      Surface(
+        color = Color.White,
+        shape = RoundedCornerShape(20.dp),
+        border = BorderStroke(1.dp, Slate200),
+        modifier = Modifier.clickable { selectedTab = 1 }
+      ) {
+        Text("⚖️ 8 Perspektiven", color = BlueprintNavy, fontSize = 11.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+      }
+    }
 
     Text(
       text = "ARENA-MATRIX & WETTKÄMPFE",

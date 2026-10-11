@@ -142,7 +142,50 @@ fun BlockchainExplorerScreen(
           }
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
+        // TOP BUTTONGEFLECHT / SUB-NAV MESH (Exakte historische Parität zu index.html subnav-mesh-explorer)
+        Row(
+          modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(bottom = 8.dp),
+          horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+          Surface(
+            color = SignalBlue,
+            shape = RoundedCornerShape(20.dp),
+            modifier = Modifier.clickable { selectedPerspective = ExplorerPerspective.USER }
+          ) {
+            Text("📜 Urkunden-Register (28 Akten)", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp))
+          }
+          Surface(
+            color = Color.White,
+            shape = RoundedCornerShape(20.dp),
+            border = BorderStroke(1.dp, Slate200),
+            modifier = Modifier.clickable { selectedPerspective = ExplorerPerspective.KI }
+          ) {
+            Text("🔍 TX & Mempool Explorer", color = BlueprintNavy, fontSize = 11.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp))
+          }
+          Surface(
+            color = Color.White,
+            shape = RoundedCornerShape(20.dp),
+            border = BorderStroke(1.dp, Slate200),
+            modifier = Modifier.clickable { selectedPerspective = ExplorerPerspective.ADMIN }
+          ) {
+            Text("🏛️ XJustiz Notariatsakten", color = BlueprintNavy, fontSize = 11.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp))
+          }
+          Surface(
+            color = Color.White,
+            shape = RoundedCornerShape(20.dp),
+            border = BorderStroke(1.dp, UrkundeGold),
+            modifier = Modifier.clickable {
+              Toast.makeText(context, "Notarscheck (§ 36 BeurkG) Notariatssiegel geladen", Toast.LENGTH_SHORT).show()
+            }
+          ) {
+            Text("🔏 Notarscheck (§ 36 BeurkG)", color = UrkundeGoldDark, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp))
+          }
+        }
+
+        Spacer(modifier = Modifier.height(6.dp))
 
         // 3-Segment Perspective Selector
         Row(

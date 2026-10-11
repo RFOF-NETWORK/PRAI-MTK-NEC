@@ -40,6 +40,40 @@ fun SystemHubScreen(
     contentPadding = PaddingValues(top = 16.dp, bottom = 32.dp),
     verticalArrangement = Arrangement.spacedBy(10.dp)
   ) {
+    // TOP BUTTONGEFLECHT / SUB-NAV MESH (Parität mit Web-App)
+    item {
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(bottom = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+      ) {
+        Surface(
+          color = SignalBlue,
+          shape = RoundedCornerShape(20.dp),
+          modifier = Modifier.clickable { onNavigateToBlueprint() }
+        ) {
+          Text("🏛️ Architektur-Blueprint", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+        }
+        Surface(
+          color = Color.White,
+          shape = RoundedCornerShape(20.dp),
+          border = BorderStroke(1.dp, Slate200),
+          modifier = Modifier.clickable { onNavigateToTitles() }
+        ) {
+          Text("📜 36 BeurkG", color = BlueprintNavy, fontSize = 11.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+        }
+        Surface(
+          color = Color.White,
+          shape = RoundedCornerShape(20.dp),
+          border = BorderStroke(1.dp, Slate200),
+          modifier = Modifier.clickable { onNavigateToGlossar() }
+        ) {
+          Text("🤖 Guardian", color = BlueprintNavy, fontSize = 11.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+        }
+      }
+    }
+
     item {
       Text(
         text = "SYSTEM & ARCHITEKTUR",

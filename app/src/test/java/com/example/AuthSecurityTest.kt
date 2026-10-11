@@ -84,4 +84,56 @@ class AuthSecurityTest {
     assertFalse(resLocked.success)
     assertTrue(resLocked.message.contains("Sicherheits-Lockout aktiv"))
   }
+
+  @Test
+  fun testCurrencyOperationsSendReceiveSwapWorkProperly() {
+    // 1. Test Deposit (Empfangen)
+    val initialEth = com.example.data.WalletRepository.assets.value.find { it.chain == com.example.model.CryptoChain.ETH }?.balance ?: 0.0
+    com.example.data.WalletRepository.deposit(com.example.model.CryptoChain.ETH, 1.5, "Test Empfangen")
+    val afterDeposit = com.example.data.WalletRepository.assets.value.find { it.chain == com.example.model.CryptoChain.ETH }?.balance ?: 0.0
+    assertTrue(afterDeposit >= initialEth + 1.49)
+
+    // 2. Test Withdraw (Versenden)
+    val beforeWithdraw = com.example.data.WalletRepository.assets.value.find { it.chain == com.example.model.CryptoChain.ETH }?.balance ?: 0.0
+    val withdrawSuccess = com.example.data.WalletRepository.withdraw(com.example.model.CryptoChain.ETH, "0xRecipientVault", 0.5)
+    assertTrue(withdrawSuccess)
+    val afterWithdraw = com.example.data.WalletRepository.assets.value.find { it.chain == com.example.model.CryptoChain.ETH }?.balance ?: 0.0
+    assertEquals(beforeWithdraw - 0.5, afterWithdraw, 0.01)
+
+    // 3. Test Swap
+    val swapResult = com.example.data.WalletRepository.swap(
+      fromChain = com.example.model.CryptoChain.ETH,
+      toChain = com.example.model.CryptoChain.BTC,
+      amountFrom = 0.5
+    )
+    assertNotNull(swapResult)
+    assertTrue(swapResult!! > 0.0)
+  }
+
+  @Test
+  fun testRegularUserCannotMintSupplyOutOfThinAir() {
+    // Normal user registers and logs in
+    val regResult = AuthManager.registerAccount("TestNutzer", "NutzerPass123!", com.example.auth.UserType.KUNDE)
+    assertTrue(regResult.success)
+    assertEquals(UserRole.USER, AuthManager.currentUser.value.role)
+    assertFalse(AuthManager.isAdmin)
+    assertFalse(AuthManager.currentUser.value.isMtkHolderAllowed)
+    assertFalse(AuthManager.currentUser.value.isEscrowAuthorized)
+
+    // Regular user cannot hold or mint MTK from thin air
+    assertFalse(AuthManager.currentUser.value.role == UserRole.ADMIN)
+    assertNotEquals("Satoramy", AuthManager.currentUser.value.username)
+    assertNotEquals("RFOF-NETWORK", AuthManager.currentUser.value.username)
+  }
+
+  @Test
+  fun testThirdPartyProviderBindingWithoutPasswordIntermediary() {
+    // Providers can bind their active tokens deterministically using official credentials
+    val providers = AuthManager.parallelProviders.value
+    assertTrue(providers.containsKey(com.example.auth.AuthProviderType.GITHUB))
+    assertTrue(providers.containsKey(com.example.auth.AuthProviderType.FIREBASE))
+    assertTrue(providers.containsKey(com.example.auth.AuthProviderType.GOOGLE))
+    assertTrue(providers.containsKey(com.example.auth.AuthProviderType.MICROSOFT))
+    assertTrue(providers.containsKey(com.example.auth.AuthProviderType.W3CONNECT))
+  }
 }
