@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.auth.AuthManager
@@ -94,6 +95,11 @@ fun MainAppContent() {
   val screenStack = remember { mutableStateListOf(Screen.DASHBOARD) }
 
   fun navigateTo(screen: Screen) {
+    if (screen == Screen.WALLET && currentUser.role == UserRole.GUEST) {
+      showAuthDialog = true
+      Toast.makeText(context, "Anmeldung erforderlich: Multi-Chain Wallet & Treuhand sind nur nach Login verfügbar.", Toast.LENGTH_SHORT).show()
+      return
+    }
     if (screenStack.lastOrNull() != screen) {
       screenStack.add(screen)
     }
@@ -315,6 +321,9 @@ fun MainAppContent() {
               onClick = {
                 AuthManager.logout()
                 WalletRepository.refreshAssetsForCurrentRole()
+                if (currentScreen == Screen.WALLET) {
+                  currentScreen = Screen.DASHBOARD
+                }
                 Toast.makeText(context, "Erfolgreich abgemeldet (Gast-Modus)", Toast.LENGTH_SHORT).show()
               },
               colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFEF4444)),
@@ -409,14 +418,16 @@ fun MainAppContent() {
             alwaysShowLabel = true,
             modifier = Modifier.width(68.dp)
           )
-          NavigationBarItem(
-            selected = currentScreen == Screen.WALLET,
-            onClick = { navigateTo(Screen.WALLET) },
-            icon = { Icon(Icons.Default.AccountBalanceWallet, contentDescription = "Wallet") },
-            label = { Text("Wallet", fontSize = 9.sp, maxLines = 1, softWrap = false) },
-            alwaysShowLabel = true,
-            modifier = Modifier.width(68.dp)
-          )
+          if (currentUser.role != UserRole.GUEST) {
+            NavigationBarItem(
+              selected = currentScreen == Screen.WALLET,
+              onClick = { navigateTo(Screen.WALLET) },
+              icon = { Icon(Icons.Default.AccountBalanceWallet, contentDescription = "Wallet") },
+              label = { Text("Wallet", fontSize = 9.sp, maxLines = 1, softWrap = false) },
+              alwaysShowLabel = true,
+              modifier = Modifier.width(68.dp)
+            )
+          }
           NavigationBarItem(
             selected = currentScreen == Screen.EXPLORER,
             onClick = { navigateTo(Screen.EXPLORER) },
@@ -506,9 +517,50 @@ fun MainAppContent() {
           }
         )
 
-        Screen.WALLET -> WalletScreen(
-          onNavigateToExplorer = { navigateTo(Screen.EXPLORER) }
-        )
+        Screen.WALLET -> {
+          if (currentUser.role == UserRole.GUEST) {
+            Box(
+              modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+              contentAlignment = Alignment.Center
+            ) {
+              Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+              ) {
+                Icon(
+                  Icons.Default.Lock,
+                  contentDescription = "Gesperrt",
+                  tint = UrkundeGold,
+                  modifier = Modifier.size(56.dp)
+                )
+                Text(
+                  text = "Geschützter Wallet-Bereich",
+                  style = MaterialTheme.typography.titleLarge,
+                  fontWeight = FontWeight.Bold,
+                  color = BlueprintNavy
+                )
+                Text(
+                  text = "Zugriff und Einsicht auf Treugeber-Bestände und Multi-Chain Wallets sind erst nach erfolgreicher Authentifizierung freigeschaltet.",
+                  style = MaterialTheme.typography.bodyMedium,
+                  textAlign = TextAlign.Center,
+                  color = Color.Gray
+                )
+                Button(
+                  onClick = { showAuthDialog = true },
+                  colors = ButtonDefaults.buttonColors(containerColor = BlueprintNavy)
+                ) {
+                  Text("Jetzt Anmelden / Registrieren", color = Color.White)
+                }
+              }
+            }
+          } else {
+            WalletScreen(
+              onNavigateToExplorer = { navigateTo(Screen.EXPLORER) }
+            )
+          }
+        }
 
         Screen.EXPLORER -> BlockchainExplorerScreen(
           onBack = { navigateBack() }

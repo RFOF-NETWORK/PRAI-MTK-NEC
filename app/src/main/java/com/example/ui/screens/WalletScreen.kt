@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -78,6 +79,27 @@ fun WalletScreen(
 
   val currencyFormat = remember {
     NumberFormat.getCurrencyInstance(Locale.GERMANY)
+  }
+
+  if (currentUser.role == UserRole.GUEST) {
+    Box(
+      modifier = modifier
+        .fillMaxSize()
+        .background(BackgroundLight)
+        .testTag("wallet_screen_guest_blocked"),
+      contentAlignment = Alignment.Center
+    ) {
+      Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.padding(24.dp)
+      ) {
+        Icon(Icons.Default.Lock, contentDescription = "Gesperrt", tint = UrkundeGold, modifier = Modifier.size(48.dp))
+        Text("Treuhand- und Wallet-Zugriff gesperrt", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = BlueprintNavy)
+        Text("Einsicht in Treugeber-Bestände ist ausschließlich nach Authentifizierung gestattet.", style = MaterialTheme.typography.bodySmall, color = Color.Gray, textAlign = TextAlign.Center)
+      }
+    }
+    return
   }
 
   Column(

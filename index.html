@@ -707,7 +707,7 @@
     <button class="nav-tab-btn active" onclick="navigateTo('dashboard')">📊 Übersicht</button>
     <button class="nav-tab-btn" onclick="navigateTo('categories')">📁 28 Kategorien</button>
     <button class="nav-tab-btn" onclick="navigateTo('arenas')">🎯 Arenen Matrix</button>
-    <button class="nav-tab-btn" onclick="navigateTo('wallet')">💳 Multi-Chain Wallet</button>
+    <button class="nav-tab-btn" id="nav-btn-wallet" onclick="navigateTo('wallet')" style="display: none;">💳 Multi-Chain Wallet</button>
     <button class="nav-tab-btn" onclick="navigateTo('explorer')">📜 Urkunden & Explorer</button>
     <button class="nav-tab-btn" onclick="navigateTo('system')">🏛️ System & Architektur</button>
     <button class="nav-tab-btn" onclick="navigateTo('rapp-center')">🏬 rApp Center (v8.0)</button>
@@ -1551,8 +1551,8 @@ Native Android Module: Version 8.0 READY</pre>
 
   </main>
 
-  <!-- MOBILE BOTTOM DOCK (EXACT 9-ITEM DOCK MATCHING ANDROID BOTTOMBAR) -->
-  <nav class="mobile-bottom-dock">
+  <!-- MOBILE BOTTOM DOCK (EXACT 7-ITEM DOCK FOR GUEST, 8-ITEM DOCK AFTER LOGIN) -->
+  <nav class="mobile-bottom-dock" id="mobile-bottom-dock">
     <button class="dock-item active" onclick="navigateTo('dashboard')">
       <span class="dock-icon">📊</span>
       <span>Übersicht</span>
@@ -1565,7 +1565,7 @@ Native Android Module: Version 8.0 READY</pre>
       <span class="dock-icon">🎯</span>
       <span>Arenen</span>
     </button>
-    <button class="dock-item" onclick="navigateTo('wallet')">
+    <button class="dock-item" id="dock-btn-wallet" onclick="navigateTo('wallet')" style="display: none;">
       <span class="dock-icon">💳</span>
       <span>Wallet</span>
     </button>
@@ -1584,10 +1584,6 @@ Native Android Module: Version 8.0 READY</pre>
     <button class="dock-item" onclick="navigateTo('documentation')">
       <span class="dock-icon">📖</span>
       <span>Dokumentation</span>
-    </button>
-    <button class="dock-item gold-active" onclick="navigateTo('web-portal')">
-      <span class="dock-icon">🌐</span>
-      <span>Web & Git</span>
     </button>
   </nav>
 
@@ -1633,14 +1629,25 @@ Native Android Module: Version 8.0 READY</pre>
 
     // NAVIGATION SYSTEM (EXACT PARITY WITH ANDROID MainActivity.kt)
     function navigateTo(screenId) {
+      if (screenId === 'wallet' && currentUser.role === 'GUEST') {
+        openAuthModal();
+        showToast("Anmeldung erforderlich: Multi-Chain Wallet & Treuhand sind erst nach Login verfügbar.");
+        return;
+      }
+
       document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
       const target = document.getElementById('screen-' + screenId);
       if (target) target.classList.add('active');
 
       // Update Desktop Tabs
       document.querySelectorAll('.nav-tab-btn').forEach(btn => btn.classList.remove('active'));
+      const activeNav = document.querySelector(`.nav-tab-btn[onclick="navigateTo('${screenId}')"]`);
+      if (activeNav) activeNav.classList.add('active');
+
       // Update Mobile Dock Items
       document.querySelectorAll('.dock-item').forEach(item => item.classList.remove('active'));
+      const activeDock = document.querySelector(`.dock-item[onclick="navigateTo('${screenId}')"]`);
+      if (activeDock) activeDock.classList.add('active');
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -1971,6 +1978,17 @@ PARITÄT:           Android APK v8.0 & Web App 100% SYNCHRON
         if (authBtnLabel) authBtnLabel.innerText = "Logout";
         authBtn.title = "Abmelden (" + currentUser.username + ")";
       }
+
+      // Wallet button visibility: ONLY visible after login (7 items before, 8 items after)
+      const dockWallet = document.getElementById('dock-btn-wallet');
+      const navWallet = document.getElementById('nav-btn-wallet');
+      if (currentUser.role === 'GUEST') {
+        if (dockWallet) dockWallet.style.display = 'none';
+        if (navWallet) navWallet.style.display = 'none';
+      } else {
+        if (dockWallet) dockWallet.style.display = 'flex';
+        if (navWallet) navWallet.style.display = 'inline-flex';
+      }
     }
 
     function handleTopAuthAction() {
@@ -2001,6 +2019,11 @@ PARITÄT:           Android APK v8.0 & Web App 100% SYNCHRON
       localStorage.setItem('current_user', JSON.stringify(currentUser));
       updateHeaderAuthUI();
       renderAuthModal();
+      updateWalletBalanceDisplays();
+      const currentScreen = document.querySelector('.app-screen.active');
+      if (currentScreen && currentScreen.id === 'screen-wallet') {
+        navigateTo('dashboard');
+      }
       showToast("Erfolgreich abgemeldet (Gast-Modus)");
     }
 
@@ -2553,6 +2576,16 @@ PARITÄT:           Android APK v8.0 & Web App 100% SYNCHRON
       const ethDisp = document.getElementById('asset-bal-eth');
       const btcDisp = document.getElementById('asset-bal-btc');
       const tonDisp = document.getElementById('asset-bal-ton');
+
+      if (currentUser.role === 'GUEST') {
+        if (totalDisp) totalDisp.innerText = "€ 0,00 (Geschützt)";
+        if (mtkDisp) mtkDisp.innerText = "0 MTK";
+        if (mtkEurDisp) mtkEurDisp.innerText = "≈ € 0,00";
+        if (ethDisp) ethDisp.innerText = "0.00 ETH";
+        if (btcDisp) btcDisp.innerText = "0.00 BTC";
+        if (tonDisp) tonDisp.innerText = "0 TON";
+        return;
+      }
 
       if (totalDisp) totalDisp.innerText = "€ " + walletBalances.EUR.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2});
       if (mtkDisp) mtkDisp.innerText = walletBalances.MTK.toLocaleString('de-DE') + " MTK";

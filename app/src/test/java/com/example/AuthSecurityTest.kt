@@ -86,7 +86,22 @@ class AuthSecurityTest {
   }
 
   @Test
+  fun testGuestCannotSeeWalletOrTreugeberBalances() {
+    // Guest starts with empty assets and no transaction visibility
+    AuthManager.logout()
+    com.example.data.WalletRepository.refreshAssetsForCurrentRole()
+    assertTrue(com.example.data.WalletRepository.assets.value.isEmpty())
+    assertTrue(com.example.data.WalletRepository.transactions.value.isEmpty())
+    assertEquals(UserRole.GUEST, AuthManager.currentUser.value.role)
+  }
+
+  @Test
   fun testCurrencyOperationsSendReceiveSwapWorkProperly() {
+    // Authenticate as verified user to perform wallet operations
+    val loginRes = AuthManager.loginWithCredentials("Satoramy", "SatoramyAdmin2026!")
+    assertTrue(loginRes.success)
+    com.example.data.WalletRepository.refreshAssetsForCurrentRole()
+
     // 1. Test Deposit (Empfangen)
     val initialEth = com.example.data.WalletRepository.assets.value.find { it.chain == com.example.model.CryptoChain.ETH }?.balance ?: 0.0
     com.example.data.WalletRepository.deposit(com.example.model.CryptoChain.ETH, 1.5, "Test Empfangen")

@@ -49,7 +49,6 @@ object WalletRepository {
 
   init {
     refreshAssetsForCurrentRole()
-    initInitialTransactions()
 
     // Listen to real live price updates from network
     kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
@@ -60,10 +59,24 @@ object WalletRepository {
   }
 
   fun refreshAssetsForCurrentRole() {
+    val currentUser = AuthManager.currentUser.value
+    if (currentUser.role == com.example.auth.UserRole.GUEST) {
+      _assets.value = emptyList()
+      _transactions.value = emptyList()
+      return
+    }
     refreshAssetsWithMarketData(com.example.network.CryptoPriceService.marketData.value)
+    if (_transactions.value.isEmpty()) {
+      initInitialTransactions()
+    }
   }
 
   private fun refreshAssetsWithMarketData(liveMarket: Map<String, com.example.network.LiveMarketData>) {
+    val currentUser = AuthManager.currentUser.value
+    if (currentUser.role == com.example.auth.UserRole.GUEST) {
+      _assets.value = emptyList()
+      return
+    }
     val isAdmin = AuthManager.isAdmin
     val derived = AESEncryption.deriveAddresses(currentSeedPhrase)
 
