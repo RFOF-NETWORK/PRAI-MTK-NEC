@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PRAI-MTK-NEC — Banking rApp (Demo)</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;margin:2rem}pre{background:#f6f8fa;padding:1rem;border-radius:6px;}</style>
+</head>
+<body>
+  <h1>PRAI/MTK/NEC — Banking rApp (Demo)</h1>
+  <p>This is a lightweight web demo for the Banking rApp. It contains validators and describes flows. No private keys are present here.</p>
+
+  <h2>Capabilities</h2>
+  <ul>
+    <li>IBAN (ISO 13616) validation and normalization (EU/DE focus)</li>
+    <li>Destination address validation (crypto address checksum + IBAN)</li>
+    <li>Tx proposal flow: propose → sign (in app) → submit</li>
+    <li>Escrow / audit mapping (off‑chain for fiat; on‑chain Escrow contract for token custody)</li>
+  </ul>
+
+  <h2>Quick Test</h2>
+  <p>Example IBAN validator (client‑side only): enter an IBAN and click Validate.</p>
+  <input id="iban" placeholder="DE89370400440532013000" style="width:80%"><button id="v">Validate</button>
+  <pre id="out"></pre>
+
+  <script>
+    // Minimal client-side IBAN check (mod97), for demo only. Use server-side validated implementation for production.
+    function ibanToDigits(iban){
+      const s = iban.replace(/\s+/g,'').toUpperCase();
+      return s.slice(4)+s.slice(0,4);
+    }
+    function charToNumber(c){
+      const code = c.charCodeAt(0);
+      if(code>=48 && code<=57) return c; // 0-9
+      return (code-55).toString(); // A=10 -> 10
+    }
+    function ibanMod97(iban){
+      let digits = '';
+      for(const ch of ibanToDigits(iban)) digits += charToNumber(ch);
+      // compute mod 97 in chunks
+      let remainder = 0n;
+      for(let i=0;i<digits.length;i+=7){
+        const block = digits.slice(i,i+7);
+        remainder = (remainder*BigInt(10**block.length) + BigInt(block)) % 97n;
+      }
+      return Number(remainder);
+    }
+    document.getElementById('v').onclick = ()=>{
+      const v = document.getElementById('iban').value.trim();
+      if(!v){document.getElementById('out').textContent='Enter IBAN';return}
+      try{const mod = ibanMod97(v); document.getElementById('out').textContent = 'mod97 = '+mod + (mod===1? ' (valid)':' (invalid)');}
+      catch(e){document.getElementById('out').textContent='Error: '+e}
+    }
+  </script>
+
+  <p>See <code>../docs/design.md</code> for full architecture and implementation plan.</p>
+</body>
+</html>
