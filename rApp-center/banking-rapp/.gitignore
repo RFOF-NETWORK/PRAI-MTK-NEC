@@ -1,0 +1,9 @@
+# rApp-center/banking-rapp
+# Ignore local keystores, env, build outputs
+
+/build/
+.gradle/
+/local.properties
+/*.keystore
+/*.jks
+.env

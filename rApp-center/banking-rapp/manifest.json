@@ -1,0 +1,17 @@
+{
+  "id": "eu.de.rfof.prai-mtk-nec.banking-rapp",
+  "name": "PRAI-MTK-NEC Banking rApp",
+  "version": "0.1.0",
+  "description": "Banking DB rApp for PRAI/MTK/NEC — IBAN (ISO13616) + single START wallet + escrow mapping",
+  "platforms": ["android","web"],
+  "author": "RFOF-NETWORK",
+  "permissions": [
+    "network",
+    "storage",
+    "keystore"
+  ],
+  "entry": {
+    "android": "app-android/",
+    "web": "web/index.html"
+  }
+}
