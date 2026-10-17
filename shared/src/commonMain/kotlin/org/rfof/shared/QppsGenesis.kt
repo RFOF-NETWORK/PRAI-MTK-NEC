@@ -44,13 +44,17 @@ object QppsGenesis {
     }
 
     private fun simpleDeterministicHash(input: String): String {
-        // 64-bit rolling polynomial hash, deterministic across JS/JVM
-        var h = 1469598103934665603UL
-        val prime = 1099511628211UL
-        input.encodeToByteArray().forEach { b ->
-            h = (h xor (b.toULong())) * prime
+        // FNV-1a 64-bit hash using signed Long to stay portable across targets
+        var h = 0xcbf29ce484222325L // FNV offset basis (signed representation)
+        val prime = 0x100000001b3L // FNV prime
+        val bytes = input.encodeToByteArray()
+        for (b in bytes) {
+            h = h xor b.toLong()
+            h = h * prime
         }
-        return h.toString(16)
+        // produce hex string (use unsigned representation via mask)
+        val hex = (h and -1L).toULong().toString(16)
+        return hex
     }
 
     private fun deriveSignature(gid: String): String {
