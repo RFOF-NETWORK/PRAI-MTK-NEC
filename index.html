@@ -23,24 +23,49 @@
     <pre id="ibanout"></pre>
   </div>
 
-  <script src="/shared.bundle.js"></script>
   <script>
-    // Assume shared exposes global org_rfof_shared_QppsGenesis with computeGenesis
-    function runGenesis(){
+    // Attempt to load the Kotlin/JS bundle from common build locations.
+    (function(){
+      const candidates = [
+        '/shared.bundle.js',
+        '/shared/build/js/packages/shared/kotlin/shared.js',
+        '/shared/build/distributions/shared.js',
+        '/build/js/packages/shared/kotlin/shared.js'
+      ];
+      function loadScript(url, onload, onerror){
+        const s = document.createElement('script');
+        s.src = url; s.async = false;
+        s.onload = onload; s.onerror = onerror;
+        document.head.appendChild(s);
+      }
+      let idx = 0;
+      function tryNext(){
+        if(idx >= candidates.length){
+          document.body.insertAdjacentHTML('beforeend','<p style="color:red">Could not find the Kotlin/JS bundle. Please build shared module and copy the JS bundle to one of the known locations listed in the docs.</p>');
+          return;
+        }
+        const url = candidates[idx++];
+        loadScript(url, ()=>{ document.dispatchEvent(new CustomEvent('kmp-bundle-loaded')); }, ()=>{ tryNext(); });
+      }
+      tryNext();
+    })();
+  </script>
+
+  <script>
+    document.addEventListener('kmp-bundle-loaded', ()=>{
       try{
         const g = org.rfof.shared.QppsGenesis.computeGenesis();
-        document.getElementById('genout').textContent = JSON.stringify(g,['genesisId','e8Points','matrixSize','rounds','signature'],2);
+        document.getElementById('genout').textContent = JSON.stringify({ genesisId:g.genesisId, e8Points:g.e8Points, matrixSize:g.matrixSize, rounds:g.rounds, signature:g.signature }, null, 2);
       }catch(e){document.getElementById('genout').textContent = 'Error: '+e}
-    }
-    document.getElementById('gen').onclick = runGenesis;
 
-    document.getElementById('check').onclick = ()=>{
-      const v=document.getElementById('iban').value;
-      try{
-        const ok = org.rfof.shared.IbanValidator.isValid(v);
-        document.getElementById('ibanout').textContent = ok? 'VALID':'INVALID';
-      }catch(e){document.getElementById('ibanout').textContent = 'Error: '+e}
-    }
+      document.getElementById('check').onclick = ()=>{
+        const v=document.getElementById('iban').value;
+        try{
+          const ok = org.rfof.shared.IbanValidator.isValid(v);
+          document.getElementById('ibanout').textContent = ok? 'VALID':'INVALID';
+        }catch(e){document.getElementById('ibanout').textContent = 'Error: '+e}
+      }
+    });
   </script>
 </body>
 </html>
